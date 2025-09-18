@@ -740,24 +740,9 @@ class MainApp(App):
     
     def update_all_text(self):
         """Update all text elements in the UI with current language"""
-        # Force a complete UI refresh by rebuilding the interface
-        current_screen_name = self.root.current
-        
-        # Reload the KV file to refresh all text bindings
-        from kivy.lang import Builder
-        Builder.unload_file('GalapagosCarTracking_translated.kv')
-        new_root = Builder.load_file('GalapagosCarTracking_translated.kv')
-        
-        # Replace the current root with the new one
-        self.root = new_root
-        
-        # Set the current screen back to what it was
-        self.root.current = current_screen_name
-        
-        # Trigger any screen-specific updates
-        current_screen = self.root.get_screen(current_screen_name)
-        if hasattr(current_screen, 'on_pre_enter'):
-            current_screen.on_pre_enter()
+        # Just toggle the language - the KV bindings should update automatically
+        # since they use app.translator.get_text() calls
+        pass
 
 
 # run the application

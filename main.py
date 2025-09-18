@@ -14,6 +14,7 @@ from datetime import datetime
 from datetime import timedelta
 from plyer import gps
 from math import radians, sin, cos, sqrt, atan2
+from translations import translator
 
 
 currentUser = ''
@@ -120,7 +121,7 @@ def DBShowAll():
  
 def DBCheckUsernameExists(username):
     if(username == ''):
-        return "Username Invalid"
+        return translator.get_text('username_invalid')
     else:
         [cursor, mydb] = DBConnect()
         query = "SELECT * FROM UserData WHERE username = '{}'".format(username)
@@ -134,13 +135,13 @@ def DBCheckUsernameExists(username):
         except: # If this phone is unused
             return "Valid"
         else: # If this phone is already in the database
-            return "This username is already in use. Please choose another username."
+            return translator.get_text('username_exists')
 
 def DBCheckPhoneExists(phone):
     try:
         int(phone)
     except: 
-        return "Phone Number Invalid"
+        return translator.get_text('phone_invalid')
     else:
         [cursor, mydb] = DBConnect()
         query = "SELECT * FROM UserData WHERE phone = '{}'".format(phone)
@@ -154,7 +155,7 @@ def DBCheckPhoneExists(phone):
         except: # If this phone is unused
             return "Valid"
         else: # If this phone is already in the database
-            return "This phone number is already in use"
+            return translator.get_text('phone_exists')
     
 def DBRegister(username, password, name, phone, company1, comp1num, company2, comp2num):
     [cursor, mydb] = DBConnect()
@@ -462,9 +463,9 @@ class Welcome(Screen):
                 global currentUser
                 currentUser = str(username)
             else:
-                self.ids.Incorrect.text = 'Invalid Username or Password'
+                self.ids.Incorrect.text = translator.get_text('invalid_credentials')
         else:
-            self.ids.Incorrect.text = 'Connection Required to Log In'
+            self.ids.Incorrect.text = translator.get_text('connection_required_login')
        
 class Home(Screen):
     def logOut(self):
@@ -524,7 +525,7 @@ class Register1(Screen):
                 self.manager.current = "Register2" # sets the window to the window with the name given
                 self.manager.transition.direction = "up" # sets transition direction    
         else:
-            self.ids.Incorrect.text = "Connection Required to Register New Account"
+            self.ids.Incorrect.text = translator.get_text('connection_required_register')
    
 class Register2(Screen):
     def register(self, username, password, name, phone, comp1, car1, comp2, car2):
@@ -541,7 +542,7 @@ class Register2(Screen):
             self.manager.current = "Welcome"# sets the window to the window with the name given
             self.manager.transition.direction = "up" # sets transition direction
         else:
-            self.ids.Incorrect.text = "Connection Required to Register New Account"
+            self.ids.Incorrect.text = translator.get_text('connection_required_register')
 
 class StartTrip(Screen):
     def on_pre_enter(self):
@@ -664,6 +665,10 @@ class WindowManager(ScreenManager):
     pass
 
 class MainApp(App):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.translator = translator
+    
     def build(self):
         return kv
     
@@ -727,9 +732,22 @@ class MainApp(App):
             self.root.get_screen('Register2').ids.CarNumberTwo.opacity = 0
             self.root.get_screen('Register2').ids.Car2NumReg.opacity = 0   
 
+    def toggle_language(self):
+        """Toggle between English and Spanish and update all UI text"""
+        translator.toggle_language()
+        self.update_all_text()
+    
+    def update_all_text(self):
+        """Update all text elements in the UI with current language"""
+        # This method will be called to refresh all text when language changes
+        # We'll trigger screen updates by calling on_pre_enter for visible screens
+        current_screen = self.root.current
+        if hasattr(self.root.get_screen(current_screen), 'on_pre_enter'):
+            self.root.get_screen(current_screen).on_pre_enter()
+
 
 # load the kivy file
-kv = Builder.load_file('GalapagosCarTracking.kv')
+kv = Builder.load_file('GalapagosCarTracking_translated.kv')
 # run the application
 if __name__=='__main__':
     MainApp().run()

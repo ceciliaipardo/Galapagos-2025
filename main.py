@@ -670,7 +670,8 @@ class MainApp(App):
         self.translator = translator
     
     def build(self):
-        return kv
+        # Load the KV file
+        return Builder.load_file('GalapagosCarTracking_translated.kv')
     
     def on_start(self):
         if platform == "android":
@@ -679,16 +680,16 @@ class MainApp(App):
         localDBCreate()
         localDBLogin('testUser', 'testPassword', 'Test User', '1234567890', 'Company1', '1', 'Company2', '2') # DELETE ONCE LOGIN IS POSSIBLE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         onLaunch()  
-        kv.transition = NoTransition()
+        self.root.transition = NoTransition()
         try:
             username = localDBPullAccountData()[0]
             if(username != ''):
-                kv.current = "Home"
+                self.root.current = "Home"
             else:
-                kv.current = "Welcome"
+                self.root.current = "Welcome"
         except:
-            kv.current = "Welcome"
-        kv.transition = SlideTransition()    
+            self.root.current = "Welcome"
+        self.root.transition = SlideTransition()
 
         
     def on_gps_location(self, **kwargs):
@@ -739,15 +740,26 @@ class MainApp(App):
     
     def update_all_text(self):
         """Update all text elements in the UI with current language"""
-        # This method will be called to refresh all text when language changes
-        # We'll trigger screen updates by calling on_pre_enter for visible screens
-        current_screen = self.root.current
-        if hasattr(self.root.get_screen(current_screen), 'on_pre_enter'):
-            self.root.get_screen(current_screen).on_pre_enter()
+        # Force a complete UI refresh by rebuilding the interface
+        current_screen_name = self.root.current
+        
+        # Reload the KV file to refresh all text bindings
+        from kivy.lang import Builder
+        Builder.unload_file('GalapagosCarTracking_translated.kv')
+        new_root = Builder.load_file('GalapagosCarTracking_translated.kv')
+        
+        # Replace the current root with the new one
+        self.root = new_root
+        
+        # Set the current screen back to what it was
+        self.root.current = current_screen_name
+        
+        # Trigger any screen-specific updates
+        current_screen = self.root.get_screen(current_screen_name)
+        if hasattr(current_screen, 'on_pre_enter'):
+            current_screen.on_pre_enter()
 
 
-# load the kivy file
-kv = Builder.load_file('GalapagosCarTracking_translated.kv')
 # run the application
 if __name__=='__main__':
     MainApp().run()

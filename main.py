@@ -1,4 +1,9 @@
-import mysql.connector
+try:
+    import mysql.connector
+    MYSQL_AVAILABLE = True
+except ImportError:
+    MYSQL_AVAILABLE = False
+    print("MySQL connector not available. Running in SQLite-only mode.")
 import sqlite3
 from kivy.app import App
 from kivy.lang import Builder
@@ -10,6 +15,8 @@ from kivy.uix.screenmanager import NoTransition
 from kivy.uix.screenmanager import SlideTransition
 from kivymd.app import MDApp
 from kivy.logger import Logger
+from kivy.event import EventDispatcher
+from kivy.properties import StringProperty
 from datetime import datetime
 from datetime import timedelta
 from plyer import gps
@@ -33,6 +40,8 @@ minMph = 2
 
 
 def DBConnect():
+    if not MYSQL_AVAILABLE:
+        raise Exception("MySQL not available")
     mydb = mysql.connector.connect(
 			host = "localhost", ##going to be an IP
 			user = "root",		
@@ -665,9 +674,41 @@ class WindowManager(ScreenManager):
     pass
 
 class MainApp(App):
+    # Create observable string properties for all translatable text
+    welcome_text = StringProperty()
+    username_text = StringProperty()
+    password_text = StringProperty()
+    login_text = StringProperty()
+    register_link_text = StringProperty()
+    home_text = StringProperty()
+    start_trip_text = StringProperty()
+    log_out_text = StringProperty()
+    get_stats_text = StringProperty()
+    back_text = StringProperty()
+    next_text = StringProperty()
+    done_text = StringProperty()
+    complete_text = StringProperty()
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.translator = translator
+        self.update_text_properties()
+    
+    def update_text_properties(self):
+        """Update all text properties with current language"""
+        self.welcome_text = self.translator.get_text('welcome')
+        self.username_text = self.translator.get_text('username')
+        self.password_text = self.translator.get_text('password')
+        self.login_text = self.translator.get_text('login')
+        self.register_link_text = self.translator.get_text('register_link')
+        self.home_text = self.translator.get_text('home')
+        self.start_trip_text = self.translator.get_text('start_trip')
+        self.log_out_text = self.translator.get_text('log_out')
+        self.get_stats_text = self.translator.get_text('get_stats')
+        self.back_text = self.translator.get_text('back')
+        self.next_text = self.translator.get_text('next')
+        self.done_text = self.translator.get_text('done')
+        self.complete_text = self.translator.get_text('complete')
     
     def build(self):
         # Load the KV file
@@ -736,13 +777,86 @@ class MainApp(App):
     def toggle_language(self):
         """Toggle between English and Spanish and update all UI text"""
         translator.toggle_language()
-        self.update_all_text()
+        self.update_all_screen_texts()
+    
+    def update_all_screen_texts(self):
+        """Update text on all screens by directly modifying widget text properties"""
+        # Update Welcome screen
+        try:
+            welcome_screen = self.root.get_screen('Welcome')
+            # Find and update all labels and buttons with translation keys
+            self.update_widget_texts(welcome_screen)
+        except:
+            pass
+        
+        # Update Home screen
+        try:
+            home_screen = self.root.get_screen('Home')
+            self.update_widget_texts(home_screen)
+        except:
+            pass
+            
+        # Update all other screens
+        for screen_name in ['Register1', 'Register2', 'HomeStatsPage', 'StartTrip', 'Destination', 'People', 'Cargo', 'FinishTrip', 'TripStats']:
+            try:
+                screen = self.root.get_screen(screen_name)
+                self.update_widget_texts(screen)
+            except:
+                pass
+    
+    def update_widget_texts(self, widget):
+        """Recursively update text properties of widgets"""
+        from kivy.uix.label import Label
+        from kivy.uix.button import Button
+        
+        # Update this widget if it has text
+        if hasattr(widget, 'text'):
+            # Map common English text to translation keys
+            text_map = {
+                'Welcome!': 'welcome',
+                'Username:': 'username', 
+                'Password:': 'password',
+                'Log In': 'login',
+                "Don't have an account? Register Here": 'register_link',
+                'Home': 'home',
+                'Start Trip': 'start_trip',
+                'Log Out': 'log_out',
+                'Get Stats': 'get_stats',
+                'Back': 'back',
+                'Next': 'next',
+                'Done': 'done',
+                'Complete': 'complete',
+                'Please Fill Out the following:': 'fill_out_following',
+                'Complete your Registration:': 'complete_registration',
+                'Name:': 'name',
+                'Phone Number:': 'phone_number',
+                'Car Company:': 'car_company',
+                'Car Number:': 'car_number',
+                'Which car are you using?': 'which_car',
+                'Where are you going?': 'where_going',
+                'Who are you driving?': 'who_driving',
+                'What kind of cargo are they carrying?': 'what_cargo',
+                'Statistics for Today': 'statistics_today',
+                'Number of Trips': 'number_of_trips',
+                'Miles Driven': 'miles_driven',
+                'Estimated Total Gas Usage': 'estimated_gas',
+                'Total Driving Time': 'total_time',
+                'Time Spent Between Trips': 'time_between',
+                'Back to Home': 'back_to_home'
+            }
+            
+            current_text = str(widget.text).strip()
+            if current_text in text_map:
+                widget.text = translator.get_text(text_map[current_text])
+        
+        # Recursively update children
+        if hasattr(widget, 'children'):
+            for child in widget.children:
+                self.update_widget_texts(child)
     
     def update_all_text(self):
         """Update all text elements in the UI with current language"""
-        # Just toggle the language - the KV bindings should update automatically
-        # since they use app.translator.get_text() calls
-        pass
+        self.toggle_language()
 
 
 # run the application

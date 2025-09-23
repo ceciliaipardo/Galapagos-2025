@@ -8,7 +8,9 @@ Simply double-click on `run_app.bat` to start the application.
 ### Method 2: Using Command Line
 1. Open Command Prompt or PowerShell
 2. Navigate to the app directory
-3. Run: `py main.py`
+3. Run: `py main.py` (NOT `python main.py`)
+
+**Important**: Use `py` instead of `python` on Windows. The `python` command may not be available depending on your Python installation method.
 
 ### Method 3: From PowerShell/Terminal
 ```

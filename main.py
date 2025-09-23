@@ -22,6 +22,7 @@ from datetime import timedelta
 from plyer import gps
 from math import radians, sin, cos, sqrt, atan2
 from translations import translator
+import os
 
 
 currentUser = ''
@@ -433,6 +434,18 @@ def startTrip():
     currentTripID = '{}{}{}{}{}{}{}'.format(currentUser, now.year, now.month, now.day, now.hour, now.minute, now.second)
     localDBRecord(currentTripID, currentCompany, currentCar, 'Start Trip', 0, 0, 0, 0, now)
 
+def get_image_path(image_name):
+    """Get the correct image path based on current language"""
+    current_lang = translator.get_current_language()
+    lang_path = os.path.join('images', current_lang, image_name)
+    
+    # Check if language-specific image exists
+    if os.path.exists(lang_path):
+        return lang_path
+    else:
+        # Fall back to root directory image
+        return image_name
+
 def getTripDistance(tripID):
     coords = localDBPullTripCoords(tripID)
     totalDist = 0
@@ -780,10 +793,15 @@ class MainApp(App):
             self.root.get_screen('Register2').ids.CarNumberTwo.opacity = 0
             self.root.get_screen('Register2').ids.Car2NumReg.opacity = 0   
 
+    def get_image_path(self, image_name):
+        """Get the correct image path based on current language"""
+        return get_image_path(image_name)
+    
     def toggle_language(self):
         """Toggle between English and Spanish and update all UI text"""
         translator.toggle_language()
         self.update_all_screen_texts()
+        self.update_all_images()
     
     def update_all_screen_texts(self):
         """Update text on all screens by directly modifying widget text properties"""
@@ -889,6 +907,29 @@ class MainApp(App):
         if hasattr(widget, 'children'):
             for child in widget.children:
                 self.update_widget_texts(child)
+    
+    def update_all_images(self):
+        """Update all button background images based on current language"""
+        # List of image files that need language-specific versions
+        image_buttons = [
+            ('Destination', 'highlands', 'highlands.png'),
+            ('Destination', 'puertoAyora', 'town.png'),
+            ('Destination', 'airport', 'airport.png'),
+            ('People', 'student', 'student.png'),
+            ('People', 'singletourist', 'tourist.png'),
+            ('People', 'tourists', '2tourists.png'),
+            ('Cargo', 'luggage', 'luggage.png'),
+            ('Cargo', 'equipment', 'farm.png'),
+            ('Cargo', 'food', 'food.png'),
+        ]
+        
+        for screen_name, button_id, image_file in image_buttons:
+            try:
+                screen = self.root.get_screen(screen_name)
+                button = screen.ids[button_id]
+                button.background_normal = self.get_image_path(image_file)
+            except:
+                pass  # Skip if screen or button doesn't exist
     
     def update_all_text(self):
         """Update all text elements in the UI with current language"""

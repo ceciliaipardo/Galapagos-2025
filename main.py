@@ -743,7 +743,13 @@ class MainApp(App):
 
         
     def on_request_close(self):
-        self.root.get_screen("FinishTrip").root.endTrip()
+        try:
+            if hasattr(self.root, 'get_screen'):
+                finish_screen = self.root.get_screen("FinishTrip")
+                if hasattr(finish_screen, 'endTrip'):
+                    finish_screen.endTrip()
+        except Exception as e:
+            Logger.info(f"Error during app close: {e}")
         return True
         
     def startGPS(self, seconds):
@@ -842,7 +848,37 @@ class MainApp(App):
                 'Estimated Total Gas Usage': 'estimated_gas',
                 'Total Driving Time': 'total_time',
                 'Time Spent Between Trips': 'time_between',
-                'Back to Home': 'back_to_home'
+                'Back to Home': 'back_to_home',
+                # Destination options
+                'The Highlands': 'the_highlands',
+                'Puerto Ayora': 'puerto_ayora',
+                'Airport': 'airport',
+                'Other': 'other',
+                # People options
+                'Students': 'students',
+                'Single Tourist': 'single_tourist',
+                'Multiple Tourists': 'multiple_tourists',
+                'Locals': 'locals',
+                'Miscellaneous Passengers': 'misc_passengers',
+                # Cargo options
+                'Luggage': 'luggage',
+                'Work Equipment': 'work_equipment',
+                'Food and Goods': 'food_goods',
+                'Miscellaneous Cargo': 'misc_cargo',
+                # Trip Stats labels
+                'Here are the statistics of your latest trip': 'trip_statistics',
+                'Destination:': 'destination',
+                'Passengers & Cargo:': 'passengers_cargo',
+                'Distance Driven:': 'distance_driven',
+                'Trip Duration:': 'trip_duration',
+                'Estimated Fuel Used:': 'estimated_fuel',
+                'Start Your Next Trip': 'start_next_trip',
+                'Trip Too Short': 'trip_too_short',
+                'Click Complete when you have dropped \n       your passenger and cargo off': 'click_complete',
+                # Additional registration fields
+                'Check this Box if you Drive for Another Company:': 'check_another_company',
+                '2nd Car Company:': 'second_car_company',
+                '2nd Car Number:': 'second_car_number'
             }
             
             current_text = str(widget.text).strip()

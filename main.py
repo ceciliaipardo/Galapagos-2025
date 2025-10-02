@@ -1,4 +1,9 @@
-import mysql.connector
+try:
+    import mysql.connector
+    MYSQL_AVAILABLE = True
+except ImportError:
+    MYSQL_AVAILABLE = False
+    print("MySQL connector not available. Running in SQLite-only mode.")
 import sqlite3
 from kivy.app import App
 from kivy.lang import Builder
@@ -10,10 +15,14 @@ from kivy.uix.screenmanager import NoTransition
 from kivy.uix.screenmanager import SlideTransition
 from kivymd.app import MDApp
 from kivy.logger import Logger
+from kivy.event import EventDispatcher
+from kivy.properties import StringProperty
 from datetime import datetime
 from datetime import timedelta
 from plyer import gps
 from math import radians, sin, cos, sqrt, atan2
+from translations import translator
+import os
 
 
 currentUser = ''
@@ -32,6 +41,8 @@ minMph = 2
 
 
 def DBConnect():
+    if not MYSQL_AVAILABLE:
+        raise Exception("MySQL not available")
     mydb = mysql.connector.connect(
 			host = "localhost", ##going to be an IP
 			user = "root",		
@@ -120,7 +131,7 @@ def DBShowAll():
  
 def DBCheckUsernameExists(username):
     if(username == ''):
-        return "Username Invalid"
+        return translator.get_text('username_invalid')
     else:
         [cursor, mydb] = DBConnect()
         query = "SELECT * FROM UserData WHERE username = '{}'".format(username)
@@ -134,13 +145,13 @@ def DBCheckUsernameExists(username):
         except: # If this phone is unused
             return "Valid"
         else: # If this phone is already in the database
-            return "This username is already in use. Please choose another username."
+            return translator.get_text('username_exists')
 
 def DBCheckPhoneExists(phone):
     try:
         int(phone)
     except: 
-        return "Phone Number Invalid"
+        return translator.get_text('phone_invalid')
     else:
         [cursor, mydb] = DBConnect()
         query = "SELECT * FROM UserData WHERE phone = '{}'".format(phone)
@@ -154,7 +165,7 @@ def DBCheckPhoneExists(phone):
         except: # If this phone is unused
             return "Valid"
         else: # If this phone is already in the database
-            return "This phone number is already in use"
+            return translator.get_text('phone_exists')
     
 def DBRegister(username, password, name, phone, company1, comp1num, company2, comp2num):
     [cursor, mydb] = DBConnect()
@@ -423,6 +434,18 @@ def startTrip():
     currentTripID = '{}{}{}{}{}{}{}'.format(currentUser, now.year, now.month, now.day, now.hour, now.minute, now.second)
     localDBRecord(currentTripID, currentCompany, currentCar, 'Start Trip', 0, 0, 0, 0, now)
 
+def get_image_path(image_name):
+    """Get the correct image path based on current language"""
+    current_lang = translator.get_current_language()
+    lang_path = os.path.join('images', current_lang, image_name)
+    
+    # Check if language-specific image exists
+    if os.path.exists(lang_path):
+        return lang_path
+    else:
+        # Fall back to root directory image
+        return image_name
+
 def getTripDistance(tripID):
     coords = localDBPullTripCoords(tripID)
     totalDist = 0
@@ -462,9 +485,9 @@ class Welcome(Screen):
                 global currentUser
                 currentUser = str(username)
             else:
-                self.ids.Incorrect.text = 'Invalid Username or Password'
+                self.ids.Incorrect.text = translator.get_text('invalid_credentials')
         else:
-            self.ids.Incorrect.text = 'Connection Required to Log In'
+            self.ids.Incorrect.text = translator.get_text('connection_required_login')
        
 class Home(Screen):
     def logOut(self):
@@ -524,7 +547,7 @@ class Register1(Screen):
                 self.manager.current = "Register2" # sets the window to the window with the name given
                 self.manager.transition.direction = "up" # sets transition direction    
         else:
-            self.ids.Incorrect.text = "Connection Required to Register New Account"
+            self.ids.Incorrect.text = translator.get_text('connection_required_register')
    
 class Register2(Screen):
     def register(self, username, password, name, phone, comp1, car1, comp2, car2):
@@ -541,7 +564,7 @@ class Register2(Screen):
             self.manager.current = "Welcome"# sets the window to the window with the name given
             self.manager.transition.direction = "up" # sets transition direction
         else:
-            self.ids.Incorrect.text = "Connection Required to Register New Account"
+            self.ids.Incorrect.text = translator.get_text('connection_required_register')
 
 class StartTrip(Screen):
     def on_pre_enter(self):
@@ -664,8 +687,45 @@ class WindowManager(ScreenManager):
     pass
 
 class MainApp(App):
+    # Create observable string properties for all translatable text
+    welcome_text = StringProperty()
+    username_text = StringProperty()
+    password_text = StringProperty()
+    login_text = StringProperty()
+    register_link_text = StringProperty()
+    home_text = StringProperty()
+    start_trip_text = StringProperty()
+    log_out_text = StringProperty()
+    get_stats_text = StringProperty()
+    back_text = StringProperty()
+    next_text = StringProperty()
+    done_text = StringProperty()
+    complete_text = StringProperty()
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.translator = translator
+        self.update_text_properties()
+    
+    def update_text_properties(self):
+        """Update all text properties with current language"""
+        self.welcome_text = self.translator.get_text('welcome')
+        self.username_text = self.translator.get_text('username')
+        self.password_text = self.translator.get_text('password')
+        self.login_text = self.translator.get_text('login')
+        self.register_link_text = self.translator.get_text('register_link')
+        self.home_text = self.translator.get_text('home')
+        self.start_trip_text = self.translator.get_text('start_trip')
+        self.log_out_text = self.translator.get_text('log_out')
+        self.get_stats_text = self.translator.get_text('get_stats')
+        self.back_text = self.translator.get_text('back')
+        self.next_text = self.translator.get_text('next')
+        self.done_text = self.translator.get_text('done')
+        self.complete_text = self.translator.get_text('complete')
+    
     def build(self):
-        return kv
+        # Load the KV file
+        return Builder.load_file('GalapagosCarTracking_translated.kv')
     
     def on_start(self):
         if platform == "android":
@@ -674,16 +734,16 @@ class MainApp(App):
         localDBCreate()
         localDBLogin('testUser', 'testPassword', 'Test User', '1234567890', 'Company1', '1', 'Company2', '2') # DELETE ONCE LOGIN IS POSSIBLE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         onLaunch()  
-        kv.transition = NoTransition()
+        self.root.transition = NoTransition()
         try:
             username = localDBPullAccountData()[0]
             if(username != ''):
-                kv.current = "Home"
+                self.root.current = "Home"
             else:
-                kv.current = "Welcome"
+                self.root.current = "Welcome"
         except:
-            kv.current = "Welcome"
-        kv.transition = SlideTransition()    
+            self.root.current = "Welcome"
+        self.root.transition = SlideTransition()
 
         
     def on_gps_location(self, **kwargs):
@@ -696,7 +756,13 @@ class MainApp(App):
 
         
     def on_request_close(self):
-        self.root.get_screen("FinishTrip").root.endTrip()
+        try:
+            if hasattr(self.root, 'get_screen'):
+                finish_screen = self.root.get_screen("FinishTrip")
+                if hasattr(finish_screen, 'endTrip'):
+                    finish_screen.endTrip()
+        except Exception as e:
+            Logger.info(f"Error during app close: {e}")
         return True
         
     def startGPS(self, seconds):
@@ -727,9 +793,149 @@ class MainApp(App):
             self.root.get_screen('Register2').ids.CarNumberTwo.opacity = 0
             self.root.get_screen('Register2').ids.Car2NumReg.opacity = 0   
 
+    def get_image_path(self, image_name):
+        """Get the correct image path based on current language"""
+        return get_image_path(image_name)
+    
+    def toggle_language(self):
+        """Toggle between English and Spanish and update all UI text"""
+        translator.toggle_language()
+        self.update_all_screen_texts()
+        self.update_all_images()
+    
+    def update_all_screen_texts(self):
+        """Update text on all screens by directly modifying widget text properties"""
+        # Update Welcome screen
+        try:
+            welcome_screen = self.root.get_screen('Welcome')
+            # Find and update all labels and buttons with translation keys
+            self.update_widget_texts(welcome_screen)
+        except:
+            pass
+        
+        # Update Home screen
+        try:
+            home_screen = self.root.get_screen('Home')
+            self.update_widget_texts(home_screen)
+        except:
+            pass
+            
+        # Update all other screens
+        for screen_name in ['Register1', 'Register2', 'HomeStatsPage', 'StartTrip', 'Destination', 'People', 'Cargo', 'FinishTrip', 'TripStats']:
+            try:
+                screen = self.root.get_screen(screen_name)
+                self.update_widget_texts(screen)
+            except:
+                pass
+    
+    def update_widget_texts(self, widget):
+        """Recursively update text properties of widgets"""
+        from kivy.uix.label import Label
+        from kivy.uix.button import Button
+        
+        # Update this widget if it has text
+        if hasattr(widget, 'text'):
+            # Map common English text to translation keys
+            text_map = {
+                'Welcome!': 'welcome',
+                'Username:': 'username', 
+                'Password:': 'password',
+                'Log In': 'login',
+                "Don't have an account? Register Here": 'register_link',
+                'Home': 'home',
+                'Start Trip': 'start_trip',
+                'Log Out': 'log_out',
+                'Get Stats': 'get_stats',
+                'Back': 'back',
+                'Next': 'next',
+                'Done': 'done',
+                'Complete': 'complete',
+                'Please Fill Out the following:': 'fill_out_following',
+                'Complete your Registration:': 'complete_registration',
+                'Name:': 'name',
+                'Phone Number:': 'phone_number',
+                'Car Company:': 'car_company',
+                'Car Number:': 'car_number',
+                'Which car are you using?': 'which_car',
+                'Where are you going?': 'where_going',
+                'Who are you driving?': 'who_driving',
+                'What kind of cargo are they carrying?': 'what_cargo',
+                'Statistics for Today': 'statistics_today',
+                'Number of Trips': 'number_of_trips',
+                'Miles Driven': 'miles_driven',
+                'Estimated Total Gas Usage': 'estimated_gas',
+                'Total Driving Time': 'total_time',
+                'Time Spent Between Trips': 'time_between',
+                'Back to Home': 'back_to_home',
+                # Destination options
+                'The Highlands': 'the_highlands',
+                'Puerto Ayora': 'puerto_ayora',
+                'Airport': 'airport',
+                'Other': 'other',
+                # People options
+                'Students': 'students',
+                'Single Tourist': 'single_tourist',
+                'Multiple Tourists': 'multiple_tourists',
+                'Locals': 'locals',
+                'Miscellaneous Passengers': 'misc_passengers',
+                # Cargo options
+                'Luggage': 'luggage',
+                'Work Equipment': 'work_equipment',
+                'Food and Goods': 'food_goods',
+                'Miscellaneous Cargo': 'misc_cargo',
+                # Trip Stats labels
+                'Here are the statistics of your latest trip': 'trip_statistics',
+                'Destination:': 'destination',
+                'Passengers & Cargo:': 'passengers_cargo',
+                'Distance Driven:': 'distance_driven',
+                'Trip Duration:': 'trip_duration',
+                'Estimated Fuel Used:': 'estimated_fuel',
+                'Start Your Next Trip': 'start_next_trip',
+                'Trip Too Short': 'trip_too_short',
+                'Click Complete when you have dropped \n       your passenger and cargo off': 'click_complete',
+                # Additional registration fields
+                'Check this Box if you Drive for Another Company:': 'check_another_company',
+                '2nd Car Company:': 'second_car_company',
+                '2nd Car Number:': 'second_car_number'
+            }
+            
+            current_text = str(widget.text).strip()
+            if current_text in text_map:
+                widget.text = translator.get_text(text_map[current_text])
+        
+        # Recursively update children
+        if hasattr(widget, 'children'):
+            for child in widget.children:
+                self.update_widget_texts(child)
+    
+    def update_all_images(self):
+        """Update all button background images based on current language"""
+        # List of image files that need language-specific versions
+        image_buttons = [
+            ('Destination', 'highlands', 'highlands.png'),
+            ('Destination', 'puertoAyora', 'town.png'),
+            ('Destination', 'airport', 'airport.png'),
+            ('People', 'student', 'student.png'),
+            ('People', 'singletourist', 'tourist.png'),
+            ('People', 'tourists', '2tourists.png'),
+            ('Cargo', 'luggage', 'luggage.png'),
+            ('Cargo', 'equipment', 'farm.png'),
+            ('Cargo', 'food', 'food.png'),
+        ]
+        
+        for screen_name, button_id, image_file in image_buttons:
+            try:
+                screen = self.root.get_screen(screen_name)
+                button = screen.ids[button_id]
+                button.background_normal = self.get_image_path(image_file)
+            except:
+                pass  # Skip if screen or button doesn't exist
+    
+    def update_all_text(self):
+        """Update all text elements in the UI with current language"""
+        self.toggle_language()
 
-# load the kivy file
-kv = Builder.load_file('GalapagosCarTracking.kv')
+
 # run the application
 if __name__=='__main__':
     MainApp().run()

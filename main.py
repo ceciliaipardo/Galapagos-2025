@@ -1,10 +1,8 @@
-try:
-    import mysql.connector
-    MYSQL_AVAILABLE = True
-except ImportError:
-    MYSQL_AVAILABLE = False
-    print("MySQL connector not available. Running in SQLite-only mode.")
 import sqlite3
+from supabase_config import get_supabase_client, test_connection
+
+# Get Supabase client
+supabase = get_supabase_client()
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.utils import platform
@@ -41,211 +39,218 @@ minMph = 2
 
 
 def DBConnect():
-    if not MYSQL_AVAILABLE:
-        raise Exception("MySQL not available")
-    mydb = mysql.connector.connect(
-			host = "localhost", ##going to be an IP
-			user = "root",		
-			password = "password123",
-			database = "second_db",
-			)
-    cursor = mydb.cursor()
-    return [cursor,mydb]
+    """Connect to Supabase"""
+    if supabase is None:
+        raise Exception("Supabase not available")
+    return supabase
 
 def DBCreate():
-    [cursor,mydb] = DBConnect()
-    # Create an actual database
-    cursor.execute("CREATE DATABASE IF NOT EXISTS second_db")
-	# Create A Table for User Data
-    cursor.execute("""CREATE TABLE if not exists UserData(
-	username VARCHAR(20),
-    password VARCHAR(20),
-    name VARCHAR(20),
-    phone VARCHAR(15),
-    company1 VARCHAR(20),
-    comp1num VARCHAR(5),
-    company2 VARCHAR(20),
-    comp2num VARCHAR(5)
-   	)""")
-    # Create a Table for Tracking Data
-    cursor.execute("""CREATE TABLE if not exists TrackingData(
-	tripID VARCHAR(40),
-    company VARCHAR(20),
-    carnum VARCHAR(5),
-    destinationXstatus VARCHAR(20),
-    passengersXtotalTime VARCHAR(20),
-    cargoXtotalDist VARCHAR(20),
-   	gpslonXworkingFuel VARCHAR(20),
-    gpslat VARCHAR(20),
-    time VARCHAR(30)
-    )""")
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
+    """Tables should be created in Supabase Dashboard using supabase_schema.sql"""
+    Logger.info("Supabase: Tables should be created in Supabase Dashboard")
+    pass
 
 def DBClearUsers():
-    [cursor, mydb] = DBConnect()
-    # Clear Data
-    query = "truncate UserData"
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close() 
+    """Clear all users from Supabase"""
+    try:
+        client = DBConnect()
+        response = client.table('UserData').delete().neq('username', '').execute()
+        Logger.info("Supabase: Cleared UserData table")
+    except Exception as e:
+        Logger.error(f"Supabase: Error clearing users - {e}")
 
 def DBClearTracking():
-    [cursor, mydb] = DBConnect()
-    # Clear Data
-    query = "truncate TrackingData"
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close() 
+    """Clear all tracking data from Supabase"""
+    try:
+        client = DBConnect()
+        response = client.table('TrackingData').delete().neq('tripID', '').execute()
+        Logger.info("Supabase: Cleared TrackingData table")
+    except Exception as e:
+        Logger.error(f"Supabase: Error clearing tracking - {e}")
 
 def DBDelete():
-    [cursor, mydb] = DBConnect()
-    #cursor.execute("DROP TABLE UserData")
-    cursor.execute("DROP TABLE TrackingData")
+    """Delete tables - Use Supabase dashboard to delete tables"""
+    Logger.warning("Supabase: Use Supabase dashboard to delete tables")
+    pass
 
 def DBShowAll():
-    [cursor,mydb] = DBConnect()
-    # Grab records from database
-    cursor.execute("SELECT * FROM UserData")
-    records = cursor.fetchall()
-    print("\nUser Data Data Base")
-    for row in records:
-        print(row)
-    cursor.execute("SELECT * FROM TrackingData")
-    records = cursor.fetchall()
-    print("\n")
-    print("\nTracking Data Data Base")
-    for row in records:
-        print(row)
-    print("\n")
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
+    """Show all data from Supabase"""
+    try:
+        client = DBConnect()
+        users_response = client.table('UserData').select("*").execute()
+        print("\nUser Data from Supabase")
+        for row in users_response.data:
+            print(row)
+        tracking_response = client.table('TrackingData').select("*").execute()
+        print("\nTracking Data from Supabase")
+        for row in tracking_response.data:
+            print(row)
+        print("\n")
+    except Exception as e:
+        Logger.error(f"Supabase: Error showing all data - {e}")
  
 def DBCheckUsernameExists(username):
-    if(username == ''):
+    """Check if username exists in Supabase"""
+    if username == '':
         return translator.get_text('username_invalid')
-    else:
-        [cursor, mydb] = DBConnect()
-        query = "SELECT * FROM UserData WHERE username = '{}'".format(username)
-        cursor.execute(query)
-        test = cursor.fetchone()
-        mydb.commit()
-	    # Close our connection
-        mydb.close()
-        try: 
-            test[0]
-        except: # If this phone is unused
-            return "Valid"
-        else: # If this phone is already in the database
+    try:
+        client = DBConnect()
+        response = client.table('UserData').select("username").eq('username', username).execute()
+        if response.data and len(response.data) > 0:
             return translator.get_text('username_exists')
+        else:
+            return "Valid"
+    except Exception as e:
+        Logger.error(f"Supabase: Error checking username - {e}")
+        return "Error checking username"
 
 def DBCheckPhoneExists(phone):
+    """Check if phone exists in Supabase"""
     try:
         int(phone)
     except: 
         return translator.get_text('phone_invalid')
-    else:
-        [cursor, mydb] = DBConnect()
-        query = "SELECT * FROM UserData WHERE phone = '{}'".format(phone)
-        cursor.execute(query)
-        test = cursor.fetchone()
-        mydb.commit()
-	    # Close our connection
-        mydb.close()
-        try: 
-            test[0]
-        except: # If this phone is unused
-            return "Valid"
-        else: # If this phone is already in the database
+    try:
+        client = DBConnect()
+        response = client.table('UserData').select("phone").eq('phone', phone).execute()
+        if response.data and len(response.data) > 0:
             return translator.get_text('phone_exists')
+        else:
+            return "Valid"
+    except Exception as e:
+        Logger.error(f"Supabase: Error checking phone - {e}")
+        return "Error checking phone"
     
 def DBRegister(username, password, name, phone, company1, comp1num, company2, comp2num):
-    [cursor, mydb] = DBConnect()
-    query = "INSERT INTO UserData (username, password, name, phone, company1, comp1num, company2, comp2num) values ('{}','{}','{}','{}','{}','{}','{}','{}')".format(username, password, name, phone, company1, comp1num, company2, comp2num)
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
-
-def DBLogin(username,password):
-    [cursor, mydb] = DBConnect()
-    query = "SELECT * FROM UserData WHERE username = %s AND password = %s"
-    cursor.execute(query, (username,password))
-    # Checks for a line where the username and password match those input
+    """Register a new user in Supabase"""
     try:
-        test = cursor.fetchone()
-        username = test[0]
-    except: # If no line matching is found
-        return(False)
-    else: # If a matching line is found
-        account = test
-        localDBLogin(account[0], account[1], account[2], account[3], account[4], account[5], account[6], account[7])
-        return(True)
+        client = DBConnect()
+        data = {
+            'username': username,
+            'password': password,
+            'name': name,
+            'phone': phone,
+            'company1': company1,
+            'comp1num': comp1num,
+            'company2': company2,
+            'comp2num': comp2num
+        }
+        response = client.table('UserData').insert(data).execute()
+        Logger.info(f"Supabase: User {username} registered successfully")
+    except Exception as e:
+        Logger.error(f"Supabase: Error registering user - {e}")
+
+def DBLogin(username, password):
+    """Login user via Supabase"""
+    try:
+        client = DBConnect()
+        response = client.table('UserData').select("*").eq('username', username).eq('password', password).execute()
+        if response.data and len(response.data) > 0:
+            account = response.data[0]
+            localDBLogin(
+                account['username'], 
+                account['password'], 
+                account['name'], 
+                account['phone'], 
+                account['company1'], 
+                account['comp1num'], 
+                account['company2'], 
+                account['comp2num']
+            )
+            return True
+        else:
+            return False
+    except Exception as e:
+        Logger.error(f"Supabase: Error during login - {e}")
+        return False
 
 def DBPullUserData():
-    [cursor, mydb] = DBConnect()
-    query = "SELECT * FROM UserData WHERE username = '{}'".format(currentUser)
-    cursor.execute(query)
-    records = cursor.fetchone()
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
-    return records
+    """Pull user data from Supabase"""
+    try:
+        client = DBConnect()
+        response = client.table('UserData').select("*").eq('username', currentUser).execute()
+        if response.data and len(response.data) > 0:
+            data = response.data[0]
+            return (
+                data['username'],
+                data['password'],
+                data['name'],
+                data['phone'],
+                data['company1'],
+                data['comp1num'],
+                data['company2'],
+                data['comp2num']
+            )
+        return None
+    except Exception as e:
+        Logger.error(f"Supabase: Error pulling user data - {e}")
+        return None
 
 def DBUploadDataPoint(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time):
-    [cursor, mydb] = DBConnect()
-    query = "INSERT INTO TrackingData (tripID, company, carnum, destinationXstatus, passengersXtotalTime, cargoXtotalDist, gpslonXworkingFuel, gpslat, time) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')".format(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time)
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
+    """Upload a tracking data point to Supabase"""
+    try:
+        client = DBConnect()
+        data = {
+            'tripID': tripID,
+            'company': company,
+            'carnum': carnum,
+            'destinationXstatus': destination,
+            'passengersXtotalTime': str(passengers),
+            'cargoXtotalDist': str(cargo),
+            'gpslonXworkingFuel': str(gpslon),
+            'gpslat': str(gpslat),
+            'time': str(time)
+        }
+        response = client.table('TrackingData').insert(data).execute()
+        Logger.info(f"Supabase: Uploaded data point for trip {tripID}")
+    except Exception as e:
+        Logger.error(f"Supabase: Error uploading data point - {e}")
 
 def DBCheckConnection():
+    """Check Supabase connection"""
     try:
-        [cursor, mydb] = DBConnect()
-        query = "SELECT * FROM UserData WHERE username = '{}'".format(currentUser)
-        cursor.execute(query)
-        records = cursor.fetchone()
-        mydb.commit()
-        mydb.close()
+        return test_connection()
     except:
         return False
-    else:
-        return True
 
 def DBGetDayStats(username, date):
-    dayID = "%{}{}%".format(username, date)
-    [cursor, mydb] = DBConnect()
-    query = "SELECT passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel,time FROM TrackingData WHERE destinationXstatus = 'End Trip' AND tripID LIKE '{}'".format(dayID)
-    cursor.execute(query)
-    trips = cursor.fetchall()
-    numTrips = 0
-    totalDist = 0
-    totalTime = timedelta()
-    totalFuel = 0
-    for row in trips:
-        numTrips += 1
-        totalDist += float(row[1])
-        t = datetime.strptime(str(row[0]),'%H:%M:%S.%f')
-        totalTime = totalTime + timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
-        totalFuel += float(row[2])
-        endTime = datetime.strptime(str(row[3]),'%Y-%m-%d %H:%M:%S.%f')
-    query = "SELECT time FROM TrackingData WHERE destinationXstatus = 'Start Trip' AND tripID LIKE '{}'".format(dayID)
-    cursor.execute(query)
-    dayStart = datetime.strptime(str(cursor.fetchone()[0]),'%Y-%m-%d %H:%M:%S.%f')
-    idleTime = endTime - dayStart - totalTime
-    return [numTrips, totalDist, totalFuel, totalTime, idleTime]
+    """Get daily statistics from Supabase"""
+    try:
+        dayID = f"{username}{date}"
+        client = DBConnect()
+        response = client.table('TrackingData').select(
+            "passengersXtotalTime, cargoXtotalDist, gpslonXworkingFuel, time"
+        ).eq('destinationXstatus', 'End Trip').like('tripID', f"%{dayID}%").execute()
+        
+        trips = response.data
+        numTrips = 0
+        totalDist = 0
+        totalTime = timedelta()
+        totalFuel = 0
+        endTime = None
+        
+        for row in trips:
+            numTrips += 1
+            totalDist += float(row['cargoXtotalDist'])
+            t = datetime.strptime(str(row['passengersXtotalTime']), '%H:%M:%S.%f')
+            totalTime = totalTime + timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
+            totalFuel += float(row['gpslonXworkingFuel'])
+            endTime = datetime.strptime(str(row['time']), '%Y-%m-%d %H:%M:%S.%f')
+        
+        response = client.table('TrackingData').select("time").eq('destinationXstatus', 'Start Trip').like('tripID', f"%{dayID}%").limit(1).execute()
+        
+        if response.data and len(response.data) > 0:
+            dayStart = datetime.strptime(str(response.data[0]['time']), '%Y-%m-%d %H:%M:%S.%f')
+            if endTime:
+                idleTime = endTime - dayStart - totalTime
+            else:
+                idleTime = timedelta()
+        else:
+            idleTime = timedelta()
+        
+        return [numTrips, totalDist, totalFuel, totalTime, idleTime]
+    except Exception as e:
+        Logger.error(f"Supabase: Error getting day stats - {e}")
+        return [0, 0, 0, timedelta(), timedelta()]
         
     
 

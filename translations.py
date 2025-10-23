@@ -3,7 +3,7 @@
 
 class Translations:
     def __init__(self):
-        self.current_language = 'en'  # Default to English
+        self.current_language = 'es'  # Default to Spanish
         
         self.texts = {
             'en': {
@@ -61,7 +61,9 @@ class Translations:
                 
                 # Destination Screen
                 'where_going': 'Where are you going?',
+                'highlands': 'The Highlands',
                 'the_highlands': 'The Highlands',
+                'town': 'Puerto Ayora',
                 'puerto_ayora': 'Puerto Ayora',
                 'airport': 'Airport',
                 'other': 'Other',
@@ -98,7 +100,8 @@ class Translations:
                 # General
                 'language': 'Language',
                 'english': 'English',
-                'spanish': 'Español'
+                'spanish': 'Español',
+                'translate': 'Translate'
             },
             'es': {
                 # Welcome Screen
@@ -155,7 +158,9 @@ class Translations:
                 
                 # Destination Screen
                 'where_going': '¿A dónde va?',
-                'the_highlands': 'Las Tierras Altas',
+                'highlands': 'Parte Alta',
+                'the_highlands': 'Parte Alta',
+                'town': 'Puerto Ayora',
                 'puerto_ayora': 'Puerto Ayora',
                 'airport': 'Aeropuerto',
                 'other': 'Otro',
@@ -192,7 +197,8 @@ class Translations:
                 # General
                 'language': 'Idioma',
                 'english': 'English',
-                'spanish': 'Español'
+                'spanish': 'Español',
+                'translate': 'Traducir'
             }
         }
     

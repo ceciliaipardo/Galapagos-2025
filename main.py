@@ -5,6 +5,9 @@ except ImportError:
     MYSQL_AVAILABLE = False
     print("MySQL connector not available. Running in SQLite-only mode.")
 import sqlite3
+from kivy.config import Config
+# Disable multitouch emulation (removes red dots on screen)
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.utils import platform
@@ -569,8 +572,8 @@ class Register2(Screen):
 class StartTrip(Screen):
     def on_pre_enter(self):
         userData = localDBPullAccountData()
-        self.ids.car1.text = "{} {}".format(userData[4], userData[5])
-        self.ids.car2.text = "{} {}".format(userData[6], userData[7])
+        self.ids.car1.text = "{}".format(userData[4])
+        self.ids.car2.text = "{}".format(userData[6])
         if(userData[6] != ''):
             self.ids.car2.disabled = False
             self.ids.car2.opacity = 100
@@ -653,7 +656,19 @@ class FinishTrip(Screen):
 class TripStats(Screen):
     def on_enter(self):
         statistics = localDBGetTripStats(currentTripID)
-        self.ids.Destination.text = str(statistics[0])
+        
+        # Translate destination text if it's a known destination
+        destination = str(statistics[0])
+        if destination == "Other":
+            destination = translator.get_text('other')
+        elif destination == "The Highlands":
+            destination = translator.get_text('the_highlands')
+        elif destination == "Puerto Ayora":
+            destination = translator.get_text('puerto_ayora')
+        elif destination == "Airport":
+            destination = translator.get_text('airport')
+        
+        self.ids.Destination.text = destination
         self.ids.PassengersCargo.text = str(statistics[1])
         self.ids.tripDist.text = "{} Miles".format(statistics[2])
         hours = int(statistics[3].seconds/3600)
@@ -835,8 +850,9 @@ class MainApp(App):
         
         # Update this widget if it has text
         if hasattr(widget, 'text'):
-            # Map common English text to translation keys
+            # Map both English and Spanish text to translation keys
             text_map = {
+                # English
                 'Welcome!': 'welcome',
                 'Username:': 'username', 
                 'Password:': 'password',
@@ -850,53 +866,108 @@ class MainApp(App):
                 'Next': 'next',
                 'Done': 'done',
                 'Complete': 'complete',
+                # Spanish
+                '¡Bienvenido!': 'welcome',
+                'Usuario:': 'username',
+                'Contraseña:': 'password',
+                'Iniciar Sesión': 'login',
+                '¿No tienes cuenta? Regístrate Aquí': 'register_link',
+                'Inicio': 'home',
+                'Iniciar Viaje': 'start_trip',
+                'Cerrar Sesión': 'log_out',
+                'Ver Estadísticas': 'get_stats',
+                'Atrás': 'back',
+                'Siguiente': 'next',
+                'Listo': 'done',
+                'Completar': 'complete',
                 'Please Fill Out the following:': 'fill_out_following',
+                'Por favor complete lo siguiente:': 'fill_out_following',
                 'Complete your Registration:': 'complete_registration',
+                'Complete su Registro:': 'complete_registration',
                 'Name:': 'name',
+                'Nombre:': 'name',
                 'Phone Number:': 'phone_number',
+                'Número de Teléfono:': 'phone_number',
                 'Car Company:': 'car_company',
+                'Compañía de Taxi:': 'car_company',
                 'Car Number:': 'car_number',
+                'Número de Auto:': 'car_number',
                 'Which car are you using?': 'which_car',
+                '¿Qué auto está usando?': 'which_car',
                 'Where are you going?': 'where_going',
+                '¿A dónde va?': 'where_going',
                 'Who are you driving?': 'who_driving',
+                '¿A quién está transportando?': 'who_driving',
                 'What kind of cargo are they carrying?': 'what_cargo',
+                '¿Qué tipo de carga llevan?': 'what_cargo',
                 'Statistics for Today': 'statistics_today',
+                'Estadísticas de Hoy': 'statistics_today',
                 'Number of Trips': 'number_of_trips',
+                'Número de Viajes': 'number_of_trips',
                 'Miles Driven': 'miles_driven',
+                'Millas Conducidas': 'miles_driven',
                 'Estimated Total Gas Usage': 'estimated_gas',
+                'Uso Total Estimado de Gasolina': 'estimated_gas',
                 'Total Driving Time': 'total_time',
+                'Tiempo Total de Conducción': 'total_time',
                 'Time Spent Between Trips': 'time_between',
+                'Tiempo Entre Viajes': 'time_between',
                 'Back to Home': 'back_to_home',
+                'Volver al Inicio': 'back_to_home',
                 # Destination options
-                'The Highlands': 'the_highlands',
-                'Puerto Ayora': 'puerto_ayora',
+                'The Highlands': 'highlands',
+                'Parte Alta': 'highlands',
+                'Puerto Ayora': 'town',
                 'Airport': 'airport',
+                'Aeropuerto': 'airport',
                 'Other': 'other',
+                'Otro': 'other',
                 # People options
                 'Students': 'students',
+                'Estudiantes': 'students',
                 'Single Tourist': 'single_tourist',
+                'Turista Individual': 'single_tourist',
                 'Multiple Tourists': 'multiple_tourists',
+                'Múltiples Turistas': 'multiple_tourists',
                 'Locals': 'locals',
+                'Locales': 'locals',
                 'Miscellaneous Passengers': 'misc_passengers',
+                'Pasajeros Varios': 'misc_passengers',
                 # Cargo options
                 'Luggage': 'luggage',
+                'Equipaje': 'luggage',
                 'Work Equipment': 'work_equipment',
+                'Equipo de Trabajo': 'work_equipment',
                 'Food and Goods': 'food_goods',
+                'Comida y Productos': 'food_goods',
                 'Miscellaneous Cargo': 'misc_cargo',
+                'Carga Variada': 'misc_cargo',
                 # Trip Stats labels
                 'Here are the statistics of your latest trip': 'trip_statistics',
+                'Aquí están las estadísticas de su último viaje': 'trip_statistics',
                 'Destination:': 'destination',
+                'Destino:': 'destination',
                 'Passengers & Cargo:': 'passengers_cargo',
+                'Pasajeros y Carga:': 'passengers_cargo',
                 'Distance Driven:': 'distance_driven',
+                'Distancia Conducida:': 'distance_driven',
                 'Trip Duration:': 'trip_duration',
+                'Duración del Viaje:': 'trip_duration',
                 'Estimated Fuel Used:': 'estimated_fuel',
+                'Combustible Estimado Usado:': 'estimated_fuel',
                 'Start Your Next Trip': 'start_next_trip',
+                'Iniciar su Próximo Viaje': 'start_next_trip',
                 'Trip Too Short': 'trip_too_short',
+                'Viaje Muy Corto': 'trip_too_short',
                 'Click Complete when you have dropped \n       your passenger and cargo off': 'click_complete',
+                'Haga clic en Completar cuando haya dejado \n       a su pasajero y carga': 'click_complete',
                 # Additional registration fields
                 'Check this Box if you Drive for Another Company:': 'check_another_company',
+                'Marque esta casilla si maneja para otra compañía:': 'check_another_company',
                 '2nd Car Company:': 'second_car_company',
-                '2nd Car Number:': 'second_car_number'
+                '2da Compañía de Taxi:': 'second_car_company',
+                '2nd Car Number:': 'second_car_number',
+                '2do Número de Auto:': 'second_car_number'
             }
             
             current_text = str(widget.text).strip()
@@ -910,26 +981,9 @@ class MainApp(App):
     
     def update_all_images(self):
         """Update all button background images based on current language"""
-        # List of image files that need language-specific versions
-        image_buttons = [
-            ('Destination', 'highlands', 'highlands.png'),
-            ('Destination', 'puertoAyora', 'town.png'),
-            ('Destination', 'airport', 'airport.png'),
-            ('People', 'student', 'student.png'),
-            ('People', 'singletourist', 'tourist.png'),
-            ('People', 'tourists', '2tourists.png'),
-            ('Cargo', 'luggage', 'luggage.png'),
-            ('Cargo', 'equipment', 'farm.png'),
-            ('Cargo', 'food', 'food.png'),
-        ]
-        
-        for screen_name, button_id, image_file in image_buttons:
-            try:
-                screen = self.root.get_screen(screen_name)
-                button = screen.ids[button_id]
-                button.background_normal = self.get_image_path(image_file)
-            except:
-                pass  # Skip if screen or button doesn't exist
+        # No image backgrounds needed for the clean design
+        # All buttons use solid colors instead of images
+        pass
     
     def update_all_text(self):
         """Update all text elements in the UI with current language"""

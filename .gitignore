@@ -1,1 +1,26 @@
-kivy-ios/
+# macOS
+.DS_Store
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+.env.*
+
+# Build/artifacts
+dist/
+build/
+.kivy/
+kivy_*.txt
+
+# Editors
+.vscode/
+
+# Local DBs
+*.sqlite3
+local_db.db

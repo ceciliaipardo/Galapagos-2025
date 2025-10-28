@@ -28,7 +28,7 @@ git --version
 ### Install Required Python Packages
 ```bash
 # Make sure you're in your project directory
-cd Galapagos-2025/
+cd Galapagos/Barnwell-Code
 
 # Install required packages
 pip3 install cython

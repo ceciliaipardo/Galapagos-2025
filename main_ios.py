@@ -7,12 +7,14 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import NoTransition
 from kivy.uix.screenmanager import SlideTransition
-from kivymd.app import MDApp
 from kivy.logger import Logger
+from kivy.event import EventDispatcher
+from kivy.properties import StringProperty
 from datetime import datetime
 from datetime import timedelta
 from plyer import gps
 from math import radians, sin, cos, sqrt, atan2
+from translations import translator
 import json
 import os
 
@@ -715,7 +717,55 @@ class Loading(Screen):
 class WindowManager(ScreenManager):
     pass
 
+def get_image_path(image_name):
+    """Get the correct image path based on current language"""
+    current_lang = translator.get_current_language()
+    lang_path = os.path.join('images', current_lang, image_name)
+    
+    # Check if language-specific image exists
+    if os.path.exists(lang_path):
+        return lang_path
+    else:
+        # Fall back to root directory image
+        return image_name
+
 class MainApp(App):
+    # Create observable string properties for all translatable text
+    welcome_text = StringProperty()
+    username_text = StringProperty()
+    password_text = StringProperty()
+    login_text = StringProperty()
+    register_link_text = StringProperty()
+    home_text = StringProperty()
+    start_trip_text = StringProperty()
+    log_out_text = StringProperty()
+    get_stats_text = StringProperty()
+    back_text = StringProperty()
+    next_text = StringProperty()
+    done_text = StringProperty()
+    complete_text = StringProperty()
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.translator = translator
+        self.update_text_properties()
+    
+    def update_text_properties(self):
+        """Update all text properties with current language"""
+        self.welcome_text = self.translator.get_text('welcome')
+        self.username_text = self.translator.get_text('username')
+        self.password_text = self.translator.get_text('password')
+        self.login_text = self.translator.get_text('login')
+        self.register_link_text = self.translator.get_text('register_link')
+        self.home_text = self.translator.get_text('home')
+        self.start_trip_text = self.translator.get_text('start_trip')
+        self.log_out_text = self.translator.get_text('log_out')
+        self.get_stats_text = self.translator.get_text('get_stats')
+        self.back_text = self.translator.get_text('back')
+        self.next_text = self.translator.get_text('next')
+        self.done_text = self.translator.get_text('done')
+        self.complete_text = self.translator.get_text('complete')
+    
     def build(self):
         return kv
     
@@ -785,6 +835,17 @@ class MainApp(App):
             self.root.get_screen('Register2').ids.Company2Reg.opacity = 0
             self.root.get_screen('Register2').ids.CarNumberTwo.opacity = 0
             self.root.get_screen('Register2').ids.Car2NumReg.opacity = 0
+    
+    def get_image_path(self, image_name):
+        """Get the correct image path based on current language"""
+        return get_image_path(image_name)
+    
+    def toggle_language(self):
+        """Toggle between English and Spanish"""
+        translator.toggle_language()
+        self.update_text_properties()
+        # Note: For full UI updates, you may need to reload screens or manually update text
+        Logger.info(f"Language switched to: {translator.get_current_language()}")
 
 # Load the kivy file
 kv = Builder.load_file('GalapagosCarTracking.kv')

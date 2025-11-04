@@ -478,7 +478,29 @@ def getTripDistance(tripID):
 
 
 
-class Welcome(Screen):            
+class Welcome(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language - skip TextInput widgets
+        for widget in self.walk():
+            # Skip TextInput widgets completely
+            if widget.__class__.__name__ == 'TextInput':
+                continue
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                widget.text = translator.get_text('welcome') if 'Welcome' in widget.text or 'Bienvenido' in widget.text else \
+                              translator.get_text('username') if 'Username' in widget.text or 'Usuario' in widget.text else \
+                              translator.get_text('password') if 'Password' in widget.text or 'Contraseña' in widget.text else \
+                              widget.text
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if 'EN' == widget.text:
+                        widget.text = 'ES'
+                    elif 'ES' == widget.text:
+                        widget.text = 'EN'
+                    elif 'Login' in widget.text or 'Iniciar' in widget.text:
+                        widget.text = translator.get_text('login')
+                    elif 'Register' in widget.text or 'Registra' in widget.text:
+                        widget.text = translator.get_text('register_link')
+            
     def logIn(self, username, password):
         if(DBCheckConnection()):
             if DBLogin(username, password):
@@ -495,6 +517,25 @@ class Welcome(Screen):
             self.ids.Incorrect.text = translator.get_text('connection_required_login')
        
 class Home(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                if 'Home' in widget.text or 'Inicio' in widget.text:
+                    widget.text = translator.get_text('home')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif 'Start Trip' in widget.text or 'Iniciar viaje' in widget.text or 'Iniciar' in widget.text:
+                        widget.text = translator.get_text('start_trip')
+                    elif 'Get Stats' in widget.text or 'Ver estadísticas' in widget.text or 'Ver' in widget.text:
+                        widget.text = translator.get_text('get_stats')
+                    elif 'Log Out' in widget.text or 'Cerrar sesión' in widget.text or 'Cerrar' in widget.text:
+                        widget.text = translator.get_text('log_out')
+        
     def logOut(self):
         global currentUser
         global currentCompany
@@ -541,7 +582,25 @@ class HomeStatsPage(Screen):
             self.ids.TotalTime.text = "Connection Required"
             self.ids.TimeBetween.text = "Connection Required"
 
-class Register1(Screen):        
+class Register1(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text'):
+                if 'complete' in widget.text or 'siguiente' in widget.text:
+                    widget.text = translator.get_text('fill_out_following')
+                elif 'Name' in widget.text or 'Nombre' in widget.text:
+                    widget.text = translator.get_text('name')
+                elif 'Username' in widget.text or 'Usuario' in widget.text:
+                    widget.text = translator.get_text('username')
+                elif 'Password' in widget.text or 'Contraseña' in widget.text:
+                    widget.text = translator.get_text('password')
+                elif 'Phone' in widget.text or 'teléfono' in widget.text:
+                    widget.text = translator.get_text('phone_number')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text'):
+                if 'Next' in widget.text or 'Siguiente' in widget.text:
+                    widget.text = translator.get_text('next')
+        
     def checkRegPg1(self, username, phone):
         if(DBCheckConnection()):
             if(DBCheckUsernameExists(username) != "Valid"):
@@ -555,6 +614,24 @@ class Register1(Screen):
             self.ids.Incorrect.text = translator.get_text('connection_required_register')
    
 class Register2(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text'):
+                if 'Complete' in widget.text or 'registro' in widget.text:
+                    widget.text = translator.get_text('complete_registration')
+                elif 'Car Company' in widget.text or 'compañía' in widget.text:
+                    widget.text = translator.get_text('car_company')
+                elif 'Car Number' in widget.text or 'Número' in widget.text:
+                    widget.text = translator.get_text('car_number')
+                elif 'another company' in widget.text or 'otra' in widget.text:
+                    widget.text = translator.get_text('check_another_company')
+                elif 'Second' in widget.text or 'Segunda' in widget.text:
+                    widget.text = translator.get_text('second_car_company')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text'):
+                if 'Done' in widget.text or 'Listo' in widget.text:
+                    widget.text = translator.get_text('done')
+        
     def register(self, username, password, name, phone, comp1, car1, comp2, car2):
         if(DBCheckConnection()):
             DBRegister(username, password, name, phone, comp1, car1, comp2, car2)
@@ -573,9 +650,28 @@ class Register2(Screen):
 
 class StartTrip(Screen):
     def on_pre_enter(self):
+        # Update screen title and button text
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label':
+                # Update "Which Car?" / "Qué auto está usando?" title
+                if hasattr(widget, 'text'):
+                    widget.text = translator.get_text('which_car')
+        
         userData = localDBPullAccountData()
-        self.ids.car1.text = "{} {}".format(userData[4], userData[5])
-        self.ids.car2.text = "{} {}".format(userData[6], userData[7])
+        if userData is None:
+            # If no user data, use default placeholder text
+            self.ids.car1.text = translator.get_text('company_1')
+            self.ids.car2.text = translator.get_text('company_2')
+            self.ids.car2.disabled = True
+            self.ids.car2.opacity = 0
+            return
+            
+        # Use translated company names for display - if the database has placeholder values, translate them
+        company1_name = translator.get_text('company_1') if userData[4] in ['Company1', 'Company 1'] else userData[4]
+        company2_name = translator.get_text('company_2') if userData[6] in ['Company2', 'Company 2'] else userData[6]
+        
+        self.ids.car1.text = company1_name
+        self.ids.car2.text = company2_name
         if(userData[6] != ''):
             self.ids.car2.disabled = False
             self.ids.car2.opacity = 100
@@ -588,8 +684,13 @@ class StartTrip(Screen):
         global currentCompany
         global currentCar
         userData = localDBPullAccountData()
-        currentCompany = userData[2*companyNum+2]
-        currentCar = userData[2*companyNum+3]
+        if userData is not None:
+            currentCompany = userData[2*companyNum+2]
+            currentCar = userData[2*companyNum+3]
+        else:
+            # Use default values if no user data
+            currentCompany = f'Company{companyNum}'
+            currentCar = str(companyNum)
         
     def getCarLabel(self, companyNum):
         userData = localDBPullAccountData()       
@@ -603,6 +704,26 @@ class StartTrip(Screen):
         currentCompany = ''
 
 class Destination(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label':
+                widget.text = translator.get_text('where_going')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif 'Highlands' in widget.text or 'Tierras' in widget.text or 'Altas' in widget.text:
+                        widget.text = translator.get_text('the_highlands')
+                    elif 'Puerto Ayora' in widget.text:
+                        widget.text = translator.get_text('puerto_ayora')
+                    elif 'Airport' in widget.text or 'Aeropuerto' in widget.text:
+                        widget.text = translator.get_text('airport')
+                    elif 'Other' in widget.text or 'Otro' in widget.text:
+                        widget.text = translator.get_text('other')
+        
     def setDest(self, destination):
         global currentDest
         currentDest = destination
@@ -612,6 +733,24 @@ class Destination(Screen):
         currentCompany = ''
     
 class People(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label':
+                widget.text = translator.get_text('who_driving')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif 'Student' in widget.text or 'Estudiante' in widget.text:
+                        widget.text = translator.get_text('students')
+                    elif 'Tourist' in widget.text or 'Turista' in widget.text:
+                        widget.text = translator.get_text('tourist')
+                    elif 'Local' in widget.text:
+                        widget.text = translator.get_text('locals')
+        
     def setPass(self, people):
         global currentPass
         currentPass = people
@@ -620,16 +759,79 @@ class People(Screen):
         global currentDest
         currentDest = ''
 
-class Cargo(Screen):
-    def setCargo(self, cargo):
-        global currentCargo
-        currentCargo = cargo
-        
+class PassengerCount(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label':
+                widget.text = translator.get_text('passenger_count')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif widget.text in ['1', '2', '3', '4', '5+']:
+                        # Numbers don't need translation, keep as is
+                        pass
+    
+    def setPassengerCount(self, count):
+        global currentPass
+        # Append the count to the current passenger type
+        currentPass = f"{currentPass} - {count} passenger{'s' if count != '1' else ''}"
+    
     def clearPeople(self):
         global currentPass
         currentPass = ''
 
+class Cargo(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label':
+                widget.text = translator.get_text('what_cargo')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif 'Luggage' in widget.text or 'Equipaje' in widget.text:
+                        widget.text = translator.get_text('luggage')
+                    elif 'Work Equipment' in widget.text or 'Equipo de Trabajo' in widget.text or 'Trabajo' in widget.text:
+                        widget.text = translator.get_text('work_equipment')
+                    elif 'Food' in widget.text or 'Comida' in widget.text:
+                        widget.text = translator.get_text('food_goods')
+                    elif 'Varied Load' in widget.text or 'Carga Variada' in widget.text or 'Variada' in widget.text:
+                        widget.text = translator.get_text('misc_cargo')
+        
+    def setCargo(self, cargo):
+        global currentCargo
+        currentCargo = cargo
+        
+    def clearPassengerCount(self):
+        # Clear passenger count but keep the passenger type
+        global currentPass
+        # Remove the count part if it exists
+        if ' - ' in currentPass:
+            currentPass = currentPass.split(' - ')[0]
+
 class FinishTrip(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                if 'click' in widget.text.lower() or 'haga' in widget.text.lower():
+                    widget.text = translator.get_text('click_complete')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif 'Complete' in widget.text or 'Completar' in widget.text:
+                        widget.text = translator.get_text('complete')
+        
     def on_enter(self):
         try:
             MainApp().startGPS(checkFrequency)
@@ -656,6 +858,33 @@ class FinishTrip(Screen):
         currentTripID = ''
         
 class TripStats(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                if 'Trip Statistics' in widget.text or 'Estadísticas' in widget.text:
+                    widget.text = translator.get_text('trip_statistics')
+                elif 'Destination' in widget.text and len(widget.text) < 20:
+                    widget.text = translator.get_text('destination')
+                elif 'Passengers' in widget.text or 'Pasajeros' in widget.text:
+                    widget.text = translator.get_text('passengers_cargo')
+                elif 'Distance' in widget.text or 'Distancia' in widget.text:
+                    widget.text = translator.get_text('distance_driven')
+                elif 'Duration' in widget.text or 'Duración' in widget.text:
+                    widget.text = translator.get_text('trip_duration')
+                elif 'Fuel' in widget.text or 'Combustible' in widget.text:
+                    widget.text = translator.get_text('estimated_fuel')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif 'Start Next' in widget.text or 'Siguiente' in widget.text:
+                        widget.text = translator.get_text('start_next_trip')
+                    elif widget.text == 'Home' or widget.text == 'Inicio':
+                        widget.text = translator.get_text('home')
+        
     def on_enter(self):
         statistics = localDBGetTripStats(currentTripID)
         self.ids.Destination.text = str(statistics[0])
@@ -692,52 +921,24 @@ class WindowManager(ScreenManager):
     pass
 
 class MainApp(App):
-    # Create observable string properties for all translatable text
-    welcome_text = StringProperty()
-    username_text = StringProperty()
-    password_text = StringProperty()
-    login_text = StringProperty()
-    register_link_text = StringProperty()
-    home_text = StringProperty()
-    start_trip_text = StringProperty()
-    log_out_text = StringProperty()
-    get_stats_text = StringProperty()
-    back_text = StringProperty()
-    next_text = StringProperty()
-    done_text = StringProperty()
-    complete_text = StringProperty()
+    # Observable property that triggers KV re-evaluation when language changes
+    language = StringProperty('es')
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.translator = translator
-        self.update_text_properties()
-    
-    def update_text_properties(self):
-        """Update all text properties with current language"""
-        self.welcome_text = self.translator.get_text('welcome')
-        self.username_text = self.translator.get_text('username')
-        self.password_text = self.translator.get_text('password')
-        self.login_text = self.translator.get_text('login')
-        self.register_link_text = self.translator.get_text('register_link')
-        self.home_text = self.translator.get_text('home')
-        self.start_trip_text = self.translator.get_text('start_trip')
-        self.log_out_text = self.translator.get_text('log_out')
-        self.get_stats_text = self.translator.get_text('get_stats')
-        self.back_text = self.translator.get_text('back')
-        self.next_text = self.translator.get_text('next')
-        self.done_text = self.translator.get_text('done')
-        self.complete_text = self.translator.get_text('complete')
     
     def build(self):
-        # Load the KV file
-        return Builder.load_file('GalapagosCarTracking_translated.kv')
+        # Load the appropriate KV file based on language
+        kv_file = 'GalapagosCarTracking_translated.kv'  # Spanish is default
+        return Builder.load_file(kv_file)
     
     def on_start(self):
         if platform == "android":
             from android.permissions import request_permissions, Permission
             request_permissions([Permission.INTERNET, Permission.ACCESS_BACKGROUND_LOCATION, Permission.ACCESS_FINE_LOCATION, Permission.ACCESS_COARSE_LOCATION])
         localDBCreate()
-        localDBLogin('testUser', 'testPassword', 'Test User', '1234567890', 'Company1', '1', 'Company2', '2') # DELETE ONCE LOGIN IS POSSIBLE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        localDBLogin('testUser', 'testPassword', 'Test User', '1234567890', 'Company1', '1', 'Company2', '2') # DELETE ONCE LOGIN IS POSSIBLE - Company1/2 are placeholders that get translated to "Company 1"/"Compañía 1" etc.
         onLaunch()  
         self.root.transition = NoTransition()
         try:
@@ -803,142 +1004,22 @@ class MainApp(App):
         return get_image_path(image_name)
     
     def toggle_language(self):
-        """Toggle between English and Spanish and update all UI text"""
+        """Toggle between English and Spanish"""
+        # Toggle language
         translator.toggle_language()
-        self.update_all_screen_texts()
-        self.update_all_images()
-    
-    def update_all_screen_texts(self):
-        """Update text on all screens by directly modifying widget text properties"""
-        # Update Welcome screen
+        self.language = translator.get_current_language()
+        Logger.info(f"Language toggled to: {self.language}")
+        
+        # Refresh current screen
         try:
-            welcome_screen = self.root.get_screen('Welcome')
-            # Find and update all labels and buttons with translation keys
-            self.update_widget_texts(welcome_screen)
-        except:
-            pass
-        
-        # Update Home screen
-        try:
-            home_screen = self.root.get_screen('Home')
-            self.update_widget_texts(home_screen)
-        except:
-            pass
-            
-        # Update all other screens
-        for screen_name in ['Register1', 'Register2', 'HomeStatsPage', 'StartTrip', 'Destination', 'People', 'Cargo', 'FinishTrip', 'TripStats']:
-            try:
-                screen = self.root.get_screen(screen_name)
-                self.update_widget_texts(screen)
-            except:
-                pass
+            current_screen = self.root.current
+            screen_obj = self.root.get_screen(current_screen)
+            if hasattr(screen_obj, 'on_pre_enter'):
+                screen_obj.on_pre_enter()
+                Logger.info(f"Refreshed {current_screen} screen after language change")
+        except Exception as e:
+            Logger.error(f"Error refreshing screen: {e}")
     
-    def update_widget_texts(self, widget):
-        """Recursively update text properties of widgets"""
-        from kivy.uix.label import Label
-        from kivy.uix.button import Button
-        
-        # Update this widget if it has text
-        if hasattr(widget, 'text'):
-            # Map common English text to translation keys
-            text_map = {
-                'Welcome!': 'welcome',
-                'Username:': 'username', 
-                'Password:': 'password',
-                'Log In': 'login',
-                "Don't have an account? Register Here": 'register_link',
-                'Home': 'home',
-                'Start Trip': 'start_trip',
-                'Log Out': 'log_out',
-                'Get Stats': 'get_stats',
-                'Back': 'back',
-                'Next': 'next',
-                'Done': 'done',
-                'Complete': 'complete',
-                'Please Fill Out the following:': 'fill_out_following',
-                'Complete your Registration:': 'complete_registration',
-                'Name:': 'name',
-                'Phone Number:': 'phone_number',
-                'Car Company:': 'car_company',
-                'Car Number:': 'car_number',
-                'Which car are you using?': 'which_car',
-                'Where are you going?': 'where_going',
-                'Who are you driving?': 'who_driving',
-                'What kind of cargo are they carrying?': 'what_cargo',
-                'Statistics for Today': 'statistics_today',
-                'Number of Trips': 'number_of_trips',
-                'Miles Driven': 'miles_driven',
-                'Estimated Total Gas Usage': 'estimated_gas',
-                'Total Driving Time': 'total_time',
-                'Time Spent Between Trips': 'time_between',
-                'Back to Home': 'back_to_home',
-                # Destination options
-                'The Highlands': 'the_highlands',
-                'Puerto Ayora': 'puerto_ayora',
-                'Airport': 'airport',
-                'Other': 'other',
-                # People options
-                'Students': 'students',
-                'Single Tourist': 'single_tourist',
-                'Multiple Tourists': 'multiple_tourists',
-                'Locals': 'locals',
-                'Miscellaneous Passengers': 'misc_passengers',
-                # Cargo options
-                'Luggage': 'luggage',
-                'Work Equipment': 'work_equipment',
-                'Food and Goods': 'food_goods',
-                'Miscellaneous Cargo': 'misc_cargo',
-                # Trip Stats labels
-                'Here are the statistics of your latest trip': 'trip_statistics',
-                'Destination:': 'destination',
-                'Passengers & Cargo:': 'passengers_cargo',
-                'Distance Driven:': 'distance_driven',
-                'Trip Duration:': 'trip_duration',
-                'Estimated Fuel Used:': 'estimated_fuel',
-                'Start Your Next Trip': 'start_next_trip',
-                'Trip Too Short': 'trip_too_short',
-                'Click Complete when you have dropped \n       your passenger and cargo off': 'click_complete',
-                # Additional registration fields
-                'Check this Box if you Drive for Another Company:': 'check_another_company',
-                '2nd Car Company:': 'second_car_company',
-                '2nd Car Number:': 'second_car_number'
-            }
-            
-            current_text = str(widget.text).strip()
-            if current_text in text_map:
-                widget.text = translator.get_text(text_map[current_text])
-        
-        # Recursively update children
-        if hasattr(widget, 'children'):
-            for child in widget.children:
-                self.update_widget_texts(child)
-    
-    def update_all_images(self):
-        """Update all button background images based on current language"""
-        # List of image files that need language-specific versions
-        image_buttons = [
-            ('Destination', 'highlands', 'highlands.png'),
-            ('Destination', 'puertoAyora', 'town.png'),
-            ('Destination', 'airport', 'airport.png'),
-            ('People', 'student', 'student.png'),
-            ('People', 'singletourist', 'tourist.png'),
-            ('People', 'tourists', '2tourists.png'),
-            ('Cargo', 'luggage', 'luggage.png'),
-            ('Cargo', 'equipment', 'farm.png'),
-            ('Cargo', 'food', 'food.png'),
-        ]
-        
-        for screen_name, button_id, image_file in image_buttons:
-            try:
-                screen = self.root.get_screen(screen_name)
-                button = screen.ids[button_id]
-                button.background_normal = self.get_image_path(image_file)
-            except:
-                pass  # Skip if screen or button doesn't exist
-    
-    def update_all_text(self):
-        """Update all text elements in the UI with current language"""
-        self.toggle_language()
 
 
 # run the application

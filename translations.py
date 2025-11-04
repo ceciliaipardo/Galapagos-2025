@@ -3,7 +3,7 @@
 
 class Translations:
     def __init__(self):
-        self.current_language = 'en'  # Default to English
+        self.current_language = 'es'  # Default to Spanish
         
         self.texts = {
             'en': {
@@ -27,11 +27,13 @@ class Translations:
                 'complete_registration': 'Complete your Registration:',
                 'name': 'Name:',
                 'phone_number': 'Phone Number:',
-                'car_company': 'Car Company:',
-                'car_number': 'Car Number:',
+                'car_company': 'Company 1:',
+                'car_number': 'Car Number 1:',
                 'check_another_company': 'Check this Box if you Drive for Another Company:',
-                'second_car_company': '2nd Car Company:',
-                'second_car_number': '2nd Car Number:',
+                'second_car_company': 'Company 2:',
+                'second_car_number': 'Car Number 2:',
+                'company_1': 'Company 1',
+                'company_2': 'Company 2',
                 'next': 'Next',
                 'back': 'Back',
                 'done': 'Done',
@@ -61,25 +63,31 @@ class Translations:
                 
                 # Destination Screen
                 'where_going': 'Where are you going?',
-                'the_highlands': 'The Highlands',
+                'the_highlands': 'Highlands',
                 'puerto_ayora': 'Puerto Ayora',
                 'airport': 'Airport',
                 'other': 'Other',
                 
                 # People Screen
                 'who_driving': 'Who are you driving?',
-                'students': 'Students',
-                'single_tourist': 'Single Tourist',
-                'multiple_tourists': 'Multiple Tourists',
-                'locals': 'Locals',
-                'misc_passengers': 'Miscellaneous Passengers',
+                'students': 'Student',
+                'tourist': 'Tourist',
+                'locals': 'Local',
+                
+                # Passenger Count Screen
+                'passenger_count': 'Number of Passengers?',
+                '1_passenger': '1',
+                '2_passengers': '2',
+                '3_passengers': '3',
+                '4_passengers': '4',
+                '5_plus_passengers': '5+',
                 
                 # Cargo Screen
                 'what_cargo': 'What kind of cargo are they carrying?',
                 'luggage': 'Luggage',
                 'work_equipment': 'Work Equipment',
                 'food_goods': 'Food and Goods',
-                'misc_cargo': 'Miscellaneous Cargo',
+                'misc_cargo': 'Varied Load',
                 
                 # Finish Trip Screen
                 'click_complete': 'Click Complete when you have dropped \n       your passenger and cargo off',
@@ -121,11 +129,13 @@ class Translations:
                 'complete_registration': 'Complete su Registro:',
                 'name': 'Nombre:',
                 'phone_number': 'Número de Teléfono:',
-                'car_company': 'Compañía de Taxi:',
-                'car_number': 'Número de Auto:',
+                'car_company': 'Compañía 1:',
+                'car_number': 'Número de Auto 1:',
                 'check_another_company': 'Marque esta casilla si maneja para otra compañía:',
-                'second_car_company': '2da Compañía de Taxi:',
-                'second_car_number': '2do Número de Auto:',
+                'second_car_company': 'Compañía 2:',
+                'second_car_number': 'Número de Auto 2:',
+                'company_1': 'Compañía 1',
+                'company_2': 'Compañía 2',
                 'next': 'Siguiente',
                 'back': 'Atrás',
                 'done': 'Listo',
@@ -155,18 +165,24 @@ class Translations:
                 
                 # Destination Screen
                 'where_going': '¿A dónde va?',
-                'the_highlands': 'Las Tierras Altas',
+                'the_highlands': 'Tierras Altas',
                 'puerto_ayora': 'Puerto Ayora',
                 'airport': 'Aeropuerto',
                 'other': 'Otro',
                 
                 # People Screen
                 'who_driving': '¿A quién está transportando?',
-                'students': 'Estudiantes',
-                'single_tourist': 'Turista Individual',
-                'multiple_tourists': 'Múltiples Turistas',
-                'locals': 'Locales',
-                'misc_passengers': 'Pasajeros Varios',
+                'students': 'Estudiante',
+                'tourist': 'Turista',
+                'locals': 'Local',
+                
+                # Passenger Count Screen
+                'passenger_count': '¿Número de Pasajeros?',
+                '1_passenger': '1',
+                '2_passengers': '2',
+                '3_passengers': '3',
+                '4_passengers': '4',
+                '5_plus_passengers': '5+',
                 
                 # Cargo Screen
                 'what_cargo': '¿Qué tipo de carga llevan?',

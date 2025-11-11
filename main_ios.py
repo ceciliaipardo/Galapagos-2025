@@ -39,8 +39,8 @@ checkFrequency = 10 #seconds
 minMph = 2
 
 # iOS Configuration
-API_BASE_URL = "https://your-api-server.com/api"  # Replace with your actual API endpoint
-USE_LOCAL_ONLY = True  # Set to False when you have a working API
+API_BASE_URL = "https://galapagos-2025-supabase-integration.up.railway.app/api"
+USE_LOCAL_ONLY = False  # Production mode - syncs with Supabase
 
 def APIRequest(endpoint, method="GET", data=None):
     """Make API requests to replace MySQL functionality"""

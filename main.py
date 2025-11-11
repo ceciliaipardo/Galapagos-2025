@@ -630,21 +630,33 @@ class Cargo(Screen):
 class FinishTrip(Screen):
     def on_enter(self):
         try:
-            MainApp().startGPS(checkFrequency)
-        except:
-            Logger.critical("GPS Not Enabled on This Device")
-        startTrip()
+            app = App.get_running_app()
+            if app:
+                app.startGPS(checkFrequency)
+        except Exception as e:
+            Logger.error(f"GPS initialization failed: {e}")
+        
+        try:
+            startTrip()
+        except Exception as e:
+            Logger.error(f"Failed to start trip: {e}")
     
     def endTrip(self):
         try:
-            MainApp().stopGPS()
-        except:
-            Logger.critical("GPS Not Set Up on This Device")
-        now = datetime.now()
-        dist = round(getTripDistance(currentTripID),3) # rounds to the nearest 5ft
-        tripTime = now - localDBGetTripStart(currentTripID)
-        tripFuel = round(dist/mpg, 3)
-        localDBRecord(currentTripID, currentCompany, currentCar, 'End Trip', tripTime, dist, tripFuel, '', now)
+            app = App.get_running_app()
+            if app:
+                app.stopGPS()
+        except Exception as e:
+            Logger.error(f"Failed to stop GPS: {e}")
+        
+        try:
+            now = datetime.now()
+            dist = round(getTripDistance(currentTripID),3) # rounds to the nearest 5ft
+            tripTime = now - localDBGetTripStart(currentTripID)
+            tripFuel = round(dist/mpg, 3)
+            localDBRecord(currentTripID, currentCompany, currentCar, 'End Trip', tripTime, dist, tripFuel, '', now)
+        except Exception as e:
+            Logger.error(f"Failed to end trip: {e}")
     
     def clearCargo(self):
         global currentCargo
@@ -745,9 +757,22 @@ class MainApp(App):
     def on_start(self):
         if platform == "android":
             from android.permissions import request_permissions, Permission
-            request_permissions([Permission.INTERNET, Permission.ACCESS_BACKGROUND_LOCATION, Permission.ACCESS_FINE_LOCATION, Permission.ACCESS_COARSE_LOCATION])
-        localDBCreate()
-        localDBLogin('testUser', 'testPassword', 'Test User', '1234567890', 'Company1', '1', 'Company2', '2') # DELETE ONCE LOGIN IS POSSIBLE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            try:
+                request_permissions([
+                    Permission.INTERNET, 
+                    Permission.ACCESS_BACKGROUND_LOCATION, 
+                    Permission.ACCESS_FINE_LOCATION, 
+                    Permission.ACCESS_COARSE_LOCATION,
+                    Permission.WAKE_LOCK
+                ])
+            except Exception as e:
+                Logger.error(f"Permission request failed: {e}")
+        
+        try:
+            localDBCreate()
+        except Exception as e:
+            Logger.error(f"Local DB creation failed: {e}")
+        
         onLaunch()  
         self.root.transition = NoTransition()
         try:

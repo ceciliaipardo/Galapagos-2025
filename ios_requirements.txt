@@ -12,10 +12,6 @@ sqlite3
 # GPS and location services
 plyer
 
-# Note: mysql-connector-python is not available for iOS
-# You'll need to use a different approach for remote database connectivity
-# Consider using requests + REST API or firebase for cloud database access
-
-# Additional iOS-specific packages you might need
-# requests  # for HTTP API calls to replace mysql connectivity
-# certifi   # for SSL certificate verification
+# HTTP requests for API connectivity
+requests
+certifi

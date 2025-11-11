@@ -408,8 +408,8 @@ def localDBGetTripStats(tripID):
         passengers = "{} with {}".format(tripData[0], tripData[1])
         destination = tripData[2]
     except:
-        passengers = "Trip Too Short"
-        destination = "Trip Too Short"
+        passengers = translator.get_text('trip_too_short')
+        destination = translator.get_text('trip_too_short')
     return [destination, passengers, totalDist, totalTime, totalFuel]
 
 
@@ -491,12 +491,8 @@ class Welcome(Screen):
                               translator.get_text('password') if 'Password' in widget.text or 'Contraseña' in widget.text else \
                               widget.text
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if 'EN' == widget.text:
-                        widget.text = 'ES'
-                    elif 'ES' == widget.text:
-                        widget.text = 'EN'
-                    elif 'Login' in widget.text or 'Iniciar' in widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Login' in widget.text or 'Iniciar' in widget.text:
                         widget.text = translator.get_text('login')
                     elif 'Register' in widget.text or 'Registra' in widget.text:
                         widget.text = translator.get_text('register_link')
@@ -524,12 +520,8 @@ class Home(Screen):
                 if 'Home' in widget.text or 'Inicio' in widget.text:
                     widget.text = translator.get_text('home')
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif 'Start Trip' in widget.text or 'Iniciar viaje' in widget.text or 'Iniciar' in widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Start Trip' in widget.text or 'Iniciar viaje' in widget.text or 'Iniciar' in widget.text:
                         widget.text = translator.get_text('start_trip')
                     elif 'Get Stats' in widget.text or 'Ver estadísticas' in widget.text or 'Ver' in widget.text:
                         widget.text = translator.get_text('get_stats')
@@ -558,29 +550,29 @@ class HomeStatsPage(Screen):
         if(DBCheckConnection()):
             try:
                 statistics = DBGetDayStats(currentUser, datetime.today().strftime("%Y%m%d"))
-                self.ids.NumberOfTrips.text = "{} Trips".format(statistics[0])
-                self.ids.MilesDriven.text = "{} Miles".format(statistics[1])
-                self.ids.EstimatedGas.text = "{} Gallons".format(statistics[2])
+                self.ids.NumberOfTrips.text = "{} {}".format(statistics[0], translator.get_text('trips'))
+                self.ids.MilesDriven.text = "{} {}".format(statistics[1], translator.get_text('miles'))
+                self.ids.EstimatedGas.text = "{} {}".format(statistics[2], translator.get_text('gallons'))
                 hours = int(statistics[3].seconds/3600)
                 minutes = int((statistics[3].seconds-hours*3600)/60)
                 seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
-                self.ids.TotalTime.text = '{} Hours, {} Minutes, {} Seconds'.format(hours, minutes, seconds)
+                self.ids.TotalTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
                 hours = int(statistics[4].seconds/3600)
                 minutes = int((statistics[4].seconds-hours*3600)/60)
                 seconds = int(statistics[4].seconds - hours*3600 - minutes*60)
-                self.ids.TimeBetween.text = '{} Hours, {} Minutes, {} Seconds'.format(hours, minutes, seconds)
+                self.ids.TimeBetween.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
             except:
-                self.ids.NumberOfTrips.text = "No Data Available"
-                self.ids.MilesDriven.text = "No Data Available"
-                self.ids.EstimatedGas.text = "No Data Available"
-                self.ids.TotalTime.text = "No Data Available"
-                self.ids.TimeBetween.text = "No Data Available"
+                self.ids.NumberOfTrips.text = translator.get_text('no_data_available')
+                self.ids.MilesDriven.text = translator.get_text('no_data_available')
+                self.ids.EstimatedGas.text = translator.get_text('no_data_available')
+                self.ids.TotalTime.text = translator.get_text('no_data_available')
+                self.ids.TimeBetween.text = translator.get_text('no_data_available')
         else:
-            self.ids.NumberOfTrips.text = "Connection Required"
-            self.ids.MilesDriven.text = "Connection Required"
-            self.ids.EstimatedGas.text = "Connection Required"
-            self.ids.TotalTime.text = "Connection Required"
-            self.ids.TimeBetween.text = "Connection Required"
+            self.ids.NumberOfTrips.text = translator.get_text('connection_required')
+            self.ids.MilesDriven.text = translator.get_text('connection_required')
+            self.ids.EstimatedGas.text = translator.get_text('connection_required')
+            self.ids.TotalTime.text = translator.get_text('connection_required')
+            self.ids.TimeBetween.text = translator.get_text('connection_required')
 
 class Register1(Screen):
     def on_pre_enter(self):
@@ -710,12 +702,8 @@ class Destination(Screen):
             if widget.__class__.__name__ == 'Label':
                 widget.text = translator.get_text('where_going')
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif 'Highlands' in widget.text or 'Tierras' in widget.text or 'Altas' in widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Highlands' in widget.text or 'Tierras' in widget.text or 'Altas' in widget.text:
                         widget.text = translator.get_text('the_highlands')
                     elif 'Puerto Ayora' in widget.text:
                         widget.text = translator.get_text('puerto_ayora')
@@ -739,12 +727,8 @@ class People(Screen):
             if widget.__class__.__name__ == 'Label':
                 widget.text = translator.get_text('who_driving')
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif 'Student' in widget.text or 'Estudiante' in widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Student' in widget.text or 'Estudiante' in widget.text:
                         widget.text = translator.get_text('students')
                     elif 'Tourist' in widget.text or 'Turista' in widget.text:
                         widget.text = translator.get_text('tourist')
@@ -766,19 +750,16 @@ class PassengerCount(Screen):
             if widget.__class__.__name__ == 'Label':
                 widget.text = translator.get_text('passenger_count')
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif widget.text in ['1', '2', '3', '4', '5+']:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if widget.text in ['1', '2', '3', '4', '5+']:
                         # Numbers don't need translation, keep as is
                         pass
     
     def setPassengerCount(self, count):
         global currentPass
         # Append the count to the current passenger type
-        currentPass = f"{currentPass} - {count} passenger{'s' if count != '1' else ''}"
+        passenger_word = translator.get_text('passengers') if count != '1' else translator.get_text('passenger')
+        currentPass = f"{currentPass} - {count} {passenger_word}"
     
     def clearPeople(self):
         global currentPass
@@ -791,12 +772,8 @@ class Cargo(Screen):
             if widget.__class__.__name__ == 'Label':
                 widget.text = translator.get_text('what_cargo')
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif 'Luggage' in widget.text or 'Equipaje' in widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Luggage' in widget.text or 'Equipaje' in widget.text:
                         widget.text = translator.get_text('luggage')
                     elif 'Work Equipment' in widget.text or 'Equipo de Trabajo' in widget.text or 'Trabajo' in widget.text:
                         widget.text = translator.get_text('work_equipment')
@@ -824,12 +801,8 @@ class FinishTrip(Screen):
                 if 'click' in widget.text.lower() or 'haga' in widget.text.lower():
                     widget.text = translator.get_text('click_complete')
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif 'Complete' in widget.text or 'Completar' in widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Complete' in widget.text or 'Completar' in widget.text:
                         widget.text = translator.get_text('complete')
         
     def on_enter(self):
@@ -875,12 +848,8 @@ class TripStats(Screen):
                 elif 'Fuel' in widget.text or 'Combustible' in widget.text:
                     widget.text = translator.get_text('estimated_fuel')
             elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif 'Start Next' in widget.text or 'Siguiente' in widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Start Next' in widget.text or 'Siguiente' in widget.text:
                         widget.text = translator.get_text('start_next_trip')
                     elif widget.text == 'Home' or widget.text == 'Inicio':
                         widget.text = translator.get_text('home')
@@ -889,12 +858,12 @@ class TripStats(Screen):
         statistics = localDBGetTripStats(currentTripID)
         self.ids.Destination.text = str(statistics[0])
         self.ids.PassengersCargo.text = str(statistics[1])
-        self.ids.tripDist.text = "{} Miles".format(statistics[2])
+        self.ids.tripDist.text = "{} {}".format(statistics[2], translator.get_text('miles'))
         hours = int(statistics[3].seconds/3600)
         minutes = int((statistics[3].seconds-hours*3600)/60)
         seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
-        self.ids.tripTime.text = '{} Hours, {} Minutes, {} Seconds'.format(hours, minutes, seconds)
-        self.ids.tripFuel.text = "{} Gallons".format(statistics[4])
+        self.ids.tripTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
+        self.ids.tripFuel.text = "{} {}".format(statistics[4], translator.get_text('gallons'))
     
     def on_pre_leave(self):
         if(DBCheckConnection()):
@@ -922,11 +891,13 @@ class WindowManager(ScreenManager):
 
 class MainApp(App):
     # Observable property that triggers KV re-evaluation when language changes
-    language = StringProperty('es')
+    language = StringProperty('es')  # Initialize to Spanish to match translator default
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.translator = translator
+        # Sync the language property with translator's current language
+        self.language = translator.get_current_language()
     
     def build(self):
         # Load the appropriate KV file based on language

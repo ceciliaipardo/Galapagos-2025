@@ -57,6 +57,11 @@ class Translations:
                 'miles': 'Miles',
                 'gallons': 'Gallons',
                 'hours_minutes_seconds': '{} Hours, {} Minutes, {} Seconds',
+                'hours': 'Hours',
+                'minutes': 'Minutes',
+                'seconds': 'Seconds',
+                'passenger': 'passenger',
+                'passengers': 'passengers',
                 
                 # Start Trip Screen
                 'which_car': 'Which car are you using?',
@@ -159,6 +164,11 @@ class Translations:
                 'miles': 'Millas',
                 'gallons': 'Galones',
                 'hours_minutes_seconds': '{} Horas, {} Minutos, {} Segundos',
+                'hours': 'Horas',
+                'minutes': 'Minutos',
+                'seconds': 'Segundos',
+                'passenger': 'pasajero',
+                'passengers': 'pasajeros',
                 
                 # Start Trip Screen
                 'which_car': '¿Qué auto está usando?',

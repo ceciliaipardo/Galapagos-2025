@@ -71,10 +71,19 @@ class Translations:
                 # People Screen
                 'who_driving': 'Who are you driving?',
                 'students': 'Students',
+                'tourist': 'Tourist',
                 'single_tourist': 'Single Tourist',
                 'multiple_tourists': 'Multiple Tourists',
                 'locals': 'Locals',
                 'misc_passengers': 'Miscellaneous Passengers',
+                
+                # Passenger Count Screen
+                'passenger_count': 'How many passengers?',
+                '1_passenger': '1 Passenger',
+                '2_passengers': '2 Passengers',
+                '3_passengers': '3 Passengers',
+                '4_passengers': '4 Passengers',
+                '5_plus_passengers': '5+ Passengers',
                 
                 # Cargo Screen
                 'what_cargo': 'What kind of cargo are they carrying?',
@@ -168,10 +177,19 @@ class Translations:
                 # People Screen
                 'who_driving': '¿A quién está transportando?',
                 'students': 'Estudiantes',
+                'tourist': 'Turista',
                 'single_tourist': 'Turista Individual',
                 'multiple_tourists': 'Múltiples Turistas',
                 'locals': 'Locales',
                 'misc_passengers': 'Pasajeros Varios',
+                
+                # Passenger Count Screen
+                'passenger_count': '¿Cuántos pasajeros?',
+                '1_passenger': '1 Pasajero',
+                '2_passengers': '2 Pasajeros',
+                '3_passengers': '3 Pasajeros',
+                '4_passengers': '4 Pasajeros',
+                '5_plus_passengers': '5+ Pasajeros',
                 
                 # Cargo Screen
                 'what_cargo': '¿Qué tipo de carga llevan?',

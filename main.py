@@ -1,9 +1,4 @@
-try:
-    import mysql.connector
-    MYSQL_AVAILABLE = True
-except ImportError:
-    MYSQL_AVAILABLE = False
-    print("MySQL connector not available. Running in SQLite-only mode.")
+from supabase_config import get_supabase_client, test_connection
 import sqlite3
 from kivy.config import Config
 # Disable multitouch emulation (removes red dots on screen)
@@ -43,212 +38,200 @@ minMph = 2
 
 
 
-def DBConnect():
-    if not MYSQL_AVAILABLE:
-        raise Exception("MySQL not available")
-    mydb = mysql.connector.connect(
-			host = "localhost", ##going to be an IP
-			user = "root",		
-			password = "password123",
-			database = "second_db",
-			)
-    cursor = mydb.cursor()
-    return [cursor,mydb]
-
-def DBCreate():
-    [cursor,mydb] = DBConnect()
-    # Create an actual database
-    cursor.execute("CREATE DATABASE IF NOT EXISTS second_db")
-	# Create A Table for User Data
-    cursor.execute("""CREATE TABLE if not exists UserData(
-	username VARCHAR(20),
-    password VARCHAR(20),
-    name VARCHAR(20),
-    phone VARCHAR(15),
-    company1 VARCHAR(20),
-    comp1num VARCHAR(5),
-    company2 VARCHAR(20),
-    comp2num VARCHAR(5)
-   	)""")
-    # Create a Table for Tracking Data
-    cursor.execute("""CREATE TABLE if not exists TrackingData(
-	tripID VARCHAR(40),
-    company VARCHAR(20),
-    carnum VARCHAR(5),
-    destinationXstatus VARCHAR(20),
-    passengersXtotalTime VARCHAR(20),
-    cargoXtotalDist VARCHAR(20),
-   	gpslonXworkingFuel VARCHAR(20),
-    gpslat VARCHAR(20),
-    time VARCHAR(30)
-    )""")
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
-
-def DBClearUsers():
-    [cursor, mydb] = DBConnect()
-    # Clear Data
-    query = "truncate UserData"
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close() 
-
-def DBClearTracking():
-    [cursor, mydb] = DBConnect()
-    # Clear Data
-    query = "truncate TrackingData"
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close() 
-
-def DBDelete():
-    [cursor, mydb] = DBConnect()
-    #cursor.execute("DROP TABLE UserData")
-    cursor.execute("DROP TABLE TrackingData")
-
 def DBShowAll():
-    [cursor,mydb] = DBConnect()
-    # Grab records from database
-    cursor.execute("SELECT * FROM UserData")
-    records = cursor.fetchall()
-    print("\nUser Data Data Base")
-    for row in records:
-        print(row)
-    cursor.execute("SELECT * FROM TrackingData")
-    records = cursor.fetchall()
-    print("\n")
-    print("\nTracking Data Data Base")
-    for row in records:
-        print(row)
-    print("\n")
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
+    """Show all records from Supabase database"""
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            print("Supabase client not available")
+            return
+        
+        # Get UserData records
+        user_response = supabase.table('UserData').select("*").execute()
+        print("\nUser Data Database")
+        for row in user_response.data:
+            print(row)
+        
+        # Get TrackingData records
+        tracking_response = supabase.table('TrackingData').select("*").execute()
+        print("\n\nTracking Data Database")
+        for row in tracking_response.data:
+            print(row)
+        print("\n")
+    except Exception as e:
+        Logger.error(f"DBShowAll failed: {e}")
  
 def DBCheckUsernameExists(username):
-    if(username == ''):
+    """Check if username exists in Supabase"""
+    if username == '':
         return translator.get_text('username_invalid')
-    else:
-        [cursor, mydb] = DBConnect()
-        query = "SELECT * FROM UserData WHERE username = '{}'".format(username)
-        cursor.execute(query)
-        test = cursor.fetchone()
-        mydb.commit()
-	    # Close our connection
-        mydb.close()
-        try: 
-            test[0]
-        except: # If this phone is unused
-            return "Valid"
-        else: # If this phone is already in the database
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            return "Connection Error"
+        
+        response = supabase.table('UserData').select("username").eq('username', username).execute()
+        if len(response.data) > 0:
             return translator.get_text('username_exists')
+        else:
+            return "Valid"
+    except Exception as e:
+        Logger.error(f"DBCheckUsernameExists failed: {e}")
+        return "Error"
 
 def DBCheckPhoneExists(phone):
+    """Check if phone exists in Supabase"""
     try:
         int(phone)
-    except: 
+    except:
         return translator.get_text('phone_invalid')
-    else:
-        [cursor, mydb] = DBConnect()
-        query = "SELECT * FROM UserData WHERE phone = '{}'".format(phone)
-        cursor.execute(query)
-        test = cursor.fetchone()
-        mydb.commit()
-	    # Close our connection
-        mydb.close()
-        try: 
-            test[0]
-        except: # If this phone is unused
-            return "Valid"
-        else: # If this phone is already in the database
+    
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            return "Connection Error"
+        
+        response = supabase.table('UserData').select("phone").eq('phone', phone).execute()
+        if len(response.data) > 0:
             return translator.get_text('phone_exists')
+        else:
+            return "Valid"
+    except Exception as e:
+        Logger.error(f"DBCheckPhoneExists failed: {e}")
+        return "Error"
     
 def DBRegister(username, password, name, phone, company1, comp1num, company2, comp2num):
-    [cursor, mydb] = DBConnect()
-    query = "INSERT INTO UserData (username, password, name, phone, company1, comp1num, company2, comp2num) values ('{}','{}','{}','{}','{}','{}','{}','{}')".format(username, password, name, phone, company1, comp1num, company2, comp2num)
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
-
-def DBLogin(username,password):
-    [cursor, mydb] = DBConnect()
-    query = "SELECT * FROM UserData WHERE username = %s AND password = %s"
-    cursor.execute(query, (username,password))
-    # Checks for a line where the username and password match those input
+    """Register new user in Supabase"""
     try:
-        test = cursor.fetchone()
-        username = test[0]
-    except: # If no line matching is found
-        return(False)
-    else: # If a matching line is found
-        account = test
-        localDBLogin(account[0], account[1], account[2], account[3], account[4], account[5], account[6], account[7])
-        return(True)
+        supabase = get_supabase_client()
+        if not supabase:
+            raise Exception("Supabase client not available")
+        
+        data = {
+            "username": username,
+            "password": password,
+            "name": name,
+            "phone": phone,
+            "company1": company1,
+            "comp1num": comp1num,
+            "company2": company2,
+            "comp2num": comp2num
+        }
+        
+        response = supabase.table('UserData').insert(data).execute()
+        Logger.info(f"User registered successfully: {username}")
+    except Exception as e:
+        Logger.error(f"DBRegister failed: {e}")
+        raise
+
+def DBLogin(username, password):
+    """Login user from Supabase"""
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            return False
+        
+        response = supabase.table('UserData').select("*").eq('username', username).eq('password', password).execute()
+        
+        if len(response.data) > 0:
+            account = response.data[0]
+            localDBLogin(
+                account['username'], account['password'], account['name'], 
+                account['phone'], account['company1'], account['comp1num'], 
+                account['company2'], account['comp2num']
+            )
+            return True
+        else:
+            return False
+    except Exception as e:
+        Logger.error(f"DBLogin failed: {e}")
+        return False
 
 def DBPullUserData():
-    [cursor, mydb] = DBConnect()
-    query = "SELECT * FROM UserData WHERE username = '{}'".format(currentUser)
-    cursor.execute(query)
-    records = cursor.fetchone()
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
-    return records
+    """Pull user data from Supabase"""
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            return None
+        
+        response = supabase.table('UserData').select("*").eq('username', currentUser).execute()
+        
+        if len(response.data) > 0:
+            user = response.data[0]
+            return (user['username'], user['password'], user['name'], user['phone'], 
+                   user['company1'], user['comp1num'], user['company2'], user['comp2num'])
+        return None
+    except Exception as e:
+        Logger.error(f"DBPullUserData failed: {e}")
+        return None
 
 def DBUploadDataPoint(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time):
-    [cursor, mydb] = DBConnect()
-    query = "INSERT INTO TrackingData (tripID, company, carnum, destinationXstatus, passengersXtotalTime, cargoXtotalDist, gpslonXworkingFuel, gpslat, time) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')".format(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time)
-    cursor.execute(query)
-    # Save Changes
-    mydb.commit()
-	# Close our connection
-    mydb.close()
+    """Upload tracking data point to Supabase"""
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            raise Exception("Supabase client not available")
+        
+        data = {
+            "tripID": tripID,
+            "company": company,
+            "carnum": carnum,
+            "destinationXstatus": destination,
+            "passengersXtotalTime": str(passengers),
+            "cargoXtotalDist": str(cargo),
+            "gpslonXworkingFuel": str(gpslon),
+            "gpslat": str(gpslat),
+            "time": str(time)
+        }
+        
+        response = supabase.table('TrackingData').insert(data).execute()
+    except Exception as e:
+        Logger.error(f"DBUploadDataPoint failed: {e}")
 
 def DBCheckConnection():
-    try:
-        [cursor, mydb] = DBConnect()
-        query = "SELECT * FROM UserData WHERE username = '{}'".format(currentUser)
-        cursor.execute(query)
-        records = cursor.fetchone()
-        mydb.commit()
-        mydb.close()
-    except:
-        return False
-    else:
-        return True
+    """Check if Supabase connection is available"""
+    return test_connection()
 
 def DBGetDayStats(username, date):
-    dayID = "%{}{}%".format(username, date)
-    [cursor, mydb] = DBConnect()
-    query = "SELECT passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel,time FROM TrackingData WHERE destinationXstatus = 'End Trip' AND tripID LIKE '{}'".format(dayID)
-    cursor.execute(query)
-    trips = cursor.fetchall()
-    numTrips = 0
-    totalDist = 0
-    totalTime = timedelta()
-    totalFuel = 0
-    for row in trips:
-        numTrips += 1
-        totalDist += float(row[1])
-        t = datetime.strptime(str(row[0]),'%H:%M:%S.%f')
-        totalTime = totalTime + timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
-        totalFuel += float(row[2])
-        endTime = datetime.strptime(str(row[3]),'%Y-%m-%d %H:%M:%S.%f')
-    query = "SELECT time FROM TrackingData WHERE destinationXstatus = 'Start Trip' AND tripID LIKE '{}'".format(dayID)
-    cursor.execute(query)
-    dayStart = datetime.strptime(str(cursor.fetchone()[0]),'%Y-%m-%d %H:%M:%S.%f')
-    idleTime = endTime - dayStart - totalTime
-    return [numTrips, totalDist, totalFuel, totalTime, idleTime]
+    """Get daily statistics from Supabase"""
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            raise Exception("Supabase client not available")
+        
+        dayID = f"{username}{date}"
+        
+        # Get all trips that end with 'End Trip' for the given day
+        response = supabase.table('TrackingData').select(
+            "passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel,time"
+        ).eq('destinationXstatus', 'End Trip').like('tripID', f"{dayID}%").execute()
+        
+        trips = response.data
+        numTrips = 0
+        totalDist = 0
+        totalTime = timedelta()
+        totalFuel = 0
+        
+        for row in trips:
+            numTrips += 1
+            totalDist += float(row['cargoXtotalDist'])
+            t = datetime.strptime(str(row['passengersXtotalTime']), '%H:%M:%S.%f')
+            totalTime = totalTime + timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
+            totalFuel += float(row['gpslonXworkingFuel'])
+            endTime = datetime.strptime(str(row['time']), '%Y-%m-%d %H:%M:%S.%f')
+        
+        # Get trip start time
+        start_response = supabase.table('TrackingData').select("time").eq(
+            'destinationXstatus', 'Start Trip'
+        ).like('tripID', f"{dayID}%").limit(1).execute()
+        
+        dayStart = datetime.strptime(str(start_response.data[0]['time']), '%Y-%m-%d %H:%M:%S.%f')
+        idleTime = endTime - dayStart - totalTime
+        
+        return [numTrips, totalDist, totalFuel, totalTime, idleTime]
+    except Exception as e:
+        Logger.error(f"DBGetDayStats failed: {e}")
+        raise
         
     
 
@@ -476,7 +459,29 @@ def getTripDistance(tripID):
 
 
 
-class Welcome(Screen):            
+class Welcome(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language - skip TextInput widgets
+        for widget in self.walk():
+            # Skip TextInput widgets completely
+            if widget.__class__.__name__ == 'TextInput':
+                continue
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                widget.text = translator.get_text('welcome') if 'Welcome' in widget.text or 'Bienvenido' in widget.text else \
+                              translator.get_text('username') if 'Username' in widget.text or 'Usuario' in widget.text else \
+                              translator.get_text('password') if 'Password' in widget.text or 'Contraseña' in widget.text else \
+                              widget.text
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['⚙', '']:
+                    if 'EN' == widget.text:
+                        widget.text = 'ES'
+                    elif 'ES' == widget.text:
+                        widget.text = 'EN'
+                    elif 'Login' in widget.text or 'Iniciar' in widget.text:
+                        widget.text = translator.get_text('login')
+                    elif 'Register' in widget.text or 'Registra' in widget.text:
+                        widget.text = translator.get_text('register_link')
+            
     def logIn(self, username, password):
         if(DBCheckConnection()):
             if DBLogin(username, password):
@@ -493,6 +498,33 @@ class Welcome(Screen):
             self.ids.Incorrect.text = translator.get_text('connection_required_login')
        
 class Home(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                if 'Home' in widget.text or 'Inicio' in widget.text:
+                    widget.text = translator.get_text('home')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['⚙', '']:
+                    if widget.text == 'EN':
+                        widget.text = 'ES'
+                    elif widget.text == 'ES':
+                        widget.text = 'EN'
+                    elif 'Start Trip' in widget.text or 'Iniciar viaje' in widget.text or 'Iniciar' in widget.text:
+                        widget.text = translator.get_text('start_trip')
+                    elif 'Get Stats' in widget.text or 'Ver estadísticas' in widget.text or 'Ver' in widget.text:
+                        widget.text = translator.get_text('get_stats')
+                    elif 'Log Out' in widget.text or 'Cerrar sesión' in widget.text or 'Cerrar' in widget.text:
+                        widget.text = translator.get_text('log_out')
+    
+    def autoSelectFirstCar(self):
+        """Automatically select the first car for the user"""
+        global currentCompany
+        global currentCar
+        userData = localDBPullAccountData()
+        currentCompany = userData[4]
+        currentCar = userData[5]
+        
     def logOut(self):
         global currentUser
         global currentCompany
@@ -618,12 +650,42 @@ class People(Screen):
         global currentDest
         currentDest = ''
 
+class PassengerCount(Screen):
+    def on_pre_enter(self):
+        # Update all text to current language
+        for widget in self.walk():
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                # Update title
+                if '¿Cuántos pasajeros?' in widget.text or 'How many passengers?' in widget.text or 'Passenger Count' in widget.text or 'Número de Pasajeros' in widget.text:
+                    widget.text = translator.get_text('passenger_count')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                # Skip back button and language toggle
+                if widget.text not in ['←', 'EN', 'ES', '']:
+                    # Update passenger count buttons
+                    if '1 Passenger' in widget.text or '1 Pasajero' in widget.text:
+                        widget.text = translator.get_text('1_passenger')
+                    elif '2 Passengers' in widget.text or '2 Pasajeros' in widget.text:
+                        widget.text = translator.get_text('2_passengers')
+                    elif '3 Passengers' in widget.text or '3 Pasajeros' in widget.text:
+                        widget.text = translator.get_text('3_passengers')
+                    elif '4 Passengers' in widget.text or '4 Pasajeros' in widget.text:
+                        widget.text = translator.get_text('4_passengers')
+    
+    def setPassengerCount(self, count):
+        global currentPass
+        # Append the count to the current passenger type
+        currentPass = f"{currentPass} - {count}"
+        
+    def clearPeople(self):
+        global currentPass
+        currentPass = ''
+
 class Cargo(Screen):
     def setCargo(self, cargo):
         global currentCargo
         currentCargo = cargo
         
-    def clearPeople(self):
+    def clearPassengerCount(self):
         global currentPass
         currentPass = ''
 
@@ -714,6 +776,9 @@ class WindowManager(ScreenManager):
     pass
 
 class MainApp(App):
+    # Observable property that triggers KV re-evaluation when language changes
+    language = StringProperty('es')
+    
     # Create observable string properties for all translatable text
     welcome_text = StringProperty()
     username_text = StringProperty()
@@ -880,6 +945,8 @@ class MainApp(App):
                 # People options
                 'Students': 'students',
                 'Estudiantes': 'students',
+                'Tourist': 'tourist',
+                'Turista': 'tourist',
                 'Single Tourist': 'single_tourist',
                 'Turista Individual': 'single_tourist',
                 'Multiple Tourists': 'multiple_tourists',

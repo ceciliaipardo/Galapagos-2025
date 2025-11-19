@@ -25,22 +25,12 @@ WindowManager:
 
         # Language Toggle - Top Right
         Button:
-            text: 'EN' if app.language == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '16sp'
             size_hint: (None, None)
-            size: ('60dp', '35dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.96}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 1, 1, 1, 1
-            canvas.before:
-                Color:
-                    rgba: 0.15, 0.15, 0.15, 1
-                RoundedRectangle:
-                    pos: self.pos
-                    size: self.size
-                    radius: [8, 8, 8, 8]
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         BoxLayout:
@@ -193,22 +183,12 @@ WindowManager:
 
         # Language Toggle
         Button:
-            text: 'EN' if app.language == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '16sp'
             size_hint: (None, None)
-            size: ('60dp', '35dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.96}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 1, 1, 1, 1
-            canvas.before:
-                Color:
-                    rgba: 0.15, 0.15, 0.15, 1
-                RoundedRectangle:
-                    pos: self.pos
-                    size: self.size
-                    radius: [8, 8, 8, 8]
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         BoxLayout:
@@ -307,15 +287,12 @@ WindowManager:
 
         # Language Toggle
         Button:
-            text: 'EN' if app.language == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         # Back Button
@@ -458,15 +435,12 @@ WindowManager:
 
         # Language Toggle
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         # Back Button
@@ -587,15 +561,12 @@ WindowManager:
 
         # Language Toggle
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         # Back Button
@@ -738,15 +709,12 @@ WindowManager:
 
         # Language Toggle
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         # Back Button
@@ -887,15 +855,12 @@ WindowManager:
                 size: self.size
 
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         Button:
@@ -987,15 +952,12 @@ WindowManager:
                 size: self.size
 
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         BoxLayout:
@@ -1047,15 +1009,12 @@ WindowManager:
                 size: self.size
 
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         ScrollView:
@@ -1435,15 +1394,12 @@ WindowManager:
 
         # Language Toggle - Rendered on top of ScrollView
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         # Back Button - Rendered on top of ScrollView
@@ -1472,15 +1428,12 @@ WindowManager:
                 size: self.size
 
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         Button:
@@ -1692,15 +1645,12 @@ WindowManager:
                 size: self.size
 
         Button:
-            text: 'EN' if app.translator.get_current_language() == 'es' else 'ES'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '18sp'
             size_hint: (None, None)
-            size: ('70dp', '40dp')
+            size: ('53dp', '53dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
             on_release: app.toggle_language()
 
         Button:

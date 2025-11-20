@@ -1,4 +1,4 @@
-from supabase_config import get_supabase_client, test_connection
+import supabase_rest_api as supabase_api
 import sqlite3
 from kivy.config import Config
 # Disable multitouch emulation (removes red dots on screen)
@@ -41,21 +41,16 @@ minMph = 2
 def DBShowAll():
     """Show all records from Supabase database"""
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            print("Supabase client not available")
-            return
-        
         # Get UserData records
-        user_response = supabase.table('UserData').select("*").execute()
+        user_data = supabase_api.select('UserData')
         print("\nUser Data Database")
-        for row in user_response.data:
+        for row in user_data:
             print(row)
         
         # Get TrackingData records
-        tracking_response = supabase.table('TrackingData').select("*").execute()
+        tracking_data = supabase_api.select('TrackingData')
         print("\n\nTracking Data Database")
-        for row in tracking_response.data:
+        for row in tracking_data:
             print(row)
         print("\n")
     except Exception as e:
@@ -66,12 +61,7 @@ def DBCheckUsernameExists(username):
     if username == '':
         return translator.get_text('username_invalid')
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            return "Connection Error"
-        
-        response = supabase.table('UserData').select("username").eq('username', username).execute()
-        if len(response.data) > 0:
+        if supabase_api.check_username_exists(username):
             return translator.get_text('username_exists')
         else:
             return "Valid"
@@ -87,12 +77,7 @@ def DBCheckPhoneExists(phone):
         return translator.get_text('phone_invalid')
     
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            return "Connection Error"
-        
-        response = supabase.table('UserData').select("phone").eq('phone', phone).execute()
-        if len(response.data) > 0:
+        if supabase_api.check_phone_exists(phone):
             return translator.get_text('phone_exists')
         else:
             return "Valid"
@@ -103,23 +88,7 @@ def DBCheckPhoneExists(phone):
 def DBRegister(username, password, name, phone, company1, comp1num, company2, comp2num):
     """Register new user in Supabase"""
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            raise Exception("Supabase client not available")
-        
-        data = {
-            "username": username,
-            "password": password,
-            "name": name,
-            "phone": phone,
-            "company1": company1,
-            "comp1num": comp1num,
-            "company2": company2,
-            "comp2num": comp2num
-        }
-        
-        response = supabase.table('UserData').insert(data).execute()
-        Logger.info(f"User registered successfully: {username}")
+        supabase_api.register_user(username, password, name, phone, company1, comp1num, company2, comp2num)
     except Exception as e:
         Logger.error(f"DBRegister failed: {e}")
         raise
@@ -127,14 +96,9 @@ def DBRegister(username, password, name, phone, company1, comp1num, company2, co
 def DBLogin(username, password):
     """Login user from Supabase"""
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            return False
+        account = supabase_api.login_user(username, password)
         
-        response = supabase.table('UserData').select("*").eq('username', username).eq('password', password).execute()
-        
-        if len(response.data) > 0:
-            account = response.data[0]
+        if account:
             localDBLogin(
                 account['username'], account['password'], account['name'], 
                 account['phone'], account['company1'], account['comp1num'], 
@@ -150,14 +114,9 @@ def DBLogin(username, password):
 def DBPullUserData():
     """Pull user data from Supabase"""
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            return None
+        user = supabase_api.get_user_data(currentUser)
         
-        response = supabase.table('UserData').select("*").eq('username', currentUser).execute()
-        
-        if len(response.data) > 0:
-            user = response.data[0]
+        if user:
             return (user['username'], user['password'], user['name'], user['phone'], 
                    user['company1'], user['comp1num'], user['company2'], user['comp2num'])
         return None
@@ -168,45 +127,20 @@ def DBPullUserData():
 def DBUploadDataPoint(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time):
     """Upload tracking data point to Supabase"""
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            raise Exception("Supabase client not available")
-        
-        data = {
-            "tripID": tripID,
-            "company": company,
-            "carnum": carnum,
-            "destinationXstatus": destination,
-            "passengersXtotalTime": str(passengers),
-            "cargoXtotalDist": str(cargo),
-            "gpslonXworkingFuel": str(gpslon),
-            "gpslat": str(gpslat),
-            "time": str(time)
-        }
-        
-        response = supabase.table('TrackingData').insert(data).execute()
+        supabase_api.upload_tracking_data(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time)
     except Exception as e:
         Logger.error(f"DBUploadDataPoint failed: {e}")
 
 def DBCheckConnection():
     """Check if Supabase connection is available"""
-    return test_connection()
+    return supabase_api.test_connection()
 
 def DBGetDayStats(username, date):
     """Get daily statistics from Supabase"""
     try:
-        supabase = get_supabase_client()
-        if not supabase:
-            raise Exception("Supabase client not available")
+        result = supabase_api.get_day_stats(username, date)
+        trips = result['trips']
         
-        dayID = f"{username}{date}"
-        
-        # Get all trips that end with 'End Trip' for the given day
-        response = supabase.table('TrackingData').select(
-            "passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel,time"
-        ).eq('destinationXstatus', 'End Trip').like('tripID', f"{dayID}%").execute()
-        
-        trips = response.data
         numTrips = 0
         totalDist = 0
         totalTime = timedelta()
@@ -221,12 +155,11 @@ def DBGetDayStats(username, date):
             endTime = datetime.strptime(str(row['time']), '%Y-%m-%d %H:%M:%S.%f')
         
         # Get trip start time
-        start_response = supabase.table('TrackingData').select("time").eq(
-            'destinationXstatus', 'Start Trip'
-        ).like('tripID', f"{dayID}%").limit(1).execute()
-        
-        dayStart = datetime.strptime(str(start_response.data[0]['time']), '%Y-%m-%d %H:%M:%S.%f')
-        idleTime = endTime - dayStart - totalTime
+        if result['start_time']:
+            dayStart = datetime.strptime(str(result['start_time']), '%Y-%m-%d %H:%M:%S.%f')
+            idleTime = endTime - dayStart - totalTime
+        else:
+            idleTime = timedelta()
         
         return [numTrips, totalDist, totalFuel, totalTime, idleTime]
     except Exception as e:
@@ -460,28 +393,6 @@ def getTripDistance(tripID):
 
 
 class Welcome(Screen):
-    def on_pre_enter(self):
-        # Update all text to current language - skip TextInput widgets
-        for widget in self.walk():
-            # Skip TextInput widgets completely
-            if widget.__class__.__name__ == 'TextInput':
-                continue
-            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
-                widget.text = translator.get_text('welcome') if 'Welcome' in widget.text or 'Bienvenido' in widget.text else \
-                              translator.get_text('username') if 'Username' in widget.text or 'Usuario' in widget.text else \
-                              translator.get_text('password') if 'Password' in widget.text or 'Contraseña' in widget.text else \
-                              widget.text
-            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['⚙', '']:
-                    if 'EN' == widget.text:
-                        widget.text = 'ES'
-                    elif 'ES' == widget.text:
-                        widget.text = 'EN'
-                    elif 'Login' in widget.text or 'Iniciar' in widget.text:
-                        widget.text = translator.get_text('login')
-                    elif 'Register' in widget.text or 'Registra' in widget.text:
-                        widget.text = translator.get_text('register_link')
-            
     def logIn(self, username, password):
         if(DBCheckConnection()):
             if DBLogin(username, password):
@@ -498,25 +409,6 @@ class Welcome(Screen):
             self.ids.Incorrect.text = translator.get_text('connection_required_login')
        
 class Home(Screen):
-    def on_pre_enter(self):
-        # Update all text to current language
-        for widget in self.walk():
-            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
-                if 'Home' in widget.text or 'Inicio' in widget.text:
-                    widget.text = translator.get_text('home')
-            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['⚙', '']:
-                    if widget.text == 'EN':
-                        widget.text = 'ES'
-                    elif widget.text == 'ES':
-                        widget.text = 'EN'
-                    elif 'Start Trip' in widget.text or 'Iniciar viaje' in widget.text or 'Iniciar' in widget.text:
-                        widget.text = translator.get_text('start_trip')
-                    elif 'Get Stats' in widget.text or 'Ver estadísticas' in widget.text or 'Ver' in widget.text:
-                        widget.text = translator.get_text('get_stats')
-                    elif 'Log Out' in widget.text or 'Cerrar sesión' in widget.text or 'Cerrar' in widget.text:
-                        widget.text = translator.get_text('log_out')
-    
     def autoSelectFirstCar(self):
         """Automatically select the first car for the user"""
         global currentCompany
@@ -651,26 +543,6 @@ class People(Screen):
         currentDest = ''
 
 class PassengerCount(Screen):
-    def on_pre_enter(self):
-        # Update all text to current language
-        for widget in self.walk():
-            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
-                # Update title
-                if '¿Cuántos pasajeros?' in widget.text or 'How many passengers?' in widget.text or 'Passenger Count' in widget.text or 'Número de Pasajeros' in widget.text:
-                    widget.text = translator.get_text('passenger_count')
-            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                # Skip back button and language toggle
-                if widget.text not in ['←', 'EN', 'ES', '']:
-                    # Update passenger count buttons
-                    if '1 Passenger' in widget.text or '1 Pasajero' in widget.text:
-                        widget.text = translator.get_text('1_passenger')
-                    elif '2 Passengers' in widget.text or '2 Pasajeros' in widget.text:
-                        widget.text = translator.get_text('2_passengers')
-                    elif '3 Passengers' in widget.text or '3 Pasajeros' in widget.text:
-                        widget.text = translator.get_text('3_passengers')
-                    elif '4 Passengers' in widget.text or '4 Pasajeros' in widget.text:
-                        widget.text = translator.get_text('4_passengers')
-    
     def setPassengerCount(self, count):
         global currentPass
         # Append the count to the current passenger type

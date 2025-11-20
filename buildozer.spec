@@ -38,7 +38,8 @@ version = 0.1
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
 # Note: Using urllib.request (standard library) instead of Supabase Python client for Android compatibility
-requirements = python3,sqlite3,kivy,kivymd,android,plyer,pyjnius
+# Note: pyjnius is automatically included by android and plyer - don't specify version to avoid conflicts
+requirements = python3,sqlite3,kivy==2.2.1,kivymd,android,plyer
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

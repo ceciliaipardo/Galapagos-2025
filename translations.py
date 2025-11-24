@@ -49,7 +49,7 @@ class Translations:
                 # Statistics Screen
                 'statistics_today': 'Statistics for Today',
                 'number_of_trips': 'Number of Trips',
-                'miles_driven': 'Km Driven',
+                'kilometers_driven': 'Kilometers Driven',
                 'estimated_gas': 'Estimated Total Gas Usage',
                 'total_time': 'Total Driving Time',
                 'time_between': 'Time Spent Between Trips',
@@ -162,7 +162,7 @@ class Translations:
                 # Statistics Screen
                 'statistics_today': 'Estadísticas de Hoy',
                 'number_of_trips': 'Número de Viajes',
-                'miles_driven': 'Km Conducidos',
+                'kilometers_driven': 'Kilómetros Conducidos',
                 'estimated_gas': 'Uso Total Estimado de Gasolina',
                 'total_time': 'Tiempo Total de Conducción',
                 'time_between': 'Tiempo Entre Viajes',

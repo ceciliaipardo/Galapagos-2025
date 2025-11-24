@@ -1510,13 +1510,13 @@ WindowManager:
                         valign: 'middle'
                         text_size: self.size
 
-                # Miles Driven
+                # Kilometers Driven
                 BoxLayout:
                     orientation: 'horizontal'
                     size_hint_y: 0.2
                     spacing: '10dp'
                     Label:
-                        text: app.translator.get_text('miles_driven') + ':'
+                        text: app.translator.get_text('kilometers_driven') + ':'
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '14sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -1622,34 +1622,6 @@ WindowManager:
             Rectangle:
                 pos: self.pos
                 size: self.size
-
-        Button:
-            size_hint: (None, None)
-            size: ('53dp', '53dp')
-            pos_hint: {'right': 0.95, 'top': 0.97}
-            background_normal: 'globe_icon.png'
-            background_down: 'globe_icon.png'
-            background_color: 1, 1, 1, 1
-            on_release: app.toggle_language()
-
-        Button:
-            text: '←'
-            font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '28sp'
-            size_hint: (None, None)
-            size: ('60dp', '60dp')
-            pos_hint: {'x': 0.05, 'top': 0.97}
-            background_normal: ''
-            background_color: 0, 0, 0, 0
-            color: 0.2, 0.2, 0.2, 1
-            on_release:
-                root.ids.UsernameReg.text = ''
-                root.ids.PasswordReg.text = ''
-                root.ids.PhoneReg.text = ''
-                root.ids.NameReg.text = ''
-                root.ids.Incorrect.text = ''
-                app.root.current = "Welcome"
-                root.manager.transition.direction = "down"
 
         ScrollView:
             BoxLayout:
@@ -1829,6 +1801,36 @@ WindowManager:
                 Widget:
                     size_hint_y: None
                     height: '30dp'
+
+        # Language Toggle - Rendered on top of ScrollView
+        Button:
+            size_hint: (None, None)
+            size: ('53dp', '53dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
+            on_release: app.toggle_language()
+
+        # Back Button - Rendered on top of ScrollView
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                root.ids.UsernameReg.text = ''
+                root.ids.PasswordReg.text = ''
+                root.ids.PhoneReg.text = ''
+                root.ids.NameReg.text = ''
+                root.ids.Incorrect.text = ''
+                app.root.current = "Welcome"
+                root.manager.transition.direction = "down"
 
 <Register2>:
     name: "Register2"

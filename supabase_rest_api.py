@@ -5,7 +5,17 @@ Uses only standard HTTP requests - no special dependencies needed
 import json
 import urllib.request
 import urllib.error
+import ssl
 from kivy.logger import Logger
+
+# Create SSL context that doesn't verify certificates (for development)
+# This fixes the "CERTIFICATE_VERIFY_FAILED" error on macOS
+try:
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+except:
+    ssl_context = None
 
 # Supabase credentials
 SUPABASE_URL = "https://pldkqqghyolugfecndhy.supabase.co"
@@ -48,8 +58,8 @@ def make_request(endpoint, method='GET', data=None, params=None):
         else:
             req = urllib.request.Request(url, headers=headers, method=method)
         
-        # Make request
-        with urllib.request.urlopen(req, timeout=10) as response:
+        # Make request with SSL context to avoid certificate errors
+        with urllib.request.urlopen(req, timeout=10, context=ssl_context) as response:
             response_data = response.read().decode('utf-8')
             if response_data:
                 return json.loads(response_data)
@@ -90,7 +100,7 @@ def select(table, columns='*', filters=None, limit=None):
     if limit:
         params['limit'] = str(limit)
     
-    return make_request(table, 'GET', params=params)
+    return make_request(table, method='GET', params=params)
 
 def insert(table, data):
     """
@@ -106,7 +116,7 @@ def insert(table, data):
     if not isinstance(data, list):
         data = [data]
     
-    return make_request(table, 'POST', data=data)
+    return make_request(table, method='POST', data=data)
 
 def update(table, data, filters):
     """
@@ -124,7 +134,7 @@ def update(table, data, filters):
     for col, val in filters.items():
         params[col] = f"eq.{val}"
     
-    return make_request(table, 'PATCH', data=data, params=params)
+    return make_request(table, method='PATCH', data=data, params=params)
 
 def delete(table, filters):
     """
@@ -141,7 +151,7 @@ def delete(table, filters):
     for col, val in filters.items():
         params[col] = f"eq.{val}"
     
-    return make_request(table, 'DELETE', params=params)
+    return make_request(table, method='DELETE', params=params)
 
 def test_connection():
     """Test the Supabase connection"""
@@ -253,7 +263,7 @@ def get_day_stats(username, date):
         full_url = f"{url}?{query_string}"
         
         req = urllib.request.Request(full_url, headers=headers)
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=10, context=ssl_context) as response:
             trips = json.loads(response.read().decode('utf-8'))
         
         # Get trip start data
@@ -268,7 +278,7 @@ def get_day_stats(username, date):
         full_url2 = f"{url}?{query_string2}"
         
         req2 = urllib.request.Request(full_url2, headers=headers)
-        with urllib.request.urlopen(req2, timeout=10) as response:
+        with urllib.request.urlopen(req2, timeout=10, context=ssl_context) as response:
             start_data = json.loads(response.read().decode('utf-8'))
         
         return {

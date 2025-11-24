@@ -27,6 +27,7 @@ currentUser = ''
 currentCompany = ''
 currentCar = ''
 currentDest = ''
+currentStartPoint = ''
 currentPass = ''
 currentCargo = ''
 currentlat = 0
@@ -439,9 +440,9 @@ class HomeStatsPage(Screen):
         if(DBCheckConnection()):
             try:
                 statistics = DBGetDayStats(currentUser, datetime.today().strftime("%Y%m%d"))
-                self.ids.NumberOfTrips.text = "{} Trips".format(statistics[0])
-                self.ids.MilesDriven.text = "{} Miles".format(statistics[1])
-                self.ids.EstimatedGas.text = "{} Gallons".format(statistics[2])
+                self.ids.NumberOfTrips.text = "{} {}".format(statistics[0], translator.get_text('trips'))
+                self.ids.MilesDriven.text = "{} {}".format(statistics[1], translator.get_text('km'))
+                self.ids.EstimatedGas.text = "{} {}".format(statistics[2], translator.get_text('gallons'))
                 hours = int(statistics[3].seconds/3600)
                 minutes = int((statistics[3].seconds-hours*3600)/60)
                 seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
@@ -477,19 +478,38 @@ class Register1(Screen):
             self.ids.Incorrect.text = translator.get_text('connection_required_register')
    
 class Register2(Screen):
-    def register(self, username, password, name, phone, comp1, car1, comp2, car2):
+    def register(self, username, password, name, phone, car_num):
         if(DBCheckConnection()):
-            DBRegister(username, password, name, phone, comp1, car1, comp2, car2)
+            # Get selected company from dropdown
+            selected_company = self.ids.CompanySpinner.text
+            
+            # Check if user selected from dropdown (not the default text)
+            if selected_company == translator.get_text('select_company'):
+                selected_company = ''
+            
+            # Add additional company if specified
+            additional_company = self.ids.AdditionalCompanyReg.text.strip()
+            if additional_company:
+                if selected_company:
+                    selected_company = f"{selected_company}, {additional_company}"
+                else:
+                    selected_company = additional_company
+            
+            # Register with companies as comp1, empty comp2
+            DBRegister(username, password, name, phone, selected_company, car_num, '', '')
+            
+            # Clear all fields
             self.manager.get_screen('Register1').ids.UsernameReg.text = ''
             self.manager.get_screen('Register1').ids.PasswordReg.text = ''
             self.manager.get_screen('Register1').ids.NameReg.text = ''
             self.manager.get_screen('Register1').ids.PhoneReg.text = ''
-            self.ids.Company1Reg.text = ''
             self.ids.Car1NumReg.text = ''
-            self.ids.Company2Reg.text = ''
-            self.ids.Car2NumReg.text = ''
-            self.manager.current = "Welcome"# sets the window to the window with the name given
-            self.manager.transition.direction = "up" # sets transition direction
+            self.ids.CompanySpinner.text = translator.get_text('select_company')
+            self.ids.AnotherCompanyCheck.active = False
+            self.ids.AdditionalCompanyReg.text = ''
+            
+            self.manager.current = "Welcome"
+            self.manager.transition.direction = "up"
         else:
             self.ids.Incorrect.text = translator.get_text('connection_required_register')
 
@@ -532,15 +552,24 @@ class Destination(Screen):
     def clearCar(self):
         global currentCompany
         currentCompany = ''
+
+class StartingPoint(Screen):
+    def setStartPoint(self, startPoint):
+        global currentStartPoint
+        currentStartPoint = startPoint
+        
+    def clearStartPoint(self):
+        global currentStartPoint
+        currentStartPoint = ''
     
 class People(Screen):
     def setPass(self, people):
         global currentPass
         currentPass = people
         
-    def clearDest(self):
-        global currentDest
-        currentDest = ''
+    def clearStartPoint(self):
+        global currentStartPoint
+        currentStartPoint = ''
 
 class PassengerCount(Screen):
     def setPassengerCount(self, count):
@@ -616,12 +645,12 @@ class TripStats(Screen):
         
         self.ids.Destination.text = destination
         self.ids.PassengersCargo.text = str(statistics[1])
-        self.ids.tripDist.text = "{} Miles".format(statistics[2])
+        self.ids.tripDist.text = "{} {}".format(statistics[2], translator.get_text('km'))
         hours = int(statistics[3].seconds/3600)
         minutes = int((statistics[3].seconds-hours*3600)/60)
         seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
         self.ids.tripTime.text = '{} Hours, {} Minutes, {} Seconds'.format(hours, minutes, seconds)
-        self.ids.tripFuel.text = "{} Gallons".format(statistics[4])
+        self.ids.tripFuel.text = "{} {}".format(statistics[4], translator.get_text('gallons'))
     
     def on_pre_leave(self):
         if(DBCheckConnection()):
@@ -788,6 +817,8 @@ class MainApp(App):
                 '¿Qué auto está usando?': 'which_car',
                 'Where are you going?': 'where_going',
                 '¿A dónde va?': 'where_going',
+                'Where are you coming from?': 'where_from',
+                '¿De dónde viene?': 'where_from',
                 'Who are you driving?': 'who_driving',
                 '¿A quién está transportando?': 'who_driving',
                 'What kind of cargo are they carrying?': 'what_cargo',
@@ -827,9 +858,24 @@ class MainApp(App):
                 'Locales': 'locals',
                 'Miscellaneous Passengers': 'misc_passengers',
                 'Pasajeros Varios': 'misc_passengers',
+                # Passenger Count options
+                'How many passengers?': 'passenger_count',
+                '¿Cuántos pasajeros?': 'passenger_count',
+                '1 Passenger': '1_passenger',
+                '1 Pasajero': '1_passenger',
+                '2 Passengers': '2_passengers',
+                '2 Pasajeros': '2_passengers',
+                '3 Passengers': '3_passengers',
+                '3 Pasajeros': '3_passengers',
+                '4 Passengers': '4_passengers',
+                '4 Pasajeros': '4_passengers',
+                '5+ Passengers': '5_plus_passengers',
+                '5+ Pasajeros': '5_plus_passengers',
                 # Cargo options
                 'Luggage': 'luggage',
                 'Equipaje': 'luggage',
+                'Bike': 'bike',
+                'Bicicleta': 'bike',
                 'Work Equipment': 'work_equipment',
                 'Equipo de Trabajo': 'work_equipment',
                 'Food and Goods': 'food_goods',
@@ -903,19 +949,16 @@ class MainApp(App):
         for screen in self.root.screens:
             self.update_widget_texts(screen)
     
-    def handle_checkbox_active(self, active):
-        """Handle checkbox state change for second car company"""
+    def handle_another_company_checkbox(self, active):
+        """Handle checkbox state change for additional company field"""
         register2 = self.root.get_screen('Register2')
         if active:
-            register2.ids.Company2Reg.disabled = False
-            register2.ids.Company2Reg.opacity = 1
-            register2.ids.Car2NumReg.disabled = False
-            register2.ids.Car2NumReg.opacity = 1
+            register2.ids.AdditionalCompanyBox.opacity = 1
+            register2.ids.AdditionalCompanyReg.disabled = False
         else:
-            register2.ids.Company2Reg.disabled = True
-            register2.ids.Company2Reg.opacity = 0
-            register2.ids.Car2NumReg.disabled = True
-            register2.ids.Car2NumReg.opacity = 0
+            register2.ids.AdditionalCompanyBox.opacity = 0
+            register2.ids.AdditionalCompanyReg.disabled = True
+            register2.ids.AdditionalCompanyReg.text = ''
     
     def startGPS(self, min_time):
         try:

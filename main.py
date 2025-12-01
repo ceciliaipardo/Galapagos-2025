@@ -907,7 +907,11 @@ class MainApp(App):
                 '2nd Car Company:': 'second_car_company',
                 '2da Compañía de Taxi:': 'second_car_company',
                 '2nd Car Number:': 'second_car_number',
-                '2do Número de Auto:': 'second_car_number'
+                '2do Número de Auto:': 'second_car_number',
+                'Select Company': 'select_company',
+                'Seleccionar Compañía': 'select_company',
+                'Additional Company:': 'second_car_company',
+                'Compañía Adicional:': 'second_car_company'
             }
             
             if widget.text in text_map:
@@ -955,6 +959,8 @@ class MainApp(App):
         if active:
             register2.ids.AdditionalCompanyBox.opacity = 1
             register2.ids.AdditionalCompanyReg.disabled = False
+            # Clear the dropdown selection when checkbox is activated
+            register2.ids.CompanySpinner.text = self.translator.get_text('select_company')
         else:
             register2.ids.AdditionalCompanyBox.opacity = 0
             register2.ids.AdditionalCompanyReg.disabled = True

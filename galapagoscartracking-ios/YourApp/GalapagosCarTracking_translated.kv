@@ -1,0 +1,1918 @@
+WindowManager:
+    Loading:
+    Welcome:
+    Home:
+    HomeStatsPage:
+    StartTrip:
+    Destination:
+    Register1:
+    Register2:
+    Cargo:
+    People:
+    PassengerCount:
+    FinishTrip:
+    TripStats:
+
+<Welcome>:
+    name: "Welcome"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Language Toggle - Top Right
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.96}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['25dp', '60dp', '25dp', '30dp']
+            spacing: '15dp'
+
+            # Logo/Title Area
+            Label:
+                text: app.translator.get_text('welcome')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '36sp'
+                color: 0.1, 0.1, 0.1, 1
+                size_hint_y: 0.12
+                halign: 'center'
+                valign: 'middle'
+
+            Widget:
+                size_hint_y: 0.03
+
+            # Error Message
+            Label:
+                id: Incorrect
+                text: ''
+                font_name: 'CaviarDreams.ttf'
+                font_size: '13sp'
+                color: 0.85, 0.2, 0.2, 1
+                size_hint_y: 0.04
+                halign: 'center'
+
+            # Login Form
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: 0.32
+                spacing: '12dp'
+                padding: ['15dp', 0]
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    
+                    Label:
+                        text: app.translator.get_text('username')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    
+                    TextInput:
+                        id: Username
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    
+                    Label:
+                        text: app.translator.get_text('password')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    
+                    TextInput:
+                        id: Password
+                        text: ''
+                        password: True
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+            # Login Button
+            Button:
+                text: app.translator.get_text('login')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.11
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.logIn(root.ids.Username.text, root.ids.Password.text)
+
+            Widget:
+                size_hint_y: 0.02
+
+            # Register Link
+            Button:
+                text: app.translator.get_text('register_link')
+                font_name: 'CaviarDreams.ttf'
+                font_size: '14sp'
+                size_hint_y: 0.07
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 0.3, 0.3, 0.3, 1
+                on_release:
+                    app.root.current = "Register1"
+                    root.manager.transition.direction = "up"
+
+            Widget:
+                size_hint_y: 0.15
+
+<Home>:
+    name: "Home"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Language Toggle
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.96}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['25dp', '80dp', '25dp', '40dp']
+            spacing: '20dp'
+
+            Label:
+                text: app.translator.get_text('home')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '32sp'
+                color: 0.1, 0.1, 0.1, 1
+                size_hint_y: 0.12
+                halign: 'center'
+
+            Widget:
+                size_hint_y: 0.04
+
+            # Start Trip Button
+            Button:
+                text: app.translator.get_text('start_trip')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '22sp'
+                size_hint_y: 0.16
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [15, 15, 15, 15]
+                on_release:
+                    root.startTripFromHome()
+                    app.root.current = "Destination"
+                    root.manager.transition.direction = "up"
+
+            # Stats Button
+            Button:
+                text: app.translator.get_text('get_stats')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '22sp'
+                size_hint_y: 0.16
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    app.root.current = "HomeStatsPage"
+                    root.manager.transition.direction = "down"
+
+            Widget:
+                size_hint_y: 0.06
+
+            # Logout Button
+            Button:
+                text: app.translator.get_text('log_out')
+                font_name: 'CaviarDreams.ttf'
+                font_size: '17sp'
+                size_hint_y: 0.11
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 0.4, 0.4, 0.4, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.92, 0.92, 0.92, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    root.logOut()
+                    app.root.current = "Welcome"
+                    root.manager.transition.direction = "down"
+
+            Widget:
+                size_hint_y: 0.2
+
+<Destination>:
+    name: "Destination"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Language Toggle
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        # Back Button
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                root.clearCar()
+                app.root.current = "Home"
+                root.manager.transition.direction = "down"
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['20dp', '100dp', '20dp', '25dp']
+            spacing: '15dp'
+
+            Label:
+                text: app.translator.get_text('where_going')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '26sp'
+                color: 0.1, 0.1, 0.1, 1
+                size_hint_y: 0.1
+                halign: 'center'
+
+            Widget:
+                size_hint_y: 0.02
+
+            # Option Buttons
+            Button:
+                text: app.translator.get_text('the_highlands')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    root.setDest('The Highlands')
+                    app.root.current = "People"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('puerto_ayora')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setDest('Puerto Ayora')
+                    app.root.current = "People"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('airport')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setDest("Airport")
+                    app.root.current = "People"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('other')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    root.setDest('Other')
+                    app.root.current = "People"
+                    root.manager.transition.direction = "up"
+
+            Widget:
+                size_hint_y: 0.3
+
+<People>:
+    name: "People"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Language Toggle
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        # Back Button
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                root.clearDest()
+                app.root.current = "Destination"
+                root.manager.transition.direction = "down"
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['20dp', '100dp', '20dp', '25dp']
+            spacing: '15dp'
+
+            Label:
+                text: app.translator.get_text('who_driving')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '26sp'
+                color: 0.1, 0.1, 0.1, 1
+                size_hint_y: 0.1
+                halign: 'center'
+
+            Widget:
+                size_hint_y: 0.02
+
+            Button:
+                text: app.translator.get_text('students')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    root.setPass('Students')
+                    app.root.current = "PassengerCount"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('tourist')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setPass("Tourist")
+                    app.root.current = "PassengerCount"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('locals')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setPass("Locals")
+                    app.root.current = "PassengerCount"
+                    root.manager.transition.direction = "up"
+
+            Widget:
+                size_hint_y: 0.4
+
+<PassengerCount>:
+    name: "PassengerCount"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Language Toggle
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        # Back Button
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                root.clearPeople()
+                app.root.current = "People"
+                root.manager.transition.direction = "down"
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['20dp', '100dp', '20dp', '25dp']
+            spacing: '15dp'
+
+            Label:
+                text: app.translator.get_text('passenger_count')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '26sp'
+                color: 0.1, 0.1, 0.1, 1
+                size_hint_y: 0.1
+                halign: 'center'
+
+            Widget:
+                size_hint_y: 0.02
+
+            Button:
+                text: app.translator.get_text('1_passenger')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.12
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    root.setPassengerCount('1')
+                    app.root.current = "Cargo"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('2_passengers')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.12
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setPassengerCount('2')
+                    app.root.current = "Cargo"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('3_passengers')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.12
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setPassengerCount('3')
+                    app.root.current = "Cargo"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('4_passengers')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.12
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setPassengerCount('4')
+                    app.root.current = "Cargo"
+                    root.manager.transition.direction = "up"
+
+            Widget:
+                size_hint_y: 0.4
+
+
+<Cargo>:
+    name: "Cargo"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Language Toggle
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        # Back Button
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                root.clearPassengerCount()
+                app.root.current = "PassengerCount"
+                root.manager.transition.direction = "down"
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['20dp', '100dp', '20dp', '25dp']
+            spacing: '15dp'
+
+            Label:
+                text: app.translator.get_text('what_cargo')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '24sp'
+                color: 0.1, 0.1, 0.1, 1
+                size_hint_y: None
+                height: '80dp'
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                padding: ['15dp', 0]
+
+            Widget:
+                size_hint_y: 0.02
+
+            Button:
+                text: app.translator.get_text('luggage')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    root.setCargo('Luggage')
+                    app.root.current = "FinishTrip"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('work_equipment')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setCargo('Work Equipment')
+                    app.root.current = "FinishTrip"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('food_goods')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setCargo('Food and Goods')
+                    app.root.current = "FinishTrip"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('bicycles')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setCargo('Bicycles')
+                    app.root.current = "FinishTrip"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                text: app.translator.get_text('misc_cargo')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.14
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setCargo("Miscellaneous Cargo")
+                    app.root.current = "FinishTrip"
+                    root.manager.transition.direction = "up"
+
+            Widget:
+                size_hint_y: 0.16
+
+<StartTrip>:
+    name: "StartTrip"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                root.clearCar()
+                app.root.current = "Home"
+                root.manager.transition.direction = "down"
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['25dp', '100dp', '25dp', '40dp']
+            spacing: '20dp'
+
+            Label:
+                text: app.translator.get_text('which_car')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '26sp'
+                color: 0.1, 0.1, 0.1, 1
+                size_hint_y: 0.12
+                halign: 'center'
+
+            Widget:
+                size_hint_y: 0.04
+
+            Button:
+                id: car1
+                text: ''
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '20sp'
+                size_hint_y: 0.18
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                on_release:
+                    root.selectCar(1)
+                    app.root.current = "Destination"
+                    root.manager.transition.direction = "up"
+
+            Button:
+                id: car2
+                text: ''
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '20sp'
+                size_hint_y: 0.18
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                opacity: 0
+                disabled: True
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.selectCar(2)
+                    app.root.current = "Destination"
+                    root.manager.transition.direction = "up"
+
+            Widget:
+                size_hint_y: 0.38
+
+<FinishTrip>:
+    name: "FinishTrip"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['30dp', '120dp', '30dp', '60dp']
+            spacing: '30dp'
+
+            Label:
+                text: app.translator.get_text('click_complete')
+                font_name: 'CaviarDreams.ttf'
+                font_size: '19sp'
+                color: 0.3, 0.3, 0.3, 1
+                size_hint_y: 0.15
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+
+            Button:
+                text: app.translator.get_text('complete')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '24sp'
+                size_hint_y: 0.22
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [15, 15, 15, 15]
+                on_release:
+                    root.endTrip()
+                    app.root.current = "TripStats"
+                    root.manager.transition.direction = "up"
+
+            Widget:
+                size_hint_y: 0.55
+
+<TripStats>:
+    name: "TripStats"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                orientation: 'vertical'
+                padding: ['30dp', '100dp', '30dp', '30dp']
+                spacing: '15dp'
+                size_hint_y: None
+                height: self.minimum_height
+
+                Label:
+                    text: app.translator.get_text('trip_statistics')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '26sp'
+                    color: 0.1, 0.1, 0.1, 1
+                    size_hint_y: None
+                    height: '60dp'
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.size
+
+                Widget:
+                    size_hint_y: None
+                    height: '20dp'
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: ['25dp', '30dp']
+                    spacing: '15dp'
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12, 12, 12, 12]
+
+                    Label:
+                        text: app.translator.get_text('destination')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.4, 0.4, 0.4, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+                    Label:
+                        id: Destination
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        color: 0.1, 0.1, 0.1, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+
+                    Widget:
+                        size_hint_y: None
+                        height: '15dp'
+
+                    Label:
+                        text: app.translator.get_text('passengers_cargo')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.4, 0.4, 0.4, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+                    Label:
+                        id: PassengersCargo
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        color: 0.1, 0.1, 0.1, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+
+                    Widget:
+                        size_hint_y: None
+                        height: '15dp'
+
+                    Label:
+                        text: app.translator.get_text('distance_driven')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.4, 0.4, 0.4, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+                    Label:
+                        id: tripDist
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        color: 0.1, 0.1, 0.1, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+
+                    Widget:
+                        size_hint_y: None
+                        height: '15dp'
+
+                    Label:
+                        text: app.translator.get_text('trip_duration')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.4, 0.4, 0.4, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+                    Label:
+                        id: tripTime
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        color: 0.1, 0.1, 0.1, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+
+                    Widget:
+                        size_hint_y: None
+                        height: '15dp'
+
+                    Label:
+                        text: app.translator.get_text('estimated_fuel')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.4, 0.4, 0.4, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+                    Label:
+                        id: tripFuel
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        color: 0.1, 0.1, 0.1, 1
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+
+                Widget:
+                    size_hint_y: None
+                    height: '30dp'
+
+                Button:
+                    text: app.translator.get_text('start_next_trip')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '20sp'
+                    size_hint_y: None
+                    height: '70dp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    canvas.before:
+                        Color:
+                            rgba: 0.05, 0.05, 0.05, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12, 12, 12, 12]
+                    on_release:
+                        root.clearCurrent()
+                        root.startNextTrip()
+                        app.root.current = "Destination"
+                        root.manager.transition.direction = "down"
+
+                Button:
+                    text: app.translator.get_text('home')
+                    font_name: 'CaviarDreams.ttf'
+                    font_size: '16sp'
+                    size_hint_y: None
+                    height: '60dp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 0.4, 0.4, 0.4, 1
+                    canvas.before:
+                        Color:
+                            rgba: 0.92, 0.92, 0.92, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12, 12, 12, 12]
+                    on_release:
+                        root.clearCurrent()
+                        app.root.current = "Home"
+                        root.manager.transition.direction = "down"
+
+                Widget:
+                    size_hint_y: None
+                    height: '30dp'
+
+<HomeStatsPage>:
+    name: "HomeStatsPage"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                padding: ['30dp', '100dp', '30dp', '30dp']
+                spacing: '20dp'
+                size_hint_y: None
+                height: self.minimum_height
+
+                Label:
+                    text: app.translator.get_text('statistics_today')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '30sp'
+                    color: 0.1, 0.1, 0.1, 1
+                    size_hint_y: None
+                    height: '60dp'
+                    halign: 'center'
+
+                Widget:
+                    size_hint_y: None
+                    height: '20dp'
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '500dp'
+                    padding: ['20dp', '25dp']
+                    spacing: '25dp'
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12, 12, 12, 12]
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: '70dp'
+                        spacing: '5dp'
+                        Label:
+                            text: app.translator.get_text('number_of_trips')
+                            font_name: 'CaviarDreams_Bold.ttf'
+                            font_size: '16sp'
+                            color: 0.4, 0.4, 0.4, 1
+                            size_hint_y: None
+                            height: '25dp'
+                            halign: 'left'
+                            text_size: self.size
+                        Label:
+                            id: NumberOfTrips
+                            text: ''
+                            font_name: 'CaviarDreams.ttf'
+                            font_size: '24sp'
+                            color: 0.1, 0.1, 0.1, 1
+                            size_hint_y: None
+                            height: '40dp'
+                            halign: 'left'
+                            text_size: self.size
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: '70dp'
+                        spacing: '5dp'
+                        Label:
+                            text: app.translator.get_text('miles_driven')
+                            font_name: 'CaviarDreams_Bold.ttf'
+                            font_size: '16sp'
+                            color: 0.4, 0.4, 0.4, 1
+                            size_hint_y: None
+                            height: '25dp'
+                            halign: 'left'
+                            text_size: self.size
+                        Label:
+                            id: MilesDriven
+                            text: ''
+                            font_name: 'CaviarDreams.ttf'
+                            font_size: '24sp'
+                            color: 0.1, 0.1, 0.1, 1
+                            size_hint_y: None
+                            height: '40dp'
+                            halign: 'left'
+                            text_size: self.size
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: '70dp'
+                        spacing: '5dp'
+                        Label:
+                            text: app.translator.get_text('estimated_gas')
+                            font_name: 'CaviarDreams_Bold.ttf'
+                            font_size: '16sp'
+                            color: 0.4, 0.4, 0.4, 1
+                            size_hint_y: None
+                            height: '25dp'
+                            halign: 'left'
+                            text_size: self.size
+                        Label:
+                            id: EstimatedGas
+                            text: ''
+                            font_name: 'CaviarDreams.ttf'
+                            font_size: '24sp'
+                            color: 0.1, 0.1, 0.1, 1
+                            size_hint_y: None
+                            height: '40dp'
+                            halign: 'left'
+                            text_size: self.size
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: '70dp'
+                        spacing: '5dp'
+                        Label:
+                            text: app.translator.get_text('total_time')
+                            font_name: 'CaviarDreams_Bold.ttf'
+                            font_size: '16sp'
+                            color: 0.4, 0.4, 0.4, 1
+                            size_hint_y: None
+                            height: '25dp'
+                            halign: 'left'
+                            text_size: self.size
+                        Label:
+                            id: TotalTime
+                            text: ''
+                            font_name: 'CaviarDreams.ttf'
+                            font_size: '24sp'
+                            color: 0.1, 0.1, 0.1, 1
+                            size_hint_y: None
+                            height: '40dp'
+                            halign: 'left'
+                            text_size: self.size
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: '70dp'
+                        spacing: '5dp'
+                        Label:
+                            text: app.translator.get_text('time_between')
+                            font_name: 'CaviarDreams_Bold.ttf'
+                            font_size: '16sp'
+                            color: 0.4, 0.4, 0.4, 1
+                            size_hint_y: None
+                            height: '25dp'
+                            halign: 'left'
+                            text_size: self.size
+                        Label:
+                            id: TimeBetween
+                            text: ''
+                            font_name: 'CaviarDreams.ttf'
+                            font_size: '24sp'
+                            color: 0.1, 0.1, 0.1, 1
+                            size_hint_y: None
+                            height: '40dp'
+                            halign: 'left'
+                            text_size: self.size
+
+                Widget:
+                    size_hint_y: None
+                    height: '30dp'
+
+        # Language Toggle and Back Button - placed after ScrollView to be on top
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                app.root.current = "Home"
+                root.manager.transition.direction = "down"
+
+<Register1>:
+    name: "Register1"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                root.ids.UsernameReg.text = ''
+                root.ids.PasswordReg.text = ''
+                root.ids.PhoneReg.text = ''
+                root.ids.NameReg.text = ''
+                root.ids.Incorrect.text = ''
+                app.root.current = "Welcome"
+                root.manager.transition.direction = "down"
+
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                padding: ['40dp', '100dp', '40dp', '40dp']
+                spacing: '15dp'
+                size_hint_y: None
+                height: self.minimum_height
+
+                Label:
+                    text: app.translator.get_text('fill_out_following')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '26sp'
+                    color: 0.1, 0.1, 0.1, 1
+                    size_hint_y: None
+                    height: '50dp'
+                    halign: 'center'
+
+                Label:
+                    id: Incorrect
+                    text: ''
+                    font_name: 'CaviarDreams.ttf'
+                    font_size: '14sp'
+                    color: 0.85, 0.2, 0.2, 1
+                    size_hint_y: None
+                    height: '30dp'
+                    halign: 'center'
+
+                Widget:
+                    size_hint_y: None
+                    height: '10dp'
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    Label:
+                        text: app.translator.get_text('name')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: NameReg
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    Label:
+                        text: app.translator.get_text('username')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: UsernameReg
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    Label:
+                        text: app.translator.get_text('password')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: PasswordReg
+                        text: ''
+                        password: True
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    Label:
+                        text: app.translator.get_text('phone_number')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: PhoneReg
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                Widget:
+                    size_hint_y: None
+                    height: '10dp'
+
+                Button:
+                    text: app.translator.get_text('next')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '20sp'
+                    size_hint_y: None
+                    height: '60dp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    canvas.before:
+                        Color:
+                            rgba: 0.05, 0.05, 0.05, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12, 12, 12, 12]
+                    on_release:
+                        root.checkRegPg1(root.ids.UsernameReg.text, root.ids.PhoneReg.text)
+
+                Widget:
+                    size_hint_y: None
+                    height: '30dp'
+
+<Register2>:
+    name: "Register2"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Button:
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            size_hint: (None, None)
+            size: ('45dp', '45dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            border: (0, 0, 0, 0)
+            on_release: app.toggle_language()
+
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                app.root.current = "Register1"
+                root.manager.transition.direction = "down"
+
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                padding: ['40dp', '100dp', '40dp', '40dp']
+                spacing: '15dp'
+                size_hint_y: None
+                height: self.minimum_height
+
+                Label:
+                    text: app.translator.get_text('complete_registration')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '26sp'
+                    color: 0.1, 0.1, 0.1, 1
+                    size_hint_y: None
+                    height: '50dp'
+                    halign: 'center'
+
+                Label:
+                    id: Incorrect
+                    text: ''
+                    font_name: 'CaviarDreams.ttf'
+                    font_size: '14sp'
+                    color: 0.85, 0.2, 0.2, 1
+                    size_hint_y: None
+                    height: '30dp'
+                    halign: 'center'
+
+                Widget:
+                    size_hint_y: None
+                    height: '10dp'
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    Label:
+                        text: app.translator.get_text('car_company')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: Company1Reg
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    Label:
+                        text: app.translator.get_text('car_number')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: Car1NumReg
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: '50dp'
+                    spacing: '10dp'
+                    Label:
+                        text: app.translator.get_text('check_another_company')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_x: 0.8
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    CheckBox:
+                        size_hint_x: 0.2
+                        color: 0, 0, 0, 1
+                        on_active: app.handle_checkbox_active(self.active)
+
+                BoxLayout:
+                    id: CarCompanyTwo
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    opacity: 0
+                    Label:
+                        text: app.translator.get_text('second_car_company')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: Company2Reg
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                BoxLayout:
+                    id: CarNumberTwo
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '80dp'
+                    spacing: '8dp'
+                    opacity: 0
+                    Label:
+                        text: app.translator.get_text('second_car_number')
+                        font_name: 'CaviarDreams_Bold.ttf'
+                        font_size: '16sp'
+                        color: 0.3, 0.3, 0.3, 1
+                        size_hint_y: None
+                        height: '25dp'
+                        halign: 'left'
+                        text_size: self.size
+                        padding: ['10dp', 0]
+                    TextInput:
+                        id: Car2NumReg
+                        text: ''
+                        font_name: 'CaviarDreams.ttf'
+                        font_size: '18sp'
+                        multiline: False
+                        write_tab: False
+                        size_hint_y: None
+                        height: '50dp'
+                        background_normal: ''
+                        background_color: 0.9, 0.9, 0.9, 1
+                        foreground_color: 0.1, 0.1, 0.1, 1
+                        cursor_color: 0.1, 0.1, 0.1, 1
+                        padding: ['15dp', '12dp']
+
+                Widget:
+                    size_hint_y: None
+                    height: '10dp'
+
+                Button:
+                    text: app.translator.get_text('done')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '20sp'
+                    size_hint_y: None
+                    height: '60dp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    canvas.before:
+                        Color:
+                            rgba: 0.05, 0.05, 0.05, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12, 12, 12, 12]
+                    on_release:
+                        root.register(app.root.get_screen('Register1').ids.UsernameReg.text, app.root.get_screen('Register1').ids.PasswordReg.text, app.root.get_screen('Register1').ids.NameReg.text, app.root.get_screen('Register1').ids.PhoneReg.text, root.ids.Company1Reg.text, root.ids.Car1NumReg.text, root.ids.Company2Reg.text, root.ids.Car2NumReg.text)
+                        app.root.get_screen('Welcome').ids.Incorrect.text = ''
+
+                Widget:
+                    size_hint_y: None
+                    height: '30dp'
+
+<Loading>:
+    name: "Loading"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.05, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size

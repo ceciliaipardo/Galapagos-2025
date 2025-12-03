@@ -46,7 +46,7 @@ class Translations:
                 # Statistics Screen
                 'statistics_today': 'Statistics for Today',
                 'number_of_trips': 'Number of Trips',
-                'miles_driven': 'Miles Driven',
+                'miles_driven': 'Kilometers Driven',
                 'estimated_gas': 'Estimated Total Gas Usage',
                 'total_time': 'Total Driving Time',
                 'time_between': 'Time Spent Between Trips',
@@ -54,7 +54,7 @@ class Translations:
                 'no_data_available': 'No Data Available',
                 'connection_required': 'Connection Required',
                 'trips': 'Trips',
-                'miles': 'Miles',
+                'miles': 'Kilometers',
                 'gallons': 'Gallons',
                 'hours_minutes_seconds': '{} Hours, {} Minutes, {} Seconds',
                 'hours': 'Hours',
@@ -75,9 +75,9 @@ class Translations:
                 
                 # People Screen
                 'who_driving': 'Who are you driving?',
-                'students': 'Student',
-                'tourist': 'Tourist',
-                'locals': 'Local',
+                'students': 'Students',
+                'tourist': 'Tourists',
+                'locals': 'Locals',
                 
                 # Passenger Count Screen
                 'passenger_count': 'Number of Passengers?',
@@ -92,6 +92,7 @@ class Translations:
                 'luggage': 'Luggage',
                 'work_equipment': 'Work Equipment',
                 'food_goods': 'Food and Goods',
+                'bicycles': 'Bicycle',
                 'misc_cargo': 'Varied Load',
                 
                 # Finish Trip Screen
@@ -153,7 +154,7 @@ class Translations:
                 # Statistics Screen
                 'statistics_today': 'Estadísticas de Hoy',
                 'number_of_trips': 'Número de Viajes',
-                'miles_driven': 'Millas Conducidas',
+                'miles_driven': 'Kilómetros Conducidos',
                 'estimated_gas': 'Uso Total Estimado de Gasolina',
                 'total_time': 'Tiempo Total de Conducción',
                 'time_between': 'Tiempo Entre Viajes',
@@ -161,7 +162,7 @@ class Translations:
                 'no_data_available': 'No Hay Datos Disponibles',
                 'connection_required': 'Se Requiere Conexión',
                 'trips': 'Viajes',
-                'miles': 'Millas',
+                'miles': 'Kilómetros',
                 'gallons': 'Galones',
                 'hours_minutes_seconds': '{} Horas, {} Minutos, {} Segundos',
                 'hours': 'Horas',
@@ -175,16 +176,16 @@ class Translations:
                 
                 # Destination Screen
                 'where_going': '¿A dónde va?',
-                'the_highlands': 'Tierras Altas',
+                'the_highlands': 'Parte Alta',
                 'puerto_ayora': 'Puerto Ayora',
                 'airport': 'Aeropuerto',
                 'other': 'Otro',
                 
                 # People Screen
                 'who_driving': '¿A quién está transportando?',
-                'students': 'Estudiante',
-                'tourist': 'Turista',
-                'locals': 'Local',
+                'students': 'Estudiantes',
+                'tourist': 'Turistas',
+                'locals': 'Población Locales',
                 
                 # Passenger Count Screen
                 'passenger_count': '¿Número de Pasajeros?',
@@ -199,6 +200,7 @@ class Translations:
                 'luggage': 'Equipaje',
                 'work_equipment': 'Equipo de Trabajo',
                 'food_goods': 'Comida y Productos',
+                'bicycles': 'Bicicleta',
                 'misc_cargo': 'Carga Variada',
                 
                 # Finish Trip Screen

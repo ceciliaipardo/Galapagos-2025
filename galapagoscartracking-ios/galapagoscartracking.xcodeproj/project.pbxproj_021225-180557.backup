@@ -1,0 +1,531 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01532DAA137C099F0076F6BF /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 01532DA9137C099F0076F6BF /* icon.png */; };
+		07DE4E5F81849752061FD792 /* libpyobjus.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CDEB46648FEB4CFEC9F44030 /* libpyobjus.xcframework */; };
+		1BF24863977968A369640CDD /* libffi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1694B3EAC23E6454722497E /* libffi.xcframework */; };
+		220744849061456B3F8FE6BF /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DF624D6DB57B0A9E13569C15 /* libz.tbd */; };
+		2CB5F34717D5233A006187AB /* bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CB5F34617D5233A006187AB /* bridge.m */; };
+		366346898BF4CEFBD7D31BA2 /* libios.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB0C493EAF411830ED974128 /* libios.xcframework */; };
+		3CB6F45827D6344B007297BC /* SDL_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CB6F45727D6344B007297BC /* SDL_main.m */; };
+		42624F0EA65BD0C7B978630F /* libpillow.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E5B4EA5A2DBD38F1D877344 /* libpillow.xcframework */; };
+		4836420093E55B54746EA0F8 /* libjpeg.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC14FC1A07ABE8878B6388F /* libjpeg.xcframework */; };
+		59738AB51A8BB5D8001B2C0C /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 59738AB41A8BB5D8001B2C0C /* lib */; };
+		59738ABB1A8E19AA001B2C0C /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 59738ABA1A8E19AA001B2C0C /* Images.xcassets */; };
+		59994E3B148E85C800863906 /* YourApp in Resources */ = {isa = PBXBuildFile; fileRef = 59994E3A148E85C800863906 /* YourApp */; };
+		59FDEA8B21E7D34E004E6ECE /* include in Resources */ = {isa = PBXBuildFile; fileRef = 59FDEA8A21E7D34E004E6ECE /* include */; };
+		8BA9493E86221F5A91B91D6C /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7764FF1B1E190842C80755E /* WebKit.framework */; };
+		95D44A17AA97B7E89589FE30 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB85486C88913D136F9E4CC6 /* libbz2.tbd */; };
+		A1B2C3D4E5F6789012345678 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6789012345679AA /* CoreMotion.framework */; };
+		AC5106F52959EE4E00655416 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AC5106F42959EE4E00655416 /* Launch Screen.storyboard */; };
+		AC5B4EEEBC6446DE9A4B66AF /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD844B6DA252E19B15A64D30 /* MessageUI.framework */; };
+		C43749B298A281ECF6223A4E /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 011E458B8D9A14C9BE8E614B /* libsqlite3.tbd */; };
+		C6E54D04988776F4FE69F024 /* libpython3.11.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C0439AA9E3FA044225624A /* libpython3.11.xcframework */; };
+		D5EF469C9D53DB656310EEC5 /* libcrypto.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EC4543DF82BA1AB311AC56F4 /* libcrypto.xcframework */; };
+		E6084E37A02053A027C77C58 /* libfreetype.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F54B1A9CC1EA43F6CCE310 /* libfreetype.xcframework */; };
+		F2E14ACE94EF815B814FAC01 /* libssl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A24B589392683D7D550854 /* libssl.xcframework */; };
+		FA5B42F380D768F572EA8087 /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA2B47C8B8401CBE50063CA4 /* Photos.framework */; };
+		'K1V2Y3U4I5O6P7A8S9D0F1G2' = {isa = PBXBuildFile; fileRef = H3J4K5L6M7N8O9P0Q1R2S3T4; };
+		'M1C2O3R4E5S6E7R8V9I0C1E2' = {isa = PBXBuildFile; fileRef = S3E4R5V6I7C8E9S0M1O2B3I4; };
+		'P1Q2R3S4T5U6V7W8X9Y0Z1A2' = {isa = PBXBuildFile; fileRef = A3B4C5D6E7F8G9H0I1J2K3L4; };
+		'P2Q3R4S5T6U7V8W9X0Y1Z2A3' = {isa = PBXBuildFile; fileRef = A4B5C6D7E8F9G0H1I2J3K4L5; };
+		'P3Q4R5S6T7U8V9W0X1Y2Z3A4' = {isa = PBXBuildFile; fileRef = A5B6C7D8E9F0G1H2I3J4K5L6; };
+		'P4Q5R6S7T8U9V0W1X2Y3Z4A5' = {isa = PBXBuildFile; fileRef = A6B7C8D9E0F1G2H3I4J5K6L7; };
+		'P5Q6R7S8T9U0V1W2X3Y4Z5A6' = {isa = PBXBuildFile; fileRef = A7B8C9D0E1F2G3H4I5J6K7L8; };
+		'P6Q7R8S9T0U1V2W3X4Y5Z6A7' = {isa = PBXBuildFile; fileRef = A8B9C0D1E2F3G4H5I6J7K8L9; };
+		'P7Q8R9S0T1U2V3W4X5Y6Z7A8' = {isa = PBXBuildFile; fileRef = A9B0C1D2E3F4G5H6I7J8K9L0; };
+		'Q1W2E3R4T5Y6U7I8O9P0A1S2' = {isa = PBXBuildFile; fileRef = S3D4F5G6H7J8K9L0Z1X2C3V4; };
+		'Q2W3E4R5T6Y7U8I9O0P1A2S3' = {isa = PBXBuildFile; fileRef = S4D5F6G7H8J9K0L1Z2X3C4V5; };
+		'Q3W4E5R6T7Y8U9I0O1P2A3S4' = {isa = PBXBuildFile; fileRef = S5D6F7G8H9J0K1L2Z3X4C5V6; };
+		'Q4W5E6R7T8Y9U0I1O2P3A4S5' = {isa = PBXBuildFile; fileRef = S6D7F8G9H0J1K2L3Z4X5C6V7; };
+		'Q5W6E7R8T9Y0U1I2O3P4A5S6' = {isa = PBXBuildFile; fileRef = S7D8F9G0H1J2K3L4Z5X6C7V8; };
+		'Q6W7E8R9T0Y1U2I3O4P5A6S7' = {isa = PBXBuildFile; fileRef = S8D9F0G1H2J3K4L5Z6X7C8V9; };
+		'Q8W9E0R1T2Y3U4I5O6P7A8S9' = {isa = PBXBuildFile; fileRef = V1B2N3M4A5S6D7F8G9H0J1K2; };
+		'Z1Y2X3W4V5U6T7S8R9Q0P1O2' = {isa = PBXBuildFile; fileRef = O3N4M5L6K7J8I9H0G1F2E3D4; };
+		'Z2Y3X4W5V6U7T8S9R0Q1P2O3' = {isa = PBXBuildFile; fileRef = O4N5M6L7K8J9I0H1G2F3E4D5; };
+		'Z3Y4X5W6V7U8T9S0R1Q2P3O4' = {isa = PBXBuildFile; fileRef = O5N6M7L8K9J0I1H2G3F4E5D6; };
+		'Z4Y5X6W7V8U9T0S1R2Q3P4O5' = {isa = PBXBuildFile; fileRef = O6N7M8L9K0J1I2H3G4F5E6D7; };
+		'Z5Y6X7W8V9U0T1S2R3Q4P5O6' = {isa = PBXBuildFile; fileRef = O7N8M9L0K1J2I3H4G5F6E7D8; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		011E458B8D9A14C9BE8E614B /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; path = libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
+		01532DA9137C099F0076F6BF /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
+		1D6058910D05DD3D006BFB54 /* galapagoscartracking.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = galapagoscartracking.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		2CB5F34517D5233A006187AB /* bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bridge.h; sourceTree = SOURCE_ROOT; };
+		2CB5F34617D5233A006187AB /* bridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = bridge.m; sourceTree = SOURCE_ROOT; };
+		3CB6F45727D6344B007297BC /* SDL_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_main.m; sourceTree = SOURCE_ROOT; };
+		50C0439AA9E3FA044225624A /* libpython3.11.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libpython3.11.xcframework; path = ../dist/xcframework/libpython3.11.xcframework; sourceTree = SOURCE_ROOT; };
+		59738AB41A8BB5D8001B2C0C /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/lib"; sourceTree = "<group>"; };
+		59738ABA1A8E19AA001B2C0C /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = galapagoscartracking/Images.xcassets; sourceTree = "<group>"; };
+		59994E3A148E85C800863906 /* YourApp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = YourApp; sourceTree = "<group>"; };
+		59FDEA8A21E7D34E004E6ECE /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include"; sourceTree = "<group>"; };
+		5E5B4EA5A2DBD38F1D877344 /* libpillow.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libpillow.xcframework; path = ../dist/xcframework/libpillow.xcframework; sourceTree = SOURCE_ROOT; };
+		84F54B1A9CC1EA43F6CCE310 /* libfreetype.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libfreetype.xcframework; path = ../dist/xcframework/libfreetype.xcframework; sourceTree = SOURCE_ROOT; };
+		8D1107310486CEB800E47090 /* galapagoscartracking-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "galapagoscartracking-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		8DC14FC1A07ABE8878B6388F /* libjpeg.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libjpeg.xcframework; path = ../dist/xcframework/libjpeg.xcframework; sourceTree = SOURCE_ROOT; };
+		'A3B4C5D6E7F8G9H0I1J2K3L4' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		'A4B5C6D7E8F9G0H1I2J3K4L5' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		'A5B6C7D8E9F0G1H2I3J4K5L6' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		'A6B7C8D9E0F1G2H3I4J5K6L7' = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libSDL2.xcframework; path = ../dist/xcframework/libSDL2.xcframework; sourceTree = SOURCE_ROOT; };
+		'A7B8C9D0E1F2G3H4I5J6K7L8' = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libSDL2_image.xcframework; path = ../dist/xcframework/libSDL2_image.xcframework; sourceTree = SOURCE_ROOT; };
+		'A8B9C0D1E2F3G4H5I6J7K8L9' = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libSDL2_mixer.xcframework; path = ../dist/xcframework/libSDL2_mixer.xcframework; sourceTree = SOURCE_ROOT; };
+		'A9B0C1D2E3F4G5H6I7J8K9L0' = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libSDL2_ttf.xcframework; path = ../dist/xcframework/libSDL2_ttf.xcframework; sourceTree = SOURCE_ROOT; };
+		AC5106F42959EE4E00655416 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = "Launch Screen.storyboard"; path = "Storyboards/Launch Screen.storyboard"; sourceTree = "<group>"; };
+		B2C3D4E5F6789012345679AA /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		C0A24B589392683D7D550854 /* libssl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libssl.xcframework; path = ../dist/xcframework/libssl.xcframework; sourceTree = SOURCE_ROOT; };
+		C7764FF1B1E190842C80755E /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = WebKit.framework; sourceTree = DEVELOPER_DIR; };
+		CDEB46648FEB4CFEC9F44030 /* libpyobjus.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libpyobjus.xcframework; path = ../dist/xcframework/libpyobjus.xcframework; sourceTree = SOURCE_ROOT; };
+		DF624D6DB57B0A9E13569C15 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; path = libz.tbd; sourceTree = DEVELOPER_DIR; };
+		E1694B3EAC23E6454722497E /* libffi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libffi.xcframework; path = ../dist/xcframework/libffi.xcframework; sourceTree = SOURCE_ROOT; };
+		EA2B47C8B8401CBE50063CA4 /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = Photos.framework; sourceTree = DEVELOPER_DIR; };
+		EB0C493EAF411830ED974128 /* libios.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libios.xcframework; path = ../dist/xcframework/libios.xcframework; sourceTree = SOURCE_ROOT; };
+		EC4543DF82BA1AB311AC56F4 /* libcrypto.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libcrypto.xcframework; path = ../dist/xcframework/libcrypto.xcframework; sourceTree = SOURCE_ROOT; };
+		FB85486C88913D136F9E4CC6 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; path = libbz2.tbd; sourceTree = DEVELOPER_DIR; };
+		FD844B6DA252E19B15A64D30 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = MessageUI.framework; sourceTree = DEVELOPER_DIR; };
+		'H3J4K5L6M7N8O9P0Q1R2S3T4' = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libkivy.xcframework; path = ../dist/xcframework/libkivy.xcframework; sourceTree = SOURCE_ROOT; };
+		'O3N4M5L6K7J8I9H0G1F2E3D4' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		'O4N5M6L7K8J9I0H1G2F3E4D5' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		'O5N6M7L8K9J0I1H2G3F4E5D6' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		'O6N7M8L9K0J1I2H3G4F5E6D7' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		'O7N8M9L0K1J2I3H4G5F6E7D8' = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		'S3D4F5G6H7J8K9L0Z1X2C3V4' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		'S3E4R5V6I7C8E9S0M1O2B3I4' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		'S4D5F6G7H8J9K0L1Z2X3C4V5' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		'S5D6F7G8H9J0K1L2Z3X4C5V6' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
+		'S6D7F8G9H0J1K2L3Z4X5C6V7' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
+		'S7D8F9G0H1J2K3L4Z5X6C7V8' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		'S8D9F0G1H2J3K4L5Z6X7C8V9' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		'S9D0F1G2H3J4K5L6Z7X8C9V0' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
+		'V1B2N3M4A5S6D7F8G9H0J1K2' = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libpng16.xcframework; path = ../dist/xcframework/libpng16.xcframework; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D60588F0D05DD3D006BFB54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95D44A17AA97B7E89589FE30 /* libbz2.tbd in Frameworks */,
+				220744849061456B3F8FE6BF /* libz.tbd in Frameworks */,
+				C43749B298A281ECF6223A4E /* libsqlite3.tbd in Frameworks */,
+				C6E54D04988776F4FE69F024 /* libpython3.11.xcframework in Frameworks */,
+				F2E14ACE94EF815B814FAC01 /* libssl.xcframework in Frameworks */,
+				D5EF469C9D53DB656310EEC5 /* libcrypto.xcframework in Frameworks */,
+				1BF24863977968A369640CDD /* libffi.xcframework in Frameworks */,
+				A1B2C3D4E5F6789012345678 /* CoreMotion.framework in Frameworks */,
+				K1V2Y3U4I5O6P7A8S9D0F1G2,
+				Z1Y2X3W4V5U6T7S8R9Q0P1O2,
+				Z2Y3X4W5V6U7T8S9R0Q1P2O3,
+				Z3Y4X5W6V7U8T9S0R1Q2P3O4,
+				Z4Y5X6W7V8U9T0S1R2Q3P4O5,
+				Z5Y6X7W8V9U0T1S2R3Q4P5O6,
+				P1Q2R3S4T5U6V7W8X9Y0Z1A2,
+				P2Q3R4S5T6U7V8W9X0Y1Z2A3,
+				P3Q4R5S6T7U8V9W0X1Y2Z3A4,
+				P4Q5R6S7T8U9V0W1X2Y3Z4A5,
+				P5Q6R7S8T9U0V1W2X3Y4Z5A6,
+				P6Q7R8S9T0U1V2W3X4Y5Z6A7,
+				P7Q8R9S0T1U2V3W4X5Y6Z7A8,
+				Q1W2E3R4T5Y6U7I8O9P0A1S2,
+				Q2W3E4R5T6Y7U8I9O0P1A2S3,
+				Q3W4E5R6T7Y8U9I0O1P2A3S4,
+				Q4W5E6R7T8Y9U0I1O2P3A4S5,
+				Q5W6E7R8T9Y0U1I2O3P4A5S6,
+				Q6W7E8R9T0Y1U2I3O4P5A6S7,
+				Q8W9E0R1T2Y3U4I5O6P7A8S9,
+				M1C2O3R4E5S6E7R8V9I0C1E2,
+				FA5B42F380D768F572EA8087 /* Photos.framework in Frameworks */,
+				8BA9493E86221F5A91B91D6C /* WebKit.framework in Frameworks */,
+				AC5B4EEEBC6446DE9A4B66AF /* MessageUI.framework in Frameworks */,
+				42624F0EA65BD0C7B978630F /* libpillow.xcframework in Frameworks */,
+				07DE4E5F81849752061FD792 /* libpyobjus.xcframework in Frameworks */,
+				4836420093E55B54746EA0F8 /* libjpeg.xcframework in Frameworks */,
+				E6084E37A02053A027C77C58 /* libfreetype.xcframework in Frameworks */,
+				366346898BF4CEFBD7D31BA2 /* libios.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				2CB5F34517D5233A006187AB /* bridge.h */,
+				2CB5F34617D5233A006187AB /* bridge.m */,
+				3CB6F45727D6344B007297BC /* SDL_main.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D6058910D05DD3D006BFB54 /* galapagoscartracking.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
+			isa = PBXGroup;
+			children = (
+				AC5106F32959EE3800655416 /* Storyboards */,
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = CustomTemplate;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				29B97316FDCFA39411CA2CEA /* main.m */,
+				59994E3A148E85C800863906 /* YourApp */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				59738ABA1A8E19AA001B2C0C /* Images.xcassets */,
+				59738AB41A8BB5D8001B2C0C /* lib */,
+				59FDEA8A21E7D34E004E6ECE /* include */,
+				01532DA9137C099F0076F6BF /* icon.png */,
+				8D1107310486CEB800E47090 /* galapagoscartracking-Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FB85486C88913D136F9E4CC6 /* libbz2.tbd */,
+				DF624D6DB57B0A9E13569C15 /* libz.tbd */,
+				011E458B8D9A14C9BE8E614B /* libsqlite3.tbd */,
+				50C0439AA9E3FA044225624A /* libpython3.11.xcframework */,
+				C0A24B589392683D7D550854 /* libssl.xcframework */,
+				EC4543DF82BA1AB311AC56F4 /* libcrypto.xcframework */,
+				E1694B3EAC23E6454722497E /* libffi.xcframework */,
+				B2C3D4E5F6789012345679AA /* CoreMotion.framework */,
+				H3J4K5L6M7N8O9P0Q1R2S3T4,
+				O3N4M5L6K7J8I9H0G1F2E3D4,
+				O4N5M6L7K8J9I0H1G2F3E4D5,
+				O5N6M7L8K9J0I1H2G3F4E5D6,
+				O6N7M8L9K0J1I2H3G4F5E6D7,
+				O7N8M9L0K1J2I3H4G5F6E7D8,
+				A3B4C5D6E7F8G9H0I1J2K3L4,
+				A4B5C6D7E8F9G0H1I2J3K4L5,
+				A5B6C7D8E9F0G1H2I3J4K5L6,
+				A6B7C8D9E0F1G2H3I4J5K6L7,
+				A7B8C9D0E1F2G3H4I5J6K7L8,
+				A8B9C0D1E2F3G4H5I6J7K8L9,
+				A9B0C1D2E3F4G5H6I7J8K9L0,
+				S3D4F5G6H7J8K9L0Z1X2C3V4,
+				S4D5F6G7H8J9K0L1Z2X3C4V5,
+				S5D6F7G8H9J0K1L2Z3X4C5V6,
+				S6D7F8G9H0J1K2L3Z4X5C6V7,
+				S7D8F9G0H1J2K3L4Z5X6C7V8,
+				S8D9F0G1H2J3K4L5Z6X7C8V9,
+				S9D0F1G2H3J4K5L6Z7X8C9V0,
+				S3E4R5V6I7C8E9S0M1O2B3I4,
+				V1B2N3M4A5S6D7F8G9H0J1K2,
+				EA2B47C8B8401CBE50063CA4 /* Photos.framework */,
+				C7764FF1B1E190842C80755E /* WebKit.framework */,
+				FD844B6DA252E19B15A64D30 /* MessageUI.framework */,
+				5E5B4EA5A2DBD38F1D877344 /* libpillow.xcframework */,
+				CDEB46648FEB4CFEC9F44030 /* libpyobjus.xcframework */,
+				8DC14FC1A07ABE8878B6388F /* libjpeg.xcframework */,
+				84F54B1A9CC1EA43F6CCE310 /* libfreetype.xcframework */,
+				EB0C493EAF411830ED974128 /* libios.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AC5106F32959EE3800655416 /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				AC5106F42959EE4E00655416 /* Launch Screen.storyboard */,
+			);
+			name = Storyboards;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D6058900D05DD3D006BFB54 /* GalapaGo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "GalapaGo" */;
+			buildPhases = (
+				113D17E2153E3DB5001310A5 /* ShellScript */,
+				113D17E2153E3DB5001310A6 /* ShellScript */,
+				113D17E2153E3DB5001310A7 /* ShellScript */,
+				1D60588D0D05DD3D006BFB54 /* Resources */,
+				1D60588E0D05DD3D006BFB54 /* Sources */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GalapaGo;
+			productName = galapagoscartracking;
+			productReference = 1D6058910D05DD3D006BFB54 /* galapagoscartracking.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "GalapaGo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D6058900D05DD3D006BFB54 /* GalapaGo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1D60588D0D05DD3D006BFB54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				59738AB51A8BB5D8001B2C0C /* lib in Resources */,
+				AC5106F52959EE4E00655416 /* Launch Screen.storyboard in Resources */,
+				59FDEA8B21E7D34E004E6ECE /* include in Resources */,
+				59738ABB1A8E19AA001B2C0C /* Images.xcassets in Resources */,
+				01532DAA137C099F0076F6BF /* icon.png in Resources */,
+				59994E3B148E85C800863906 /* YourApp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		113D17E2153E3DB5001310A5 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 12;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "# Copy only necessary app files\nrsync -av --delete \\\n  --exclude='kivy-ios' \\\n  --exclude='build' \\\n  --exclude='dist' \\\n  --exclude='.git' \\\n  --exclude='.venv' \\\n  --exclude='__pycache__' \\\n  --exclude='*.pyc' \\\n  --exclude='galapagoscartracking-ios' \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.py \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.kv \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.ttf \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.png \\\n  \"$PROJECT_DIR\"/YourApp/ 2>/dev/null || true";
+		};
+		113D17E2153E3DB5001310A6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 12;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/hostpython3/bin/python -m compileall -f -b \"$PROJECT_DIR\"/YourApp";
+		};
+		113D17E2153E3DB5001310A7 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 12;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "# Keep .py files for Python 3.11 imports\n# find \"$PROJECT_DIR\"/YourApp/ -regex '.*\\.py' -delete";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D60588E0D05DD3D006BFB54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2CB5F34717D5233A006187AB /* bridge.m in Sources */,
+				3CB6F45827D6344B007297BC /* SDL_main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1D6058940D05DD3E006BFB54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = VQR94PRZ3W;
+				EXCLUDED_ARCHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/frameworks",
+					"$(SRCROOT)/../dist/xcframework",
+					"$(inherited)",
+				);
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include/python3.11/**",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/include/common/sdl2",
+				);
+				INFOPLIST_FILE = "galapagoscartracking-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/lib",
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"-weak_framework",
+					UniformTypeIdentifiers,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.kivy.galapagoscartracking;
+				PRODUCT_NAME = galapagoscartracking;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1D6058950D05DD3E006BFB54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_RESOURCE_RULES_PATH = "$(SDKROOT)/ResourceRules.plist";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = VQR94PRZ3W;
+				EXCLUDED_ARCHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/frameworks",
+					"$(SRCROOT)/../dist/xcframework",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include/python3.11/**",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/include/common/sdl2",
+				);
+				INFOPLIST_FILE = "galapagoscartracking-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/lib",
+				);
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"-weak_framework",
+					UniformTypeIdentifiers,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.kivy.galapagoscartracking;
+				PRODUCT_NAME = galapagoscartracking;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = NO;
+				STRIP_INSTALLED_PRODUCT = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				DEAD_CODE_STRIPPING = NO;
+				ENABLE_BITCODE = NO;
+				USER_HEADER_SEARCH_PATHS = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/include/";
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				DEAD_CODE_STRIPPING = NO;
+				ENABLE_BITCODE = NO;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				USER_HEADER_SEARCH_PATHS = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/include/";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "GalapaGo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D6058940D05DD3E006BFB54 /* Debug */,
+				1D6058950D05DD3E006BFB54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "GalapaGo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

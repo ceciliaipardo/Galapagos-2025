@@ -322,6 +322,15 @@ def localDBCreate():
     gpslat VARCHAR(20),
     time VARCHAR(30)
    	)""")
+    cursor.execute("""CREATE TABLE if not exists dailyStats(
+	date VARCHAR(8),
+    username VARCHAR(20),
+    numTrips INTEGER,
+    totalDist REAL,
+    totalFuel REAL,
+    totalTime REAL,
+    idleTime REAL
+   	)""")
     localdb.commit()
     localdb.close()
 
@@ -418,6 +427,38 @@ def localDBRecord(tripID, company, carnum, destination, passengers, cargo, gpslo
     localdb.commit()
     localdb.close()
 
+def localDBSaveDailyStats(username, date, numTrips, totalDist, totalFuel, totalTime, idleTime):
+    """Save daily statistics to local database"""
+    try:
+        [cursor, localdb] = localDBConnect()
+        
+        # Check if stats already exist for this day
+        query = "SELECT numTrips, totalDist, totalFuel, totalTime, idleTime FROM dailyStats WHERE username = ? AND date = ?"
+        cursor.execute(query, (username, date))
+        existing = cursor.fetchone()
+        
+        if existing:
+            # Update existing record by adding to it
+            new_numTrips = int(existing[0]) + numTrips
+            new_totalDist = float(existing[1]) + totalDist
+            new_totalFuel = float(existing[2]) + totalFuel
+            new_totalTime = float(existing[3]) + totalTime.total_seconds()
+            new_idleTime = float(existing[4]) + idleTime.total_seconds()
+            
+            query = "UPDATE dailyStats SET numTrips = ?, totalDist = ?, totalFuel = ?, totalTime = ?, idleTime = ? WHERE username = ? AND date = ?"
+            cursor.execute(query, (new_numTrips, new_totalDist, new_totalFuel, new_totalTime, new_idleTime, username, date))
+            Logger.info(f"Updated daily stats for {date}: {new_numTrips} trips, {new_totalDist:.2f} km")
+        else:
+            # Insert new record
+            query = "INSERT INTO dailyStats (date, username, numTrips, totalDist, totalFuel, totalTime, idleTime) VALUES (?, ?, ?, ?, ?, ?, ?)"
+            cursor.execute(query, (date, username, numTrips, totalDist, totalFuel, totalTime.total_seconds(), idleTime.total_seconds()))
+            Logger.info(f"Saved daily stats for {date}: {numTrips} trips, {totalDist:.2f} km")
+        
+        localdb.commit()
+        localdb.close()
+    except Exception as e:
+        Logger.error(f"Error saving daily stats: {e}")
+
 def localDBDumptoServer():
     """Upload completed trip summaries to Supabase (streamlined version)"""
     successfully_uploaded = []
@@ -430,6 +471,9 @@ def localDBDumptoServer():
         completed_trips = cursor.fetchall()
         
         Logger.info(f"Found {len(completed_trips)} completed trips to upload")
+        
+        # Group trips by date for daily stats calculation
+        trips_by_date = {}
         
         for trip_row in completed_trips:
             upload_success = False
@@ -516,6 +560,14 @@ def localDBDumptoServer():
                 
                 Logger.info(f"Uploading trip {tripID}: {distance_km}km, {duration_seconds}s, {fuel_gallons}gal")
                 
+                # Extract date from tripID for daily stats grouping
+                import re
+                match = re.search(r'(\d{8})', tripID)
+                if match:
+                    trip_date = match.group(1)
+                else:
+                    trip_date = datetime.now().strftime("%Y%m%d")
+                
                 # Upload to Supabase - this will raise an exception if it fails
                 try:
                     DBUploadTripSummary(
@@ -537,6 +589,30 @@ def localDBDumptoServer():
                     upload_success = True
                     successfully_uploaded.append(tripID)
                     Logger.info(f"✅ Successfully uploaded trip {tripID}")
+                    
+                    # Track trip for daily stats
+                    if trip_date not in trips_by_date:
+                        trips_by_date[trip_date] = {
+                            'username': username,
+                            'trips': [],
+                            'numTrips': 0,
+                            'totalDist': 0,
+                            'totalFuel': 0,
+                            'totalTime': timedelta(),
+                            'earliest_start': None,
+                            'latest_end': None
+                        }
+                    
+                    trips_by_date[trip_date]['numTrips'] += 1
+                    trips_by_date[trip_date]['totalDist'] += distance_km
+                    trips_by_date[trip_date]['totalFuel'] += fuel_gallons
+                    trips_by_date[trip_date]['totalTime'] += timedelta(seconds=duration_seconds)
+                    
+                    if not trips_by_date[trip_date]['earliest_start'] or start_time < trips_by_date[trip_date]['earliest_start']:
+                        trips_by_date[trip_date]['earliest_start'] = start_time
+                    if not trips_by_date[trip_date]['latest_end'] or end_time > trips_by_date[trip_date]['latest_end']:
+                        trips_by_date[trip_date]['latest_end'] = end_time
+                    
                 except Exception as upload_error:
                     Logger.error(f"❌ Failed to upload trip {tripID}: {upload_error}")
                     # Don't add to successfully_uploaded list
@@ -546,6 +622,31 @@ def localDBDumptoServer():
                 import traceback
                 Logger.error(traceback.format_exc())
                 continue
+        
+        # Save daily stats before clearing trips
+        for date, day_data in trips_by_date.items():
+            try:
+                # Calculate idle time
+                if day_data['earliest_start'] and day_data['latest_end']:
+                    working_time = day_data['latest_end'] - day_data['earliest_start']
+                    idleTime = working_time - day_data['totalTime']
+                    if idleTime.total_seconds() < 0:
+                        idleTime = timedelta()
+                else:
+                    idleTime = timedelta()
+                
+                # Save to local database
+                localDBSaveDailyStats(
+                    username=day_data['username'],
+                    date=date,
+                    numTrips=day_data['numTrips'],
+                    totalDist=day_data['totalDist'],
+                    totalFuel=day_data['totalFuel'],
+                    totalTime=day_data['totalTime'],
+                    idleTime=idleTime
+                )
+            except Exception as e:
+                Logger.error(f"Error saving daily stats for {date}: {e}")
         
         # Only clear trips that were successfully uploaded
         if successfully_uploaded:
@@ -625,9 +726,16 @@ def localDBGetTripStats(tripID):
     return ["No Data", "No Data", 0, timedelta(), 0]
 
 def localDBGetDayStats(username, date):
-    """Get day statistics from local database"""
-    dayID = "{}{}".format(username, date)
+    """Get day statistics from local database - checks saved stats first, then live trip data"""
     [cursor, localdb] = localDBConnect()
+    
+    # First check if we have saved stats for this day
+    query = "SELECT numTrips, totalDist, totalFuel, totalTime, idleTime FROM dailyStats WHERE username = ? AND date = ?"
+    cursor.execute(query, (username, date))
+    saved_stats = cursor.fetchone()
+    
+    # Also calculate current live trip stats for today
+    dayID = "{}{}".format(username, date)
     query = "SELECT passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel,time FROM tripData WHERE destinationXstatus = 'End Trip' AND tripID LIKE ?"
     cursor.execute(query, (f"%{dayID}%",))
     trips = cursor.fetchall()
@@ -636,6 +744,8 @@ def localDBGetDayStats(username, date):
     totalDist = 0
     totalTime = timedelta()
     totalFuel = 0
+    endTime = None
+    dayStart = None
     
     for row in trips:
         numTrips += 1
@@ -652,11 +762,23 @@ def localDBGetDayStats(username, date):
         start_result = cursor.fetchone()
         if start_result:
             dayStart = datetime.strptime(str(start_result[0]),'%Y-%m-%d %H:%M:%S.%f')
-            idleTime = endTime - dayStart - totalTime
+            idleTime = endTime - dayStart - totalTime if endTime else timedelta()
         else:
             idleTime = timedelta()
     else:
         idleTime = timedelta()
+    
+    # Combine saved stats with live stats
+    if saved_stats:
+        # Add saved stats to current live stats
+        numTrips += int(saved_stats[0])
+        totalDist += float(saved_stats[1])
+        totalFuel += float(saved_stats[2])
+        saved_time_seconds = float(saved_stats[3])
+        totalTime = totalTime + timedelta(seconds=saved_time_seconds)
+        saved_idle_seconds = float(saved_stats[4])
+        idleTime = idleTime + timedelta(seconds=saved_idle_seconds)
+        Logger.info(f"Combined saved stats with {numTrips - int(saved_stats[0])} new trips")
     
     localdb.close()
     return [numTrips, totalDist, totalFuel, totalTime, idleTime]
@@ -849,33 +971,30 @@ class HomeStatsPage(Screen):
                 elif 'Time Spent Between Trips' in widget.text or 'Tiempo Entre Viajes' in widget.text:
                     widget.text = translator.get_text('time_between')
         
-        # Now update data values
-        if(DBCheckConnection()):
-            try:
-                statistics = DBGetDayStats(currentUser, datetime.today().strftime("%Y%m%d"))
-                self.ids.NumberOfTrips.text = "{} {}".format(statistics[0], translator.get_text('trips'))
-                self.ids.MilesDriven.text = "{} {}".format(statistics[1], translator.get_text('miles'))
-                self.ids.EstimatedGas.text = "{} {}".format(statistics[2], translator.get_text('gallons'))
-                hours = int(statistics[3].seconds/3600)
-                minutes = int((statistics[3].seconds-hours*3600)/60)
-                seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
-                self.ids.TotalTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
-                hours = int(statistics[4].seconds/3600)
-                minutes = int((statistics[4].seconds-hours*3600)/60)
-                seconds = int(statistics[4].seconds - hours*3600 - minutes*60)
-                self.ids.TimeBetween.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
-            except:
-                self.ids.NumberOfTrips.text = translator.get_text('no_data_available')
-                self.ids.MilesDriven.text = translator.get_text('no_data_available')
-                self.ids.EstimatedGas.text = translator.get_text('no_data_available')
-                self.ids.TotalTime.text = translator.get_text('no_data_available')
-                self.ids.TimeBetween.text = translator.get_text('no_data_available')
-        else:
-            self.ids.NumberOfTrips.text = translator.get_text('connection_required')
-            self.ids.MilesDriven.text = translator.get_text('connection_required')
-            self.ids.EstimatedGas.text = translator.get_text('connection_required')
-            self.ids.TotalTime.text = translator.get_text('connection_required')
-            self.ids.TimeBetween.text = translator.get_text('connection_required')
+        # Now update data values - use local storage first
+        try:
+            # Always use local database for stats (includes saved + live trips)
+            statistics = localDBGetDayStats(currentUser, datetime.today().strftime("%Y%m%d"))
+            self.ids.NumberOfTrips.text = "{} {}".format(statistics[0], translator.get_text('trips'))
+            self.ids.MilesDriven.text = "{:.2f} {}".format(statistics[1], translator.get_text('miles'))
+            self.ids.EstimatedGas.text = "{:.2f} {}".format(statistics[2], translator.get_text('gallons'))
+            hours = int(statistics[3].seconds/3600)
+            minutes = int((statistics[3].seconds-hours*3600)/60)
+            seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
+            self.ids.TotalTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
+            hours = int(statistics[4].seconds/3600)
+            minutes = int((statistics[4].seconds-hours*3600)/60)
+            seconds = int(statistics[4].seconds - hours*3600 - minutes*60)
+            self.ids.TimeBetween.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
+            
+            Logger.info(f"Loaded stats from local storage: {statistics[0]} trips, {statistics[1]:.2f} km")
+        except Exception as e:
+            Logger.error(f"Error loading stats: {e}")
+            self.ids.NumberOfTrips.text = translator.get_text('no_data_available')
+            self.ids.MilesDriven.text = translator.get_text('no_data_available')
+            self.ids.EstimatedGas.text = translator.get_text('no_data_available')
+            self.ids.TotalTime.text = translator.get_text('no_data_available')
+            self.ids.TimeBetween.text = translator.get_text('no_data_available')
 
 class Register1(Screen):
     def on_pre_enter(self):

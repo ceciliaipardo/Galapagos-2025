@@ -382,7 +382,7 @@ def getTripDistance(tripID):
             dlon = lon2 - lon1
             a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
             c = 2 * atan2(sqrt(a), sqrt(1 - a))
-            R = 3958.8 # radius of earth in miles
+            R = 6371.0 # radius of earth in kilometers
             d = R * c
             if(d >= (minMph*checkFrequency/3600)): # prevents movements smaller than minMph average speed to not be recorded 
                 totalDist += d
@@ -582,9 +582,36 @@ class PassengerCount(Screen):
         currentPass = ''
 
 class Cargo(Screen):
-    def setCargo(self, cargo):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.selected_cargo = []
+    
+    def on_pre_enter(self):
+        # Reset all checkboxes
+        self.selected_cargo = []
+        if hasattr(self, 'ids'):
+            self.ids.luggage_check.active = False
+            self.ids.bike_check.active = False
+            self.ids.work_check.active = False
+            self.ids.food_check.active = False
+            self.ids.misc_check.active = False
+    
+    def on_cargo_checkbox(self, checkbox, value, cargo_type):
+        if value:
+            if cargo_type not in self.selected_cargo:
+                self.selected_cargo.append(cargo_type)
+        else:
+            if cargo_type in self.selected_cargo:
+                self.selected_cargo.remove(cargo_type)
+    
+    def proceed_to_next(self):
         global currentCargo
-        currentCargo = cargo
+        if self.selected_cargo:
+            currentCargo = ', '.join(self.selected_cargo)
+        else:
+            currentCargo = 'None'
+        self.manager.current = "FinishTrip"
+        self.manager.transition.direction = "up"
         
     def clearPassengerCount(self):
         global currentPass

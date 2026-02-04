@@ -885,136 +885,196 @@ WindowManager:
         BoxLayout:
             orientation: 'vertical'
             padding: ['20dp', '100dp', '20dp', '25dp']
-            spacing: '15dp'
+            spacing: '12dp'
 
             Label:
                 text: app.translator.get_text('what_cargo')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '26sp'
                 color: 0.1, 0.1, 0.1, 1
-                size_hint_y: 0.1
+                size_hint_y: None
+                height: '40dp'
                 halign: 'center'
 
             Widget:
-                size_hint_y: 0.02
+                size_hint_y: None
+                height: '10dp'
 
-            Button:
-                text: app.translator.get_text('luggage')
-                font_name: 'CaviarDreams_Bold.ttf'
-                font_size: '19sp'
-                size_hint_y: 0.11
-                halign: 'center'
-                valign: 'middle'
-                text_size: self.size
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                color: 1, 1, 1, 1
+            # Luggage
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: '60dp'
+                spacing: '15dp'
+                padding: ['10dp', '5dp']
                 canvas.before:
                     Color:
                         rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): luggage_check.active = not luggage_check.active
+                CheckBox:
+                    id: luggage_check
+                    size_hint_x: None
+                    width: '50dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Luggage')
+                Label:
+                    text: app.translator.get_text('luggage')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Bike
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: '60dp'
+                spacing: '15dp'
+                padding: ['10dp', '5dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): bike_check.active = not bike_check.active
+                CheckBox:
+                    id: bike_check
+                    size_hint_x: None
+                    width: '50dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Bike')
+                Label:
+                    text: app.translator.get_text('bike')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Work Equipment
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: '60dp'
+                spacing: '15dp'
+                padding: ['10dp', '5dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): work_check.active = not work_check.active
+                CheckBox:
+                    id: work_check
+                    size_hint_x: None
+                    width: '50dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Work Equipment')
+                Label:
+                    text: app.translator.get_text('work_equipment')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Food and Goods
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: '60dp'
+                spacing: '15dp'
+                padding: ['10dp', '5dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): food_check.active = not food_check.active
+                CheckBox:
+                    id: food_check
+                    size_hint_x: None
+                    width: '50dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Food and Goods')
+                Label:
+                    text: app.translator.get_text('food_goods')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Miscellaneous Cargo
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: '60dp'
+                spacing: '15dp'
+                padding: ['10dp', '5dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): misc_check.active = not misc_check.active
+                CheckBox:
+                    id: misc_check
+                    size_hint_x: None
+                    width: '50dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Miscellaneous Cargo')
+                Label:
+                    text: app.translator.get_text('misc_cargo')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+            Widget:
+                size_hint_y: 0.1
+
+            # Next Button
+            Button:
+                text: app.translator.get_text('next')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '20sp'
+                size_hint_y: None
+                height: '65dp'
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 0.4, 0.4, 0.4, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.92, 0.92, 0.92, 1
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
                         radius: [12, 12, 12, 12]
                 on_release:
-                    root.setCargo('Luggage')
-                    app.root.current = "FinishTrip"
-                    root.manager.transition.direction = "up"
-
-            Button:
-                text: app.translator.get_text('bike')
-                font_name: 'CaviarDreams_Bold.ttf'
-                font_size: '19sp'
-                size_hint_y: 0.11
-                halign: 'center'
-                valign: 'middle'
-                text_size: self.size
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                color: 1, 1, 1, 1
-                canvas.before:
-                    Color:
-                        rgba: 0.05, 0.05, 0.05, 1
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [10, 10, 10, 10]
-                on_release:
-                    root.setCargo('Bike')
-                    app.root.current = "FinishTrip"
-                    root.manager.transition.direction = "up"
-
-            Button:
-                text: app.translator.get_text('work_equipment')
-                font_name: 'CaviarDreams_Bold.ttf'
-                font_size: '19sp'
-                size_hint_y: 0.11
-                halign: 'center'
-                valign: 'middle'
-                text_size: self.size
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                color: 1, 1, 1, 1
-                canvas.before:
-                    Color:
-                        rgba: 0.05, 0.05, 0.05, 1
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [10, 10, 10, 10]
-                on_release:
-                    root.setCargo('Work Equipment')
-                    app.root.current = "FinishTrip"
-                    root.manager.transition.direction = "up"
-
-            Button:
-                text: app.translator.get_text('food_goods')
-                font_name: 'CaviarDreams_Bold.ttf'
-                font_size: '19sp'
-                size_hint_y: 0.11
-                halign: 'center'
-                valign: 'middle'
-                text_size: self.size
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                color: 1, 1, 1, 1
-                canvas.before:
-                    Color:
-                        rgba: 0.05, 0.05, 0.05, 1
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [10, 10, 10, 10]
-                on_release:
-                    root.setCargo('Food and Goods')
-                    app.root.current = "FinishTrip"
-                    root.manager.transition.direction = "up"
-
-            Button:
-                text: app.translator.get_text('misc_cargo')
-                font_name: 'CaviarDreams_Bold.ttf'
-                font_size: '19sp'
-                size_hint_y: 0.11
-                halign: 'center'
-                valign: 'middle'
-                text_size: self.size
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                color: 1, 1, 1, 1
-                canvas.before:
-                    Color:
-                        rgba: 0.05, 0.05, 0.05, 1
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [10, 10, 10, 10]
-                on_release:
-                    root.setCargo("Miscellaneous Cargo")
-                    app.root.current = "FinishTrip"
-                    root.manager.transition.direction = "up"
+                    root.proceed_to_next()
 
             Widget:
-                size_hint_y: 0.33
+                size_hint_y: 0.05
 
 <StartTrip>:
     name: "StartTrip"

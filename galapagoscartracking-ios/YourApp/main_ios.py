@@ -199,11 +199,12 @@ def DBUploadTripSummary(tripID, username, company, carnum, destination, passenge
             'start_time': start_time.replace(microsecond=0).isoformat(),
             'end_time': end_time.replace(microsecond=0).isoformat()
         }
-        # Insert the trip summary
-        response = client.table('TripData').insert(data).execute()
+        # Insert the trip summary - HTTP client doesn't use .execute()
+        response = client.table('TripData').insert(data)
         Logger.info(f"Supabase: Uploaded trip summary for {tripID}")
     except Exception as e:
         Logger.error(f"Supabase: Error uploading trip summary - {e}")
+        raise  # Re-raise so the calling code knows it failed
 
 def DBCheckConnection():
     """Check Supabase connection"""
@@ -220,22 +221,35 @@ def DBGetDayStats(username, date):
         month = int(date[4:6])
         day = int(date[6:8])
         
-        # Create datetime objects for start and end of day in UTC
-        from datetime import datetime
-        start_date = datetime(year, month, day)
+        # Create timezone-aware datetime objects for comparison with Supabase timestamps
+        from datetime import datetime, timezone
+        start_date = datetime(year, month, day, tzinfo=timezone.utc)
         end_date = start_date + timedelta(days=1)
         
-        # Format as ISO strings with Z timezone
-        start_str = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
-        end_str = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        # Format as ISO strings
+        start_str = start_date.strftime("%Y-%m-%dT%H:%M:%S")
+        end_str = end_date.strftime("%Y-%m-%dT%H:%M:%S")
         
         client = DBConnect()
-        # Query trips for the specific user and date range
+        # Query all trips for the user and filter by date in Python
         response = client.table('TripData').select(
             "distance_km, duration_seconds, fuel_gallons, start_time, end_time"
-        ).eq('username', username).gte('start_time', start_str).lt('start_time', end_str).execute()
+        ).eq('username', username).execute()
         
-        trips = response.data
+        # Filter trips by date range in Python (use datetime comparison, not string)
+        trips = []
+        for row in response.data:
+            if row['start_time']:
+                try:
+                    # Parse the timestamp properly
+                    trip_start_dt = datetime.fromisoformat(row['start_time'].replace('Z', '+00:00'))
+                    # Compare as datetime objects
+                    if start_date <= trip_start_dt < end_date:
+                        trips.append(row)
+                        Logger.info(f"Found trip at {trip_start_dt}")
+                except Exception as e:
+                    Logger.error(f"Error parsing start_time '{row['start_time']}': {e}")
+        
         numTrips = len(trips)
         totalDist = 0
         totalTime = timedelta()
@@ -244,6 +258,9 @@ def DBGetDayStats(username, date):
         dayEnd = None
         
         for row in trips:
+            # Log what we're reading from Supabase for each trip
+            Logger.info(f"Trip data: distance_km={row['distance_km']}, duration_seconds={row['duration_seconds']}, fuel_gallons={row['fuel_gallons']}")
+            
             totalDist += float(row['distance_km']) if row['distance_km'] else 0
             totalTime += timedelta(seconds=int(row['duration_seconds'])) if row['duration_seconds'] else timedelta()
             totalFuel += float(row['fuel_gallons']) if row['fuel_gallons'] else 0
@@ -268,10 +285,67 @@ def DBGetDayStats(username, date):
         else:
             idleTime = timedelta()
         
+        Logger.info(f"Supabase stats: {numTrips} trips, {totalDist:.2f} km, {totalFuel:.2f} gal")
         return [numTrips, totalDist, totalFuel, totalTime, idleTime]
     except Exception as e:
         Logger.error(f"Supabase: Error getting day stats - {e}")
+        import traceback
+        Logger.error(traceback.format_exc())
         return [0, 0, 0, timedelta(), timedelta()]
+
+def DBGetIndividualTrips(username, date):
+    """Get individual trip details for a specific date from Supabase"""
+    try:
+        # Parse the date string (format: YYYYMMDD)
+        year = int(date[:4])
+        month = int(date[4:6])
+        day = int(date[6:8])
+        
+        # Create timezone-aware datetime objects
+        from datetime import datetime, timezone
+        start_date = datetime(year, month, day, tzinfo=timezone.utc)
+        end_date = start_date + timedelta(days=1)
+        
+        client = DBConnect()
+        # Query all trips for the user with all details
+        response = client.table('TripData').select(
+            "trip_id, destination, passenger_type, passenger_count, cargo_type, distance_km, duration_seconds, fuel_gallons, start_time, end_time"
+        ).eq('username', username).execute()
+        
+        # Filter trips by date range and sort by start time
+        trips = []
+        for row in response.data:
+            if row['start_time']:
+                try:
+                    # Parse the timestamp
+                    trip_start_dt = datetime.fromisoformat(row['start_time'].replace('Z', '+00:00'))
+                    # Check if trip is in the specified day
+                    if start_date <= trip_start_dt < end_date:
+                        trips.append({
+                            'trip_id': row['trip_id'],
+                            'destination': row['destination'],
+                            'passenger_type': row['passenger_type'],
+                            'passenger_count': row['passenger_count'],
+                            'cargo_type': row['cargo_type'],
+                            'distance_km': float(row['distance_km']) if row['distance_km'] else 0.0,
+                            'duration_seconds': int(row['duration_seconds']) if row['duration_seconds'] else 0,
+                            'fuel_gallons': float(row['fuel_gallons']) if row['fuel_gallons'] else 0.0,
+                            'start_time': trip_start_dt,
+                            'end_time': datetime.fromisoformat(row['end_time'].replace('Z', '+00:00')) if row['end_time'] else None
+                        })
+                except Exception as e:
+                    Logger.error(f"Error parsing trip data: {e}")
+        
+        # Sort trips by start time
+        trips.sort(key=lambda x: x['start_time'])
+        
+        Logger.info(f"Found {len(trips)} individual trips for {date}")
+        return trips
+    except Exception as e:
+        Logger.error(f"Supabase: Error getting individual trips - {e}")
+        import traceback
+        Logger.error(traceback.format_exc())
+        return []
 
 def localDBConnect():
     """Connect to local SQLite database"""
@@ -280,6 +354,9 @@ def localDBConnect():
         from plyer import storagepath
         try:
             docs_path = storagepath.get_documents_dir()
+            # Convert bytes to string if necessary
+            if isinstance(docs_path, bytes):
+                docs_path = docs_path.decode('utf-8')
         except:
             # Fallback to home Documents if storagepath fails
             docs_path = os.path.join(os.path.expanduser('~'), 'Documents')
@@ -321,6 +398,15 @@ def localDBCreate():
    	gpslonXworkingFuel VARCHAR(20),
     gpslat VARCHAR(20),
     time VARCHAR(30)
+   	)""")
+    cursor.execute("""CREATE TABLE if not exists dailyStats(
+	date VARCHAR(8),
+    username VARCHAR(20),
+    numTrips INTEGER,
+    totalDist REAL,
+    totalFuel REAL,
+    totalTime REAL,
+    idleTime REAL
    	)""")
     localdb.commit()
     localdb.close()
@@ -418,6 +504,38 @@ def localDBRecord(tripID, company, carnum, destination, passengers, cargo, gpslo
     localdb.commit()
     localdb.close()
 
+def localDBSaveDailyStats(username, date, numTrips, totalDist, totalFuel, totalTime, idleTime):
+    """Save daily statistics to local database"""
+    try:
+        [cursor, localdb] = localDBConnect()
+        
+        # Check if stats already exist for this day
+        query = "SELECT numTrips, totalDist, totalFuel, totalTime, idleTime FROM dailyStats WHERE username = ? AND date = ?"
+        cursor.execute(query, (username, date))
+        existing = cursor.fetchone()
+        
+        if existing:
+            # Update existing record by adding to it
+            new_numTrips = int(existing[0]) + numTrips
+            new_totalDist = float(existing[1]) + totalDist
+            new_totalFuel = float(existing[2]) + totalFuel
+            new_totalTime = float(existing[3]) + totalTime.total_seconds()
+            new_idleTime = float(existing[4]) + idleTime.total_seconds()
+            
+            query = "UPDATE dailyStats SET numTrips = ?, totalDist = ?, totalFuel = ?, totalTime = ?, idleTime = ? WHERE username = ? AND date = ?"
+            cursor.execute(query, (new_numTrips, new_totalDist, new_totalFuel, new_totalTime, new_idleTime, username, date))
+            Logger.info(f"Updated daily stats for {date}: {new_numTrips} trips, {new_totalDist:.2f} km")
+        else:
+            # Insert new record
+            query = "INSERT INTO dailyStats (date, username, numTrips, totalDist, totalFuel, totalTime, idleTime) VALUES (?, ?, ?, ?, ?, ?, ?)"
+            cursor.execute(query, (date, username, numTrips, totalDist, totalFuel, totalTime.total_seconds(), idleTime.total_seconds()))
+            Logger.info(f"Saved daily stats for {date}: {numTrips} trips, {totalDist:.2f} km")
+        
+        localdb.commit()
+        localdb.close()
+    except Exception as e:
+        Logger.error(f"Error saving daily stats: {e}")
+
 def localDBDumptoServer():
     """Upload completed trip summaries to Supabase (streamlined version)"""
     successfully_uploaded = []
@@ -430,6 +548,9 @@ def localDBDumptoServer():
         completed_trips = cursor.fetchall()
         
         Logger.info(f"Found {len(completed_trips)} completed trips to upload")
+        
+        # Group trips by date for daily stats calculation
+        trips_by_date = {}
         
         for trip_row in completed_trips:
             upload_success = False
@@ -494,6 +615,9 @@ def localDBDumptoServer():
                     Logger.error(f"Could not parse duration '{end_row[0]}': {e}")
                     duration_seconds = 0
                 
+                # Log what we're reading from database
+                Logger.info(f"End row data: duration={end_row[0]}, distance={end_row[1]}, fuel={end_row[2]}")
+                
                 distance_km = float(end_row[1]) if end_row[1] else 0.0
                 fuel_gallons = float(end_row[2]) if end_row[2] else 0.0
                 company = str(end_row[3]) if end_row[3] else ''
@@ -505,9 +629,9 @@ def localDBDumptoServer():
                     Logger.error(f"Could not parse end time: {end_row[5]}")
                     end_time = datetime.now()
                 
-                # Extract username from tripID (format: usernameYYYYMMDDHHMMSS)
+                # Extract username from tripID (format: usernameYYYYMMDDHHMMSS where YYYY starts with 20)
                 import re
-                match = re.search(r'(\d{4})(\d{2})(\d{2})', tripID)
+                match = re.search(r'(20\d{6})', tripID)
                 if match:
                     year_pos = match.start()
                     username = tripID[:year_pos]
@@ -515,6 +639,14 @@ def localDBDumptoServer():
                     username = currentUser if currentUser else 'unknown'
                 
                 Logger.info(f"Uploading trip {tripID}: {distance_km}km, {duration_seconds}s, {fuel_gallons}gal")
+                
+                # Extract date from tripID for daily stats grouping (format: YYYYMMDD starting with 20)
+                import re
+                match = re.search(r'(20\d{6})', tripID)
+                if match:
+                    trip_date = match.group(1)
+                else:
+                    trip_date = datetime.now().strftime("%Y%m%d")
                 
                 # Upload to Supabase - this will raise an exception if it fails
                 try:
@@ -537,6 +669,30 @@ def localDBDumptoServer():
                     upload_success = True
                     successfully_uploaded.append(tripID)
                     Logger.info(f"✅ Successfully uploaded trip {tripID}")
+                    
+                    # Track trip for daily stats
+                    if trip_date not in trips_by_date:
+                        trips_by_date[trip_date] = {
+                            'username': username,
+                            'trips': [],
+                            'numTrips': 0,
+                            'totalDist': 0,
+                            'totalFuel': 0,
+                            'totalTime': timedelta(),
+                            'earliest_start': None,
+                            'latest_end': None
+                        }
+                    
+                    trips_by_date[trip_date]['numTrips'] += 1
+                    trips_by_date[trip_date]['totalDist'] += distance_km
+                    trips_by_date[trip_date]['totalFuel'] += fuel_gallons
+                    trips_by_date[trip_date]['totalTime'] += timedelta(seconds=duration_seconds)
+                    
+                    if not trips_by_date[trip_date]['earliest_start'] or start_time < trips_by_date[trip_date]['earliest_start']:
+                        trips_by_date[trip_date]['earliest_start'] = start_time
+                    if not trips_by_date[trip_date]['latest_end'] or end_time > trips_by_date[trip_date]['latest_end']:
+                        trips_by_date[trip_date]['latest_end'] = end_time
+                    
                 except Exception as upload_error:
                     Logger.error(f"❌ Failed to upload trip {tripID}: {upload_error}")
                     # Don't add to successfully_uploaded list
@@ -546,6 +702,31 @@ def localDBDumptoServer():
                 import traceback
                 Logger.error(traceback.format_exc())
                 continue
+        
+        # Save daily stats before clearing trips
+        for date, day_data in trips_by_date.items():
+            try:
+                # Calculate idle time
+                if day_data['earliest_start'] and day_data['latest_end']:
+                    working_time = day_data['latest_end'] - day_data['earliest_start']
+                    idleTime = working_time - day_data['totalTime']
+                    if idleTime.total_seconds() < 0:
+                        idleTime = timedelta()
+                else:
+                    idleTime = timedelta()
+                
+                # Save to local database
+                localDBSaveDailyStats(
+                    username=day_data['username'],
+                    date=date,
+                    numTrips=day_data['numTrips'],
+                    totalDist=day_data['totalDist'],
+                    totalFuel=day_data['totalFuel'],
+                    totalTime=day_data['totalTime'],
+                    idleTime=idleTime
+                )
+            except Exception as e:
+                Logger.error(f"Error saving daily stats for {date}: {e}")
         
         # Only clear trips that were successfully uploaded
         if successfully_uploaded:
@@ -625,17 +806,37 @@ def localDBGetTripStats(tripID):
     return ["No Data", "No Data", 0, timedelta(), 0]
 
 def localDBGetDayStats(username, date):
-    """Get day statistics from local database"""
-    dayID = "{}{}".format(username, date)
+    """Get day statistics from local database - checks saved stats first, then live trip data"""
     [cursor, localdb] = localDBConnect()
+    
+    Logger.info(f"Getting stats for {username} on {date}")
+    
+    # First check if we have saved stats for this day
+    query = "SELECT numTrips, totalDist, totalFuel, totalTime, idleTime FROM dailyStats WHERE username = ? AND date = ?"
+    cursor.execute(query, (username, date))
+    saved_stats = cursor.fetchone()
+    
+    if saved_stats:
+        Logger.info(f"Found saved stats: {saved_stats[0]} trips, {saved_stats[1]} km")
+    else:
+        Logger.info("No saved stats found for today")
+    
+    # Also calculate current live trip stats for today
+    dayID = "{}{}".format(username, date)
+    Logger.info(f"Looking for trips with ID pattern: %{dayID}%")
+    
     query = "SELECT passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel,time FROM tripData WHERE destinationXstatus = 'End Trip' AND tripID LIKE ?"
     cursor.execute(query, (f"%{dayID}%",))
     trips = cursor.fetchall()
+    
+    Logger.info(f"Found {len(trips)} live completed trips")
     
     numTrips = 0
     totalDist = 0
     totalTime = timedelta()
     totalFuel = 0
+    endTime = None
+    dayStart = None
     
     for row in trips:
         numTrips += 1
@@ -652,11 +853,26 @@ def localDBGetDayStats(username, date):
         start_result = cursor.fetchone()
         if start_result:
             dayStart = datetime.strptime(str(start_result[0]),'%Y-%m-%d %H:%M:%S.%f')
-            idleTime = endTime - dayStart - totalTime
+            idleTime = endTime - dayStart - totalTime if endTime else timedelta()
         else:
             idleTime = timedelta()
     else:
         idleTime = timedelta()
+    
+    # Combine saved stats with live stats
+    if saved_stats:
+        # Add saved stats to current live stats
+        saved_trips = int(saved_stats[0])
+        numTrips += saved_trips
+        totalDist += float(saved_stats[1])
+        totalFuel += float(saved_stats[2])
+        saved_time_seconds = float(saved_stats[3])
+        totalTime = totalTime + timedelta(seconds=saved_time_seconds)
+        saved_idle_seconds = float(saved_stats[4])
+        idleTime = idleTime + timedelta(seconds=saved_idle_seconds)
+        Logger.info(f"Combined {saved_trips} saved trips with {numTrips - saved_trips} live trips = {numTrips} total")
+    
+    Logger.info(f"Final stats: {numTrips} trips, {totalDist:.2f} km, {totalFuel:.2f} gal")
     
     localdb.close()
     return [numTrips, totalDist, totalFuel, totalTime, idleTime]
@@ -688,7 +904,9 @@ def onLaunch():
 def startTrip():
     now = datetime.now()
     global currentTripID
-    currentTripID = '{}{}{}{}{}{}{}'.format(currentUser, now.year, now.month, now.day, now.hour, now.minute, now.second)
+    # Zero-pad month, day, hour, minute, second for consistent tripID format
+    currentTripID = '{}{:04d}{:02d}{:02d}{:02d}{:02d}{:02d}'.format(
+        currentUser, now.year, now.month, now.day, now.hour, now.minute, now.second)
     localDBRecord(currentTripID, currentCompany, currentCar, 'Start Trip', 0, 0, 0, 0, now)
 
 def getTripDistance(tripID):
@@ -825,57 +1043,293 @@ class Home(Screen):
         localDBLogOut()
 
 class HomeStatsPage(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.showing_individual_trips = False
+    
     def on_pre_enter(self):
-        # Update all label headings - both main title and category labels
-        for widget in self.walk():
-            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
-                # Check exact matches for each label (English or Spanish versions)
-                # Main title
-                if 'Statistics for Today' in widget.text or 'Estadísticas de Hoy' in widget.text:
-                    widget.text = translator.get_text('statistics_today')
-                # Category label: Number of Trips
-                elif 'Number of Trips' in widget.text or 'Número de Viajes' in widget.text:
-                    widget.text = translator.get_text('number_of_trips')
-                # Category label: Miles/Kilometers Driven
-                elif 'Kilometers Driven' in widget.text or 'Kilómetros Conducidos' in widget.text:
-                    widget.text = translator.get_text('miles_driven')
-                # Category label: Estimated Gas
-                elif 'Estimated Total Gas Usage' in widget.text or 'Uso Total Estimado de Gasolina' in widget.text:
-                    widget.text = translator.get_text('estimated_gas')
-                # Category label: Total Time
-                elif 'Total Driving Time' in widget.text or 'Tiempo Total de Conducción' in widget.text:
-                    widget.text = translator.get_text('total_time')
-                # Category label: Time Between Trips
-                elif 'Time Spent Between Trips' in widget.text or 'Tiempo Entre Viajes' in widget.text:
-                    widget.text = translator.get_text('time_between')
+        # Update the main heading directly by ID
+        if hasattr(self.ids, 'PageTitle'):
+            self.ids.PageTitle.text = translator.get_text('statistics_today')
         
-        # Now update data values
-        if(DBCheckConnection()):
-            try:
+        # Load daily totals by default
+        self.showing_individual_trips = False
+        self.load_daily_totals()
+    
+    def load_daily_totals(self):
+        """Load and display daily total statistics"""
+        # Update sub-header labels for translations
+        if hasattr(self.ids, 'NumberOfTripsLabel'):
+            self.ids.NumberOfTripsLabel.text = translator.get_text('number_of_trips')
+        if hasattr(self.ids, 'MilesDrivenLabel'):
+            self.ids.MilesDrivenLabel.text = translator.get_text('miles_driven')
+        if hasattr(self.ids, 'EstimatedGasLabel'):
+            self.ids.EstimatedGasLabel.text = translator.get_text('estimated_gas')
+        if hasattr(self.ids, 'TotalTimeLabel'):
+            self.ids.TotalTimeLabel.text = translator.get_text('total_time')
+        if hasattr(self.ids, 'TimeBetweenLabel'):
+            self.ids.TimeBetweenLabel.text = translator.get_text('time_between')
+        
+        # Show daily stats container, hide individual trips container
+        if hasattr(self.ids, 'DailyStatsContainer'):
+            self.ids.DailyStatsContainer.opacity = 1
+            self.ids.DailyStatsContainer.height = '500dp'
+        if hasattr(self.ids, 'IndividualTripsContainer'):
+            self.ids.IndividualTripsContainer.opacity = 0
+            self.ids.IndividualTripsContainer.height = 0
+        
+        # Load and update data values - use Supabase (requires internet connection)
+        try:
+            if DBCheckConnection():
+                Logger.info("HomeStatsPage: Connected to Supabase")
                 statistics = DBGetDayStats(currentUser, datetime.today().strftime("%Y%m%d"))
-                self.ids.NumberOfTrips.text = "{} {}".format(statistics[0], translator.get_text('trips'))
-                self.ids.MilesDriven.text = "{} {}".format(statistics[1], translator.get_text('miles'))
-                self.ids.EstimatedGas.text = "{} {}".format(statistics[2], translator.get_text('gallons'))
-                hours = int(statistics[3].seconds/3600)
-                minutes = int((statistics[3].seconds-hours*3600)/60)
-                seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
-                self.ids.TotalTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
-                hours = int(statistics[4].seconds/3600)
-                minutes = int((statistics[4].seconds-hours*3600)/60)
-                seconds = int(statistics[4].seconds - hours*3600 - minutes*60)
-                self.ids.TimeBetween.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
-            except:
-                self.ids.NumberOfTrips.text = translator.get_text('no_data_available')
-                self.ids.MilesDriven.text = translator.get_text('no_data_available')
-                self.ids.EstimatedGas.text = translator.get_text('no_data_available')
-                self.ids.TotalTime.text = translator.get_text('no_data_available')
-                self.ids.TimeBetween.text = translator.get_text('no_data_available')
-        else:
-            self.ids.NumberOfTrips.text = translator.get_text('connection_required')
-            self.ids.MilesDriven.text = translator.get_text('connection_required')
-            self.ids.EstimatedGas.text = translator.get_text('connection_required')
-            self.ids.TotalTime.text = translator.get_text('connection_required')
-            self.ids.TimeBetween.text = translator.get_text('connection_required')
+                
+                Logger.info(f"HomeStatsPage: RAW statistics array: {statistics}")
+                
+                # Set trip count
+                trips_text = "{} {}".format(statistics[0], translator.get_text('trips'))
+                self.ids.NumberOfTrips.text = trips_text
+                
+                # Set distance
+                distance_text = "{:.2f} {}".format(statistics[1], translator.get_text('miles'))
+                self.ids.MilesDriven.text = distance_text
+                
+                # Set fuel
+                fuel_text = "{:.2f} {}".format(statistics[2], translator.get_text('gallons'))
+                self.ids.EstimatedGas.text = fuel_text
+                
+                # Set total time
+                total_seconds = int(statistics[3].total_seconds())
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                seconds = total_seconds % 60
+                time_text = '{} {}, {} {}, {} {}'.format(
+                    hours, translator.get_text('hours'), 
+                    minutes, translator.get_text('minutes'), 
+                    seconds, translator.get_text('seconds')
+                )
+                self.ids.TotalTime.text = time_text
+                
+                # Set idle time
+                total_seconds = int(statistics[4].total_seconds())
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                seconds = total_seconds % 60
+                idle_text = '{} {}, {} {}, {} {}'.format(
+                    hours, translator.get_text('hours'), 
+                    minutes, translator.get_text('minutes'), 
+                    seconds, translator.get_text('seconds')
+                )
+                self.ids.TimeBetween.text = idle_text
+                
+                Logger.info("HomeStatsPage: Finished setting all values")
+            else:
+                Logger.warning("HomeStatsPage: No Supabase connection")
+                self.ids.NumberOfTrips.text = translator.get_text('connection_required')
+                self.ids.MilesDriven.text = translator.get_text('connection_required')
+                self.ids.EstimatedGas.text = translator.get_text('connection_required')
+                self.ids.TotalTime.text = translator.get_text('connection_required')
+                self.ids.TimeBetween.text = translator.get_text('connection_required')
+        except Exception as e:
+            Logger.error(f"CRITICAL Error loading stats: {e}")
+            import traceback
+            Logger.error(traceback.format_exc())
+            self.ids.NumberOfTrips.text = "ERROR"
+            self.ids.MilesDriven.text = "ERROR"
+            self.ids.EstimatedGas.text = "ERROR"
+            self.ids.TotalTime.text = "ERROR"
+            self.ids.TimeBetween.text = "ERROR"
+    
+    def load_individual_trips(self):
+        """Load and display individual trip details"""
+        from kivy.uix.label import Label
+        from kivy.metrics import dp
+        
+        # Hide daily stats container, show individual trips container
+        if hasattr(self.ids, 'DailyStatsContainer'):
+            self.ids.DailyStatsContainer.opacity = 0
+            self.ids.DailyStatsContainer.height = 0
+        if hasattr(self.ids, 'IndividualTripsContainer'):
+            self.ids.IndividualTripsContainer.opacity = 1
+            self.ids.IndividualTripsContainer.height = None
+        
+        # Clear existing trips from the container
+        if hasattr(self.ids, 'TripsListContainer'):
+            self.ids.TripsListContainer.clear_widgets()
+            
+            try:
+                if DBCheckConnection():
+                    trips = DBGetIndividualTrips(currentUser, datetime.today().strftime("%Y%m%d"))
+                    
+                    if len(trips) == 0:
+                        # No trips message
+                        no_trips_label = Label(
+                            text=translator.get_text('no_trips_today'),
+                            font_name='CaviarDreams.ttf',
+                            font_size='18sp',
+                            color=(0.5, 0.5, 0.5, 1),
+                            size_hint_y=None,
+                            height=dp(100),
+                            halign='center',
+                            valign='middle'
+                        )
+                        no_trips_label.bind(size=no_trips_label.setter('text_size'))
+                        self.ids.TripsListContainer.add_widget(no_trips_label)
+                    else:
+                        # Add each trip as a card
+                        for idx, trip in enumerate(trips, 1):
+                            trip_widget = self.create_trip_card(idx, trip)
+                            self.ids.TripsListContainer.add_widget(trip_widget)
+                else:
+                    # No connection message
+                    error_label = Label(
+                        text=translator.get_text('connection_required'),
+                        font_name='CaviarDreams.ttf',
+                        font_size='18sp',
+                        color=(0.8, 0.2, 0.2, 1),
+                        size_hint_y=None,
+                        height=dp(100),
+                        halign='center',
+                        valign='middle'
+                    )
+                    error_label.bind(size=error_label.setter('text_size'))
+                    self.ids.TripsListContainer.add_widget(error_label)
+            except Exception as e:
+                Logger.error(f"Error loading individual trips: {e}")
+                import traceback
+                Logger.error(traceback.format_exc())
+    
+    def create_trip_card(self, trip_number, trip_data):
+        """Create a widget card for a single trip"""
+        from kivy.uix.boxlayout import BoxLayout
+        from kivy.uix.label import Label
+        from kivy.graphics import Color, RoundedRectangle
+        from kivy.metrics import dp
+        
+        # Main card container
+        card = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=None,
+            padding=[dp(20), dp(15)],
+            spacing=dp(10)
+        )
+        
+        # Add white background with rounded corners
+        with card.canvas.before:
+            Color(1, 1, 1, 1)
+            card.bg_rect = RoundedRectangle(
+                pos=card.pos,
+                size=card.size,
+                radius=[dp(12), dp(12), dp(12), dp(12)]
+            )
+        card.bind(pos=lambda obj, val: setattr(obj.bg_rect, 'pos', val))
+        card.bind(size=lambda obj, val: setattr(obj.bg_rect, 'size', val))
+        
+        # Trip number header
+        trip_header = Label(
+            text=translator.get_text('trip_number').format(trip_number),
+            font_name='CaviarDreams_Bold.ttf',
+            font_size='20sp',
+            color=(0.1, 0.1, 0.1, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left'
+        )
+        trip_header.bind(size=trip_header.setter('text_size'))
+        card.add_widget(trip_header)
+        
+        # Trip time
+        time_str = trip_data['start_time'].strftime('%I:%M %p')
+        time_label = Label(
+            text=f"{translator.get_text('trip_time')} {time_str}",
+            font_name='CaviarDreams.ttf',
+            font_size='14sp',
+            color=(0.4, 0.4, 0.4, 1),
+            size_hint_y=None,
+            height=dp(20),
+            halign='left'
+        )
+        time_label.bind(size=time_label.setter('text_size'))
+        card.add_widget(time_label)
+        
+        # Add spacer
+        card.add_widget(BoxLayout(size_hint_y=None, height=dp(5)))
+        
+        # Trip details
+        details = [
+            (translator.get_text('destination'), trip_data['destination']),
+            (translator.get_text('passengers_cargo'), f"{trip_data['passenger_type']} - {trip_data['passenger_count']}, {trip_data['cargo_type']}"),
+            (translator.get_text('distance_driven'), f"{trip_data['distance_km']:.2f} {translator.get_text('miles')}"),
+            (translator.get_text('trip_duration'), self.format_duration(trip_data['duration_seconds'])),
+            (translator.get_text('estimated_fuel'), f"{trip_data['fuel_gallons']:.2f} {translator.get_text('gallons')}")
+        ]
+        
+        for label_text, value_text in details:
+            detail_box = BoxLayout(orientation='vertical', size_hint_y=None, height=None, spacing=dp(3))
+            
+            label = Label(
+                text=label_text,
+                font_name='CaviarDreams_Bold.ttf',
+                font_size='14sp',
+                color=(0.4, 0.4, 0.4, 1),
+                size_hint_y=None,
+                height=dp(18),
+                halign='left'
+            )
+            label.bind(size=label.setter('text_size'))
+            detail_box.add_widget(label)
+            
+            value = Label(
+                text=value_text,
+                font_name='CaviarDreams.ttf',
+                font_size='16sp',
+                color=(0.1, 0.1, 0.1, 1),
+                size_hint_y=None,
+                height=dp(20),
+                halign='left'
+            )
+            value.bind(size=value.setter('text_size'))
+            detail_box.add_widget(value)
+            
+            card.add_widget(detail_box)
+        
+        # Calculate total height
+        card.height = dp(230)
+        
+        # Add bottom spacer
+        spacer = BoxLayout(size_hint_y=None, height=dp(15))
+        
+        # Container to hold both card and spacer
+        container = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(245))
+        container.add_widget(card)
+        container.add_widget(spacer)
+        
+        return container
+    
+    def format_duration(self, seconds):
+        """Format duration in seconds to readable string"""
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        secs = seconds % 60
+        return '{} {}, {} {}, {} {}'.format(
+            hours, translator.get_text('hours'),
+            minutes, translator.get_text('minutes'),
+            secs, translator.get_text('seconds')
+        )
+    
+    def toggle_view(self):
+        """Toggle between daily totals and individual trips view"""
+        self.showing_individual_trips = not self.showing_individual_trips
+        
+        # Update toggle button text
+        if hasattr(self.ids, 'ToggleButton'):
+            if self.showing_individual_trips:
+                self.ids.ToggleButton.text = translator.get_text('daily_totals')
+                self.load_individual_trips()
+            else:
+                self.ids.ToggleButton.text = translator.get_text('individual_trips')
+                self.load_daily_totals()
 
 class Register1(Screen):
     def on_pre_enter(self):

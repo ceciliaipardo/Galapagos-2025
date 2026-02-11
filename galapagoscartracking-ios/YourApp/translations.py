@@ -109,6 +109,14 @@ class Translations:
                 'start_next_trip': 'Start Your Next Trip',
                 'trip_too_short': 'Trip Too Short',
                 
+                # Individual Trips View
+                'daily_totals': 'Daily Totals',
+                'individual_trips': 'Individual Trips',
+                'trip_number': 'Trip #{}',
+                'no_trips_today': 'No trips completed today',
+                'trip_time': 'Time:',
+                'loading': 'Loading...',
+                
                 # General
                 'language': 'Language',
                 'english': 'English',
@@ -216,6 +224,14 @@ class Translations:
                 'estimated_fuel': 'Combustible Estimado Usado:',
                 'start_next_trip': 'Iniciar su Próximo Viaje',
                 'trip_too_short': 'Viaje Muy Corto',
+                
+                # Individual Trips View
+                'daily_totals': 'Totales Diarios',
+                'individual_trips': 'Viajes Individuales',
+                'trip_number': 'Viaje #{}',
+                'no_trips_today': 'No se completaron viajes hoy',
+                'trip_time': 'Hora:',
+                'loading': 'Cargando...',
                 
                 # General
                 'language': 'Idioma',

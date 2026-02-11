@@ -115,10 +115,10 @@
 		3CB6F45727D6344B007297BC /* SDL_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_main.m; sourceTree = SOURCE_ROOT; };
 		4A0D421C8DF563E145148C11 /* libSDL2_image.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libSDL2_image.xcframework; path = ../dist/xcframework/libSDL2_image.xcframework; sourceTree = SOURCE_ROOT; };
 		50C0439AA9E3FA044225624A /* libpython3.11.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libpython3.11.xcframework; path = ../dist/xcframework/libpython3.11.xcframework; sourceTree = SOURCE_ROOT; };
-		59738AB41A8BB5D8001B2C0C /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = "/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/lib"; sourceTree = "<group>"; };
+		59738AB41A8BB5D8001B2C0C /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/lib"; sourceTree = "<group>"; };
 		59738ABA1A8E19AA001B2C0C /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = galapagoscartracking/Images.xcassets; sourceTree = "<group>"; };
 		59994E3A148E85C800863906 /* YourApp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = YourApp; sourceTree = "<group>"; };
-		59FDEA8A21E7D34E004E6ECE /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = "/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include"; sourceTree = "<group>"; };
+		59FDEA8A21E7D34E004E6ECE /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include"; sourceTree = "<group>"; };
 		5E5B4EA5A2DBD38F1D877344 /* libpillow.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libpillow.xcframework; path = ../dist/xcframework/libpillow.xcframework; sourceTree = SOURCE_ROOT; };
 		63824C90AB1436F1BF6B2465 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = CoreVideo.framework; sourceTree = DEVELOPER_DIR; };
 		6AC546738A2D7FC2BDE9EE3C /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -427,7 +427,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "# Copy only necessary app files\nrsync -av --delete \\\n  --exclude='kivy-ios' \\\n  --exclude='build' \\\n  --exclude='dist' \\\n  --exclude='.git' \\\n  --exclude='.venv' \\\n  --exclude='__pycache__' \\\n  --exclude='*.pyc' \\\n  --exclude='galapagoscartracking-ios' \\\n  \"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/\"*.py \\\n  \"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/\"*.kv \\\n  \"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/\"*.ttf \\\n  \"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/\"*.png \\\n  \"$PROJECT_DIR\"/YourApp/ 2>/dev/null || true";
+			shellScript = "# Copy only necessary app files\nrsync -av --delete \\\n  --exclude='kivy-ios' \\\n  --exclude='build' \\\n  --exclude='dist' \\\n  --exclude='.git' \\\n  --exclude='.venv' \\\n  --exclude='__pycache__' \\\n  --exclude='*.pyc' \\\n  --exclude='galapagoscartracking-ios' \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.py \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.kv \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.ttf \\\n  \"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/\"*.png \\\n  \"$PROJECT_DIR\"/YourApp/ 2>/dev/null || true";
 		};
 		113D17E2153E3DB5001310A6 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -440,7 +440,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/hostpython3/bin/python -m compileall -f -b \"$PROJECT_DIR\"/YourApp";
+			shellScript = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/hostpython3/bin/python -m compileall -f -b \"$PROJECT_DIR\"/YourApp";
 		};
 		113D17E2153E3DB5001310A7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -482,7 +482,7 @@
 				DEVELOPMENT_TEAM = VQR94PRZ3W;
 				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = (
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/frameworks",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/frameworks",
 					"$(SRCROOT)/../dist/xcframework",
 					"$(inherited)",
 				);
@@ -493,14 +493,14 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include/python3.11/**",
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/include/common/sdl2",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include/python3.11/**",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/include/common/sdl2",
 				);
 				INFOPLIST_FILE = "galapagoscartracking-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/lib",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/lib",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
@@ -532,7 +532,7 @@
 				DEVELOPMENT_TEAM = VQR94PRZ3W;
 				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = (
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/frameworks",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/frameworks",
 					"$(SRCROOT)/../dist/xcframework",
 					"$(inherited)",
 				);
@@ -540,14 +540,14 @@
 				GCC_PREFIX_HEADER = "";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include/python3.11/**",
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/include/common/sdl2",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/python3/include/python3.11/**",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/include/common/sdl2",
 				);
 				INFOPLIST_FILE = "galapagoscartracking-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/lib",
+					"/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/lib",
 				);
 				OTHER_LDFLAGS = (
 					"-all_load",
@@ -573,7 +573,7 @@
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				DEAD_CODE_STRIPPING = NO;
 				ENABLE_BITCODE = NO;
-				USER_HEADER_SEARCH_PATHS = "/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/root/include/";
+				USER_HEADER_SEARCH_PATHS = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/include/";
 			};
 			name = Debug;
 		};
@@ -584,7 +584,7 @@
 				DEAD_CODE_STRIPPING = NO;
 				ENABLE_BITCODE = NO;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				USER_HEADER_SEARCH_PATHS = "/Users/personal/Desktop/Villanova/ECE_Capstone/Python/Galapagos-2025/dist/root/include/";
+				USER_HEADER_SEARCH_PATHS = "/Users/SheeeeeeeeeeeesH/Desktop/ECE_Capstone/Python/Galapagos-2025/dist/root/include/";
 			};
 			name = Release;
 		};

@@ -1276,6 +1276,7 @@ WindowManager:
                 height: self.minimum_height
 
                 Label:
+                    id: PageTitle
                     text: app.translator.get_text('statistics_today')
                     font_name: 'CaviarDreams_Bold.ttf'
                     font_size: '30sp'
@@ -1284,11 +1285,33 @@ WindowManager:
                     height: '60dp'
                     halign: 'center'
 
+                # Toggle Button
+                Button:
+                    id: ToggleButton
+                    text: app.translator.get_text('individual_trips')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '16sp'
+                    size_hint_y: None
+                    height: '50dp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    canvas.before:
+                        Color:
+                            rgba: 0.2, 0.2, 0.2, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [10, 10, 10, 10]
+                    on_release: root.toggle_view()
+
                 Widget:
                     size_hint_y: None
-                    height: '20dp'
+                    height: '10dp'
 
+                # Daily Stats Container
                 BoxLayout:
+                    id: DailyStatsContainer
                     orientation: 'vertical'
                     size_hint_y: None
                     height: '500dp'
@@ -1308,6 +1331,7 @@ WindowManager:
                         height: '70dp'
                         spacing: '5dp'
                         Label:
+                            id: NumberOfTripsLabel
                             text: app.translator.get_text('number_of_trips')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '16sp'
@@ -1333,6 +1357,7 @@ WindowManager:
                         height: '70dp'
                         spacing: '5dp'
                         Label:
+                            id: MilesDrivenLabel
                             text: app.translator.get_text('miles_driven')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '16sp'
@@ -1358,6 +1383,7 @@ WindowManager:
                         height: '70dp'
                         spacing: '5dp'
                         Label:
+                            id: EstimatedGasLabel
                             text: app.translator.get_text('estimated_gas')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '16sp'
@@ -1380,9 +1406,10 @@ WindowManager:
                     BoxLayout:
                         orientation: 'vertical'
                         size_hint_y: None
-                        height: '70dp'
+                        height: '90dp'
                         spacing: '5dp'
                         Label:
+                            id: TotalTimeLabel
                             text: app.translator.get_text('total_time')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '16sp'
@@ -1395,19 +1422,21 @@ WindowManager:
                             id: TotalTime
                             text: ''
                             font_name: 'CaviarDreams.ttf'
-                            font_size: '24sp'
+                            font_size: '20sp'
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_y: None
-                            height: '40dp'
+                            height: self.texture_size[1] + 10
                             halign: 'left'
-                            text_size: self.size
+                            valign: 'top'
+                            text_size: self.width, None
 
                     BoxLayout:
                         orientation: 'vertical'
                         size_hint_y: None
-                        height: '70dp'
+                        height: '90dp'
                         spacing: '5dp'
                         Label:
+                            id: TimeBetweenLabel
                             text: app.translator.get_text('time_between')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '16sp'
@@ -1420,12 +1449,29 @@ WindowManager:
                             id: TimeBetween
                             text: ''
                             font_name: 'CaviarDreams.ttf'
-                            font_size: '24sp'
+                            font_size: '20sp'
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_y: None
-                            height: '40dp'
+                            height: self.texture_size[1] + 10
                             halign: 'left'
-                            text_size: self.size
+                            valign: 'top'
+                            text_size: self.width, None
+
+                # Individual Trips Container (initially hidden)
+                BoxLayout:
+                    id: IndividualTripsContainer
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: 0
+                    opacity: 0
+                    spacing: '10dp'
+
+                    BoxLayout:
+                        id: TripsListContainer
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: '0dp'
 
                 Widget:
                     size_hint_y: None

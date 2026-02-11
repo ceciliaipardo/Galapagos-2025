@@ -48,9 +48,9 @@ def DBShowAll():
         for row in user_data:
             print(row)
         
-        # Get TrackingData records
-        tracking_data = supabase_api.select('TrackingData')
-        print("\n\nTracking Data Database")
+        # Get TripData records
+        tracking_data = supabase_api.select('TripData')
+        print("\n\nTrip Data Database")
         for row in tracking_data:
             print(row)
         print("\n")
@@ -126,18 +126,65 @@ def DBPullUserData():
         return None
 
 def DBUploadDataPoint(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time):
-    """Upload tracking data point to Supabase"""
+    """Legacy function - no longer uploads individual GPS points"""
+    # GPS points are now only stored locally
+    # Trip summaries are uploaded via DBUploadTripSummary
+    pass
+
+def DBUploadTripSummary(trip_id, username, company, car_number, destination, passenger_info, 
+                        cargo_type, distance_km, duration_seconds, fuel_gallons, 
+                        start_time, end_time, starting_point=""):
+    """Upload complete trip summary to TripData table"""
     try:
-        supabase_api.upload_tracking_data(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time)
+        # Parse passenger_info to extract passenger_type and count
+        # Format is typically: "passenger_type - count" or just "passenger_type"
+        passenger_type = ""
+        passenger_count = ""
+        
+        if passenger_info and ' - ' in passenger_info:
+            parts = passenger_info.split(' - ', 1)
+            passenger_type = parts[0]
+            passenger_count = parts[1] if len(parts) > 1 else ""
+        else:
+            passenger_type = passenger_info if passenger_info else ""
+        
+        # Format timestamps to ISO format for PostgreSQL
+        if isinstance(start_time, datetime):
+            start_time_str = start_time.isoformat()
+        else:
+            start_time_str = str(start_time)
+            
+        if isinstance(end_time, datetime):
+            end_time_str = end_time.isoformat()
+        else:
+            end_time_str = str(end_time)
+        
+        supabase_api.upload_trip_summary(
+            trip_id=trip_id,
+            username=username,
+            company=company,
+            car_number=car_number,
+            destination=destination,
+            passenger_type=passenger_type,
+            passenger_count=passenger_count,
+            cargo_type=cargo_type,
+            distance_km=distance_km,
+            duration_seconds=duration_seconds,
+            fuel_gallons=fuel_gallons,
+            start_time=start_time_str,
+            end_time=end_time_str,
+            starting_point=starting_point
+        )
+        Logger.info(f"Trip summary uploaded: {trip_id}")
     except Exception as e:
-        Logger.error(f"DBUploadDataPoint failed: {e}")
+        Logger.error(f"DBUploadTripSummary failed: {e}")
 
 def DBCheckConnection():
     """Check if Supabase connection is available"""
     return supabase_api.test_connection()
 
 def DBGetDayStats(username, date):
-    """Get daily statistics from Supabase"""
+    """Get daily statistics from Supabase using new TripData schema"""
     try:
         result = supabase_api.get_day_stats(username, date)
         trips = result['trips']
@@ -146,19 +193,34 @@ def DBGetDayStats(username, date):
         totalDist = 0
         totalTime = timedelta()
         totalFuel = 0
+        firstStartTime = None
+        lastEndTime = None
         
         for row in trips:
             numTrips += 1
-            totalDist += float(row['cargoXtotalDist'])
-            t = datetime.strptime(str(row['passengersXtotalTime']), '%H:%M:%S.%f')
-            totalTime = totalTime + timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
-            totalFuel += float(row['gpslonXworkingFuel'])
-            endTime = datetime.strptime(str(row['time']), '%Y-%m-%d %H:%M:%S.%f')
+            # New schema uses distance_km, duration_seconds, fuel_gallons
+            if row.get('distance_km'):
+                totalDist += float(row['distance_km'])
+            if row.get('duration_seconds'):
+                totalTime += timedelta(seconds=int(row['duration_seconds']))
+            if row.get('fuel_gallons'):
+                totalFuel += float(row['fuel_gallons'])
+            
+            # Track first start and last end times for idle time calculation
+            if row.get('start_time'):
+                start = datetime.fromisoformat(str(row['start_time']).replace('Z', '+00:00'))
+                if not firstStartTime or start < firstStartTime:
+                    firstStartTime = start
+            
+            if row.get('end_time'):
+                end = datetime.fromisoformat(str(row['end_time']).replace('Z', '+00:00'))
+                if not lastEndTime or end > lastEndTime:
+                    lastEndTime = end
         
-        # Get trip start time
-        if result['start_time']:
-            dayStart = datetime.strptime(str(result['start_time']), '%Y-%m-%d %H:%M:%S.%f')
-            idleTime = endTime - dayStart - totalTime
+        # Calculate idle time (time between first trip start and last trip end, minus total driving time)
+        if firstStartTime and lastEndTime:
+            totalDayTime = lastEndTime - firstStartTime
+            idleTime = totalDayTime - totalTime
         else:
             idleTime = timedelta()
         
@@ -274,17 +336,100 @@ def localDBRecord(username, company, carnum, destination, passengers, cargo, gps
     localdb.commit()
 	# Close our connection
     localdb.close()
-    localDBShowAll()
+    # Don't print every GPS point
+    if destination in ['Start Trip', 'End Trip']:
+        localDBShowAll()
 
 def localDBDumptoServer():
+    """Upload trip summary to TripData table"""
     [cursor, localdb] = localDBConnect()
-    cursor.execute("SELECT * FROM tripData")
-    records = cursor.fetchall()
-    for row in records:
-        DBUploadDataPoint(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
+    
+    try:
+        # Get the MOST RECENT trip start record
+        query = "SELECT tripID, company, carnum, time FROM tripData WHERE destinationXstatus = 'Start Trip' ORDER BY time DESC LIMIT 1"
+        cursor.execute(query)
+        start_record = cursor.fetchone()
+        
+        if not start_record:
+            Logger.warning("No trip start record found")
+            localdb.close()
+            return
+        
+        trip_id = start_record[0]
+        print(f"\n==== PROCESSING TRIP: {trip_id} ====")
+        Logger.info(f"Processing trip: {trip_id}")
+        company = start_record[1]
+        car_number = start_record[2]
+        start_time = datetime.strptime(str(start_record[3]), '%Y-%m-%d %H:%M:%S.%f')
+        
+        # Use the global variables for trip info (destination, passengers, cargo)
+        # These are set during the trip workflow
+        destination = currentDest
+        passenger_info = currentPass  
+        cargo_type = currentCargo
+        starting_point = currentStartPoint
+        
+        print(f"Destination: {destination}")
+        print(f"Passengers: {passenger_info}")
+        print(f"Cargo: {cargo_type}")
+        print(f"Starting Point: {starting_point}")
+        
+        # Get the trip end record with totals
+        query = "SELECT passengersXtotalTime, cargoXtotalDist, gpslonXworkingFuel, time FROM tripData WHERE destinationXstatus = 'End Trip' AND tripID = ?"
+        cursor.execute(query, (trip_id,))
+        end_record = cursor.fetchone()
+        
+        if not end_record:
+            Logger.warning(f"No trip end record found for trip_id: {trip_id}")
+            Logger.warning(f"Checking all records for this trip...")
+            # Debug: show all records for this trip
+            cursor.execute("SELECT * FROM tripData WHERE tripID = ?", (trip_id,))
+            all_records = cursor.fetchall()
+            for rec in all_records:
+                Logger.warning(f"Record: {rec}")
+            localdb.close()
+            return
+        
+        # Parse end data
+        duration_timedelta = end_record[0]
+        distance_km = float(end_record[1])
+        fuel_gallons = float(end_record[2])
+        end_time = datetime.strptime(str(end_record[3]), '%Y-%m-%d %H:%M:%S.%f')
+        
+        # Convert timedelta to seconds
+        if isinstance(duration_timedelta, timedelta):
+            duration_seconds = int(duration_timedelta.total_seconds())
+        else:
+            # Parse from string if needed
+            try:
+                t = datetime.strptime(str(duration_timedelta), '%H:%M:%S.%f')
+                duration_seconds = t.hour * 3600 + t.minute * 60 + t.second
+            except:
+                duration_seconds = 0
+        
+        # Upload to server
+        DBUploadTripSummary(
+            trip_id=trip_id,
+            username=currentUser,
+            company=company,
+            car_number=car_number,
+            destination=destination,
+            passenger_info=passenger_info,
+            cargo_type=cargo_type,
+            distance_km=distance_km,
+            duration_seconds=duration_seconds,
+            fuel_gallons=fuel_gallons,
+            start_time=start_time,
+            end_time=end_time,
+            starting_point=currentStartPoint if currentStartPoint else ""
+        )
+        
+    except Exception as e:
+        Logger.error(f"localDBDumptoServer failed: {e}")
+    
     # Save Changes
     localdb.commit()
-	# Close our connection
+    # Close our connection
     localdb.close()
     # Clear local data
     localDBClearTrip()
@@ -684,18 +829,9 @@ class TripStats(Screen):
             localDBDumptoServer()
         
     def clearCurrent(self):
-        global currentTripID
-        global currentCompany
-        global currentCar
-        global currentDest
-        global currentPass
-        global currentCargo
-        currentCompany = ''
-        currentCar = ''
-        currentDest = ''
-        currentPass = ''
-        currentCargo = ''
-        currentTripID = ''
+        # DON'T clear the globals here - they're needed for upload in on_pre_leave
+        # They will be cleared after upload in localDBDumptoServer
+        pass
         
 class Loading(Screen):
     pass

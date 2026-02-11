@@ -26,7 +26,7 @@ def make_request(endpoint, method='GET', data=None, params=None):
     Make HTTP request to Supabase REST API
     
     Args:
-        endpoint: API endpoint (e.g., 'UserData', 'TrackingData')
+        endpoint: API endpoint (e.g., 'UserData', 'TripData')
         method: HTTP method ('GET', 'POST', 'PATCH', 'DELETE')
         data: JSON data for POST/PATCH requests
         params: Query parameters as dict
@@ -220,38 +220,66 @@ def get_user_data(username):
         Logger.error(f"get_user_data failed: {e}")
         return None
 
-def upload_tracking_data(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time):
-    """Upload tracking data point"""
+def upload_trip_summary(trip_id, username, company, car_number, destination, passenger_type, 
+                       passenger_count, cargo_type, distance_km, duration_seconds, 
+                       fuel_gallons, start_time, end_time, starting_point):
+    """Upload complete trip summary to TripData table"""
     try:
         data = {
-            "tripID": tripID,
+            "trip_id": trip_id,
+            "username": username,
             "company": company,
-            "carnum": carnum,
-            "destinationXstatus": destination,
-            "passengersXtotalTime": str(passengers),
-            "cargoXtotalDist": str(cargo),
-            "gpslonXworkingFuel": str(gpslon),
-            "gpslat": str(gpslat),
-            "time": str(time)
+            "car_number": car_number,
+            "destination": destination,
+            "passenger_type": passenger_type,
+            "passenger_count": passenger_count,
+            "cargo_type": cargo_type,
+            "distance_km": float(distance_km) if distance_km else 0.0,
+            "duration_seconds": int(duration_seconds) if duration_seconds else 0,
+            "fuel_gallons": float(fuel_gallons) if fuel_gallons else 0.0,
+            "start_time": start_time,
+            "end_time": end_time,
+            "starting_point": starting_point
         }
-        insert('TrackingData', data)
+        Logger.info(f"=== UPLOADING TRIP TO TRIPDATA ===")
+        Logger.info(f"Data being sent: {data}")
+        print(f"\n=== UPLOADING TO TRIPDATA TABLE ===")
+        print(f"Data: {json.dumps(data, indent=2)}")
+        
+        result = insert('TripData', data)
+        Logger.info(f"Trip summary uploaded successfully: {trip_id}")
+        Logger.info(f"Server response: {result}")
+        print(f"Upload successful! Response: {result}\n")
+        return result
     except Exception as e:
-        Logger.error(f"upload_tracking_data failed: {e}")
+        Logger.error(f"upload_trip_summary failed: {e}")
+        print(f"ERROR uploading trip: {e}")
         raise
 
+def upload_tracking_data(tripID, company, carnum, destination, passengers, cargo, gpslon, gpslat, time):
+    """Legacy function - kept for compatibility with local DB tracking"""
+    # This function is now only used for local database tracking
+    # Actual trip data is uploaded via upload_trip_summary at the end of the trip
+    pass
+
 def get_day_stats(username, date):
-    """Get daily statistics - uses advanced query"""
+    """Get daily statistics from TripData table - uses new schema"""
     try:
-        dayID = f"{username}{date}"
+        # Query trips for the given username and date
+        # date format should be YYYY-MM-DD
+        from datetime import datetime
+        try:
+            # Convert date from YYYYMMDD to YYYY-MM-DD format for comparison
+            date_obj = datetime.strptime(date, '%Y%m%d')
+            date_str = date_obj.strftime('%Y-%m-%d')
+        except:
+            date_str = date
         
-        # Get all trips that end with 'End Trip' for the given day
-        # Using like filter for tripID
-        url = f"{SUPABASE_URL}/rest/v1/TrackingData"
-        params = {
-            'select': 'passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel,time',
-            'destinationXstatus': 'eq.End Trip',
-            'tripID': f'like.{dayID}*'
-        }
+        url = f"{SUPABASE_URL}/rest/v1/TripData"
+        
+        # Get all trips for the user on this date
+        # Use 'and' operator for date range
+        query_string = f"select=distance_km,duration_seconds,fuel_gallons,start_time,end_time&username=eq.{username}&start_time=gte.{date_str}T00:00:00&start_time=lt.{date_str}T23:59:59"
         
         headers = {
             'apikey': SUPABASE_KEY,
@@ -259,31 +287,15 @@ def get_day_stats(username, date):
             'Content-Type': 'application/json'
         }
         
-        query_string = '&'.join([f"{k}={v}" for k, v in params.items()])
         full_url = f"{url}?{query_string}"
         
         req = urllib.request.Request(full_url, headers=headers)
         with urllib.request.urlopen(req, timeout=10, context=ssl_context) as response:
             trips = json.loads(response.read().decode('utf-8'))
         
-        # Get trip start data
-        params2 = {
-            'select': 'time',
-            'destinationXstatus': 'eq.Start Trip',
-            'tripID': f'like.{dayID}*',
-            'limit': '1'
-        }
-        
-        query_string2 = '&'.join([f"{k}={v}" for k, v in params2.items()])
-        full_url2 = f"{url}?{query_string2}"
-        
-        req2 = urllib.request.Request(full_url2, headers=headers)
-        with urllib.request.urlopen(req2, timeout=10, context=ssl_context) as response:
-            start_data = json.loads(response.read().decode('utf-8'))
-        
         return {
             'trips': trips,
-            'start_time': start_data[0]['time'] if start_data else None
+            'start_time': trips[0]['start_time'] if trips else None
         }
         
     except Exception as e:

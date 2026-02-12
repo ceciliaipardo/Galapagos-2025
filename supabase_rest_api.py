@@ -266,7 +266,7 @@ def get_day_stats(username, date):
     """Get daily statistics from TripData table - uses new schema"""
     try:
         # Query trips for the given username and date
-        # date format should be YYYY-MM-DD
+        # date format should be YYYYMMDD
         from datetime import datetime
         try:
             # Convert date from YYYYMMDD to YYYY-MM-DD format for comparison
@@ -300,4 +300,44 @@ def get_day_stats(username, date):
         
     except Exception as e:
         Logger.error(f"get_day_stats failed: {e}")
+        raise
+
+def get_individual_trips(username, date=None):
+    """Get individual trip details - all trips or for a specific day"""
+    try:
+        from datetime import datetime
+        
+        url = f"{SUPABASE_URL}/rest/v1/TripData"
+        
+        if date:
+            # Get trips for specific date
+            try:
+                # Convert date from YYYYMMDD to YYYY-MM-DD format for comparison
+                date_obj = datetime.strptime(date, '%Y%m%d')
+                date_str = date_obj.strftime('%Y-%m-%d')
+            except:
+                date_str = date
+            
+            # Get all trip details for the user on this date, ordered by start_time descending (most recent first)
+            query_string = f"select=*&username=eq.{username}&start_time=gte.{date_str}T00:00:00&start_time=lt.{date_str}T23:59:59&order=start_time.desc"
+        else:
+            # Get ALL trips for the user, ordered by start_time descending (most recent first)
+            query_string = f"select=*&username=eq.{username}&order=start_time.desc"
+        
+        headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        full_url = f"{url}?{query_string}"
+        
+        req = urllib.request.Request(full_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10, context=ssl_context) as response:
+            trips = json.loads(response.read().decode('utf-8'))
+        
+        return trips
+        
+    except Exception as e:
+        Logger.error(f"get_individual_trips failed: {e}")
         raise

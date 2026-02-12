@@ -62,6 +62,23 @@ class Translations:
                 'gallons': 'Gallons',
                 'hours_minutes_seconds': '{} Hours, {} Minutes, {} Seconds',
                 
+                # Individual Trips Screen
+                'view_individual_trips': 'View Individual Trips',
+                'view_all_trips': 'View All Trips',
+                'individual_trips_today': 'Individual Trips Today',
+                'all_trips': 'Trip History',
+                'today': 'Today',
+                'past': 'Past',
+                'trip': 'Trip',
+                'starting_point': 'Starting Point',
+                'passengers': 'Passengers',
+                'cargo': 'Cargo',
+                'distance': 'Distance',
+                'duration': 'Duration',
+                'fuel': 'Fuel',
+                'no_trips_today': 'No trips recorded today',
+                'error_loading_trips': 'Error loading trips. Please try again.',
+                
                 # Start Trip Screen
                 'which_car': 'Which car are you using?',
                 
@@ -175,6 +192,23 @@ class Translations:
                 'km': 'Km',
                 'gallons': 'Galones',
                 'hours_minutes_seconds': '{} Horas, {} Minutos, {} Segundos',
+                
+                # Individual Trips Screen
+                'view_individual_trips': 'Ver Viajes Individuales',
+                'view_all_trips': 'Ver Todos los Viajes',
+                'individual_trips_today': 'Viajes Individuales de Hoy',
+                'all_trips': 'Historial de Viajes',
+                'today': 'Hoy',
+                'past': 'Pasado',
+                'trip': 'Viaje',
+                'starting_point': 'Punto de Partida',
+                'passengers': 'Pasajeros',
+                'cargo': 'Carga',
+                'distance': 'Distancia',
+                'duration': 'Duración',
+                'fuel': 'Combustible',
+                'no_trips_today': 'No hay viajes registrados hoy',
+                'error_loading_trips': 'Error al cargar viajes. Por favor intente nuevamente.',
                 
                 # Start Trip Screen
                 'which_car': '¿Qué auto está usando?',

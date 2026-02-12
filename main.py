@@ -609,6 +609,338 @@ class HomeStatsPage(Screen):
             self.ids.TotalTime.text = "Connection Required"
             self.ids.TimeBetween.text = "Connection Required"
 
+class IndividualTripsPage(Screen):
+    def on_pre_enter(self):
+        """Load and display today's trips by default"""
+        self.load_todays_trips()
+    
+    def load_todays_trips(self):
+        """Load only today's trips"""
+        Logger.info(f"Loading TODAY's trips for user: {currentUser}")
+        if(DBCheckConnection()):
+            try:
+                # Get today's trips
+                date_str = datetime.today().strftime("%Y%m%d")
+                trips = supabase_api.get_individual_trips(currentUser, date=date_str)
+                Logger.info(f"Retrieved {len(trips) if trips else 0} trips for today")
+                self.populate_trips(trips)
+            except Exception as e:
+                Logger.error(f"Failed to load today's trips: {e}")
+                import traceback
+                Logger.error(traceback.format_exc())
+                self.show_error_message()
+        else:
+            Logger.warning("No database connection available")
+            self.show_connection_error()
+    
+    def load_past_trips(self):
+        """Load all past trips (excluding today)"""
+        Logger.info(f"Loading PAST trips for user: {currentUser}")
+        if(DBCheckConnection()):
+            try:
+                # Get ALL trips
+                all_trips = supabase_api.get_individual_trips(currentUser, date=None)
+                
+                # Filter out today's trips
+                today_str = datetime.today().strftime('%Y-%m-%d')
+                past_trips = []
+                for trip in all_trips:
+                    try:
+                        start_time = datetime.fromisoformat(str(trip.get('start_time')).replace('Z', '+00:00'))
+                        trip_date = start_time.strftime('%Y-%m-%d')
+                        if trip_date != today_str:
+                            past_trips.append(trip)
+                    except:
+                        pass
+                
+                Logger.info(f"Retrieved {len(past_trips)} past trips")
+                self.populate_trips(past_trips)
+            except Exception as e:
+                Logger.error(f"Failed to load past trips: {e}")
+                import traceback
+                Logger.error(traceback.format_exc())
+                self.show_error_message()
+        else:
+            Logger.warning("No database connection available")
+            self.show_connection_error()
+    
+    def populate_trips(self, trips):
+        """Populate the trips list in the UI with condensed trip cards"""
+        from kivy.uix.boxlayout import BoxLayout
+        from kivy.uix.label import Label
+        from kivy.uix.widget import Widget
+        from kivy.uix.button import Button
+        from kivy.graphics import Color, RoundedRectangle
+        
+        # Get the trips container
+        trips_container = self.ids.trips_container
+        trips_container.clear_widgets()
+        
+        # Debug logging
+        Logger.info(f"Populate trips called with {len(trips) if trips else 0} trips")
+        if trips:
+            for idx, trip in enumerate(trips):
+                Logger.info(f"Trip {idx+1}: {trip.get('destination')} at {trip.get('start_time')}")
+        
+        if not trips or len(trips) == 0:
+            # No trips found
+            no_trips_label = Label(
+                text=translator.get_text('no_trips_today'),
+                font_name='CaviarDreams.ttf',
+                font_size='18sp',
+                color=(0.4, 0.4, 0.4, 1),
+                size_hint_y=None,
+                height='100dp',
+                halign='center'
+            )
+            trips_container.add_widget(no_trips_label)
+            return
+        
+        # Display each trip as a condensed clickable card
+        for idx, trip in enumerate(trips, 1):
+            Logger.info(f"Creating card for trip {idx}")
+            trip_card = self.create_condensed_trip_card(idx, trip)
+            trips_container.add_widget(trip_card)
+            Logger.info(f"Added card {idx} to container")
+            
+            # Add spacing between trips
+            if idx < len(trips):
+                spacer = Widget(size_hint_y=None, height='10dp')
+                trips_container.add_widget(spacer)
+        
+        Logger.info(f"Total widgets in container: {len(trips_container.children)}")
+        Logger.info(f"Container minimum height: {trips_container.minimum_height}")
+    
+    def create_condensed_trip_card(self, trip_num, trip):
+        """Create a condensed clickable card for a single trip"""
+        from kivy.uix.button import Button
+        from kivy.graphics import Color, RoundedRectangle
+        from kivy.app import App
+        
+        # Parse timestamps and check if trip is from today
+        try:
+            start_time = datetime.fromisoformat(str(trip.get('start_time')).replace('Z', '+00:00'))
+            time_str = start_time.strftime('%I:%M %p')
+            trip_date = start_time.strftime('%m/%d/%Y')
+            today_date = datetime.today().strftime('%m/%d/%Y')
+            is_today = (trip_date == today_date)
+        except Exception as e:
+            Logger.error(f"Error parsing time: {e}")
+            time_str = 'N/A'
+            trip_date = ''
+            is_today = True
+        
+        starting = trip.get('starting_point', 'N/A')
+        ending = trip.get('destination', 'N/A')
+        
+        # Create button text - include date if not today
+        if is_today:
+            button_text = f"Trip #{trip_num}     {time_str}\n{starting} → {ending}"
+        else:
+            button_text = f"{trip_date}  {time_str}\n{starting} → {ending}"
+        
+        # Square styled button with more padding
+        card = Button(
+            text=button_text,
+            font_name='CaviarDreams.ttf',
+            font_size='15sp',
+            size_hint_y=None,
+            height='90dp',
+            halign='center',
+            valign='middle',
+            text_size=(None, None),
+            background_normal='',
+            background_color=(0, 0, 0, 0),
+            color=(0.1, 0.1, 0.1, 1)
+        )
+        
+        # Bind text_size to button size for text wrapping
+        card.bind(size=lambda instance, value: setattr(instance, 'text_size', (value[0] - 40, None)))
+        
+        # Add white background with rounded corners
+        with card.canvas.before:
+            Color(1, 1, 1, 1)
+            card.bg_rect = RoundedRectangle(pos=card.pos, size=card.size, radius=[12, 12, 12, 12])
+        
+        def update_bg(instance, value):
+            instance.bg_rect.pos = instance.pos
+            instance.bg_rect.size = instance.size
+        
+        card.bind(pos=update_bg, size=update_bg)
+        
+        # Make button clickable - navigate to detail page
+        def on_button_click(instance):
+            try:
+                Logger.info(f"Trip card {trip_num} clicked")
+                app = App.get_running_app()
+                detail_screen = app.root.get_screen('TripDetailPage')
+                detail_screen.load_trip_details(trip, trip_num)
+                app.root.current = "TripDetailPage"
+                app.root.transition.direction = "left"
+            except Exception as e:
+                Logger.error(f"Error navigating to detail page: {e}")
+                import traceback
+                Logger.error(traceback.format_exc())
+        
+        card.bind(on_release=on_button_click)
+        
+        return card
+    
+    def create_trip_card(self, trip_num, trip):
+        """Create a card widget for a single trip"""
+        from kivy.uix.boxlayout import BoxLayout
+        from kivy.uix.label import Label
+        from kivy.graphics import Color, RoundedRectangle
+        
+        # Main card container
+        card = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            padding=['15dp', '15dp'],
+            spacing='8dp'
+        )
+        
+        # Add white background with rounded corners
+        with card.canvas.before:
+            Color(1, 1, 1, 1)
+            card.bg_rect = RoundedRectangle(pos=card.pos, size=card.size, radius=[12, 12, 12, 12])
+        
+        def update_bg(instance, value):
+            instance.bg_rect.pos = instance.pos
+            instance.bg_rect.size = instance.size
+        
+        card.bind(pos=update_bg, size=update_bg)
+        
+        # Trip header
+        header = Label(
+            text=f"{translator.get_text('trip')} #{trip_num}",
+            font_name='CaviarDreams_Bold.ttf',
+            font_size='20sp',
+            color=(0.1, 0.1, 0.1, 1),
+            size_hint_y=None,
+            height='30dp',
+            halign='left'
+        )
+        header.bind(size=header.setter('text_size'))
+        card.add_widget(header)
+        
+        # Parse timestamps
+        try:
+            start_time = datetime.fromisoformat(str(trip.get('start_time')).replace('Z', '+00:00'))
+            end_time = datetime.fromisoformat(str(trip.get('end_time')).replace('Z', '+00:00'))
+            
+            start_str = start_time.strftime('%I:%M %p')
+            end_str = end_time.strftime('%I:%M %p')
+            
+            time_label = Label(
+                text=f"{start_str} - {end_str}",
+                font_name='CaviarDreams.ttf',
+                font_size='16sp',
+                color=(0.4, 0.4, 0.4, 1),
+                size_hint_y=None,
+                height='25dp',
+                halign='left'
+            )
+            time_label.bind(size=time_label.setter('text_size'))
+            card.add_widget(time_label)
+        except:
+            pass
+        
+        # Trip details
+        details = [
+            (translator.get_text('destination'), trip.get('destination', 'N/A')),
+            (translator.get_text('starting_point'), trip.get('starting_point', 'N/A')),
+            (translator.get_text('passengers'), f"{trip.get('passenger_type', 'N/A')} - {trip.get('passenger_count', '')}"),
+            (translator.get_text('cargo'), trip.get('cargo_type', 'N/A')),
+            (translator.get_text('distance'), f"{trip.get('distance_km', 0):.2f} {translator.get_text('km')}"),
+            (translator.get_text('duration'), self.format_duration(trip.get('duration_seconds', 0))),
+            (translator.get_text('fuel'), f"{trip.get('fuel_gallons', 0):.2f} {translator.get_text('gallons')}")
+        ]
+        
+        for label, value in details:
+            detail_row = BoxLayout(
+                orientation='horizontal',
+                size_hint_y=None,
+                height='25dp',
+                spacing='10dp'
+            )
+            
+            label_widget = Label(
+                text=f"{label}:",
+                font_name='CaviarDreams_Bold.ttf',
+                font_size='14sp',
+                color=(0.3, 0.3, 0.3, 1),
+                size_hint_x=0.4,
+                halign='left'
+            )
+            label_widget.bind(size=label_widget.setter('text_size'))
+            
+            value_widget = Label(
+                text=str(value),
+                font_name='CaviarDreams.ttf',
+                font_size='14sp',
+                color=(0.1, 0.1, 0.1, 1),
+                size_hint_x=0.6,
+                halign='left'
+            )
+            value_widget.bind(size=value_widget.setter('text_size'))
+            
+            detail_row.add_widget(label_widget)
+            detail_row.add_widget(value_widget)
+            card.add_widget(detail_row)
+        
+        # Calculate card height based on content
+        card.height = '320dp'
+        
+        return card
+    
+    def format_duration(self, seconds):
+        """Format duration in seconds to readable string"""
+        hours = int(seconds / 3600)
+        minutes = int((seconds - hours * 3600) / 60)
+        secs = int(seconds - hours * 3600 - minutes * 60)
+        
+        if hours > 0:
+            return f"{hours}h {minutes}m {secs}s"
+        elif minutes > 0:
+            return f"{minutes}m {secs}s"
+        else:
+            return f"{secs}s"
+    
+    def show_error_message(self):
+        """Show error message when data cannot be loaded"""
+        from kivy.uix.label import Label
+        trips_container = self.ids.trips_container
+        trips_container.clear_widgets()
+        
+        error_label = Label(
+            text=translator.get_text('error_loading_trips'),
+            font_name='CaviarDreams.ttf',
+            font_size='16sp',
+            color=(0.85, 0.2, 0.2, 1),
+            size_hint_y=None,
+            height='100dp',
+            halign='center'
+        )
+        trips_container.add_widget(error_label)
+    
+    def show_connection_error(self):
+        """Show connection error message"""
+        from kivy.uix.label import Label
+        trips_container = self.ids.trips_container
+        trips_container.clear_widgets()
+        
+        error_label = Label(
+            text=translator.get_text('connection_required'),
+            font_name='CaviarDreams.ttf',
+            font_size='16sp',
+            color=(0.85, 0.2, 0.2, 1),
+            size_hint_y=None,
+            height='100dp',
+            halign='center'
+        )
+        trips_container.add_widget(error_label)
+
 class Register1(Screen):        
     def checkRegPg1(self, username, phone):
         if(DBCheckConnection()):
@@ -833,6 +1165,100 @@ class TripStats(Screen):
         # They will be cleared after upload in localDBDumptoServer
         pass
         
+class TripDetailPage(Screen):
+    def load_trip_details(self, trip, trip_num):
+        """Load and display detailed information for a specific trip"""
+        Logger.info(f"Loading trip details for trip #{trip_num}")
+        Logger.info(f"Trip data: {trip}")
+        self.current_trip = trip
+        self.trip_number = trip_num
+        
+    def on_enter(self):
+        """Populate the detail view when entering the screen"""
+        from kivy.clock import Clock
+        Logger.info("TripDetailPage on_enter called")
+        if hasattr(self, 'current_trip'):
+            # Use Clock to delay update until screen is fully rendered
+            Clock.schedule_once(lambda dt: self.update_display(), 0.1)
+        else:
+            Logger.warning("No current_trip when entering screen")
+    
+    def update_display(self):
+        """Update all display fields with trip data"""
+        try:
+            if not hasattr(self, 'current_trip'):
+                Logger.warning("No current_trip data available")
+                return
+            
+            if not hasattr(self, 'ids'):
+                Logger.warning("IDs not yet available, rescheduling")
+                from kivy.clock import Clock
+                Clock.schedule_once(lambda dt: self.update_display(), 0.2)
+                return
+            
+            trip = self.current_trip
+            trip_num = self.trip_number
+            
+            Logger.info(f"Updating display for trip #{trip_num}")
+            
+            # Set trip number
+            self.ids.trip_number_label.text = f"{translator.get_text('trip')} #{trip_num}"
+            
+            # Parse and display timestamps
+            try:
+                start_time = datetime.fromisoformat(str(trip.get('start_time')).replace('Z', '+00:00'))
+                end_time = datetime.fromisoformat(str(trip.get('end_time')).replace('Z', '+00:00'))
+                
+                start_str = start_time.strftime('%I:%M %p')
+                end_str = end_time.strftime('%I:%M %p')
+                
+                self.ids.time_label.text = f"{start_str} - {end_str}"
+                Logger.info(f"Time set to: {start_str} - {end_str}")
+            except Exception as e:
+                Logger.error(f"Error parsing timestamps: {e}")
+                self.ids.time_label.text = 'N/A'
+            
+            # Display trip details - all with str() to avoid type issues
+            self.ids.destination_value.text = str(trip.get('destination', 'N/A'))
+            self.ids.starting_point_value.text = str(trip.get('starting_point', 'N/A'))
+            
+            # Format passengers
+            passenger_text = str(trip.get('passenger_type', 'N/A'))
+            if trip.get('passenger_count'):
+                passenger_text += f" - {trip.get('passenger_count')}"
+            self.ids.passengers_value.text = passenger_text
+            
+            self.ids.cargo_value.text = str(trip.get('cargo_type', 'N/A'))
+            self.ids.distance_value.text = f"{float(trip.get('distance_km', 0)):.2f} {translator.get_text('km')}"
+            self.ids.duration_value.text = self.format_duration(int(trip.get('duration_seconds', 0)))
+            self.ids.fuel_value.text = f"{float(trip.get('fuel_gallons', 0)):.2f} {translator.get_text('gallons')}"
+            
+            # Display company and car info if available
+            if trip.get('company'):
+                self.ids.company_value.text = f"Company: {trip.get('company')}"
+            if trip.get('car_number'):
+                self.ids.car_value.text = f"Car: {trip.get('car_number')}"
+            
+            Logger.info("Display update complete")
+            
+        except Exception as e:
+            Logger.error(f"CRASH in update_display: {e}")
+            import traceback
+            Logger.error(traceback.format_exc())
+    
+    def format_duration(self, seconds):
+        """Format duration in seconds to readable string"""
+        hours = int(seconds / 3600)
+        minutes = int((seconds - hours * 3600) / 60)
+        secs = int(seconds - hours * 3600 - minutes * 60)
+        
+        if hours > 0:
+            return f"{hours}h {minutes}m {secs}s"
+        elif minutes > 0:
+            return f"{minutes}m {secs}s"
+        else:
+            return f"{secs}s"
+
 class Loading(Screen):
     pass
         

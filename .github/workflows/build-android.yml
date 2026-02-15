@@ -14,6 +14,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        submodules: recursive
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -23,16 +25,20 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip openjdk-11-jdk python3-pip autoconf automake libtool libtool-bin pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev build-essential ccache
+        sudo apt install -y git zip unzip openjdk-11-jdk python3-pip autoconf automake libtool libtool-bin pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev build-essential ccache libltdl-dev
     
     - name: Install buildozer
       run: |
         pip install --upgrade pip
-        pip install buildozer cython==0.29.36
+        pip install buildozer==1.5.0 cython==0.29.36
+    
+    - name: Accept Android licenses
+      run: |
+        yes | sdkmanager --licenses || true
     
     - name: Build with buildozer
       run: |
-        buildozer android debug
+        yes | buildozer android debug || buildozer android debug
     
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4

@@ -1,0 +1,51 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git zip unzip openjdk-11-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev build-essential ccache
+    
+    - name: Install buildozer
+      run: |
+        pip install --upgrade pip
+        pip install buildozer cython==0.29.36
+    
+    - name: Build with buildozer
+      run: |
+        buildozer android debug
+    
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      if: success()
+      with:
+        name: android-apk
+        path: bin/*.apk
+        retention-days: 30
+    
+    - name: Upload build logs
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: build-logs
+        path: .buildozer/android/platform/build-*/build.log
+        retention-days: 7

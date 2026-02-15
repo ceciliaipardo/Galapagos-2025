@@ -38,8 +38,10 @@ version = 0.1
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
 # Note: Using urllib.request (standard library) instead of Supabase Python client for Android compatibility
-# Note: pyjnius is automatically included by android and plyer - don't specify version to avoid conflicts
-requirements = python3,sqlite3,kivy==2.2.1,kivymd,android,plyer
+# Note: Removed 'android' requirement - app doesn't use Java APIs, only causes pyjnius build issues
+# Note: sqlite3 is built into Python, removed explicit requirement
+# Note: Removed kivy version pin for better compatibility with latest p4a
+requirements = python3,kivy,kivymd,plyer
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -56,7 +58,8 @@ requirements = python3,sqlite3,kivy==2.2.1,kivymd,android,plyer
 orientation = portrait
 
 # (list) List of service to declare
-services = GPS:gps_service.py
+# Temporarily disabled to fix pyjnius build issue - GPS handled by main app
+# services = GPS:gps_service.py
 
 #
 # OSX Specific
@@ -91,7 +94,7 @@ fullscreen = 0
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-android.permissions = INTERNET,ACCESS_COARSE_LOCATION,ACCESS_FINE_LOCATION,ACCESS_BACKGROUND_LOCATION,WAKE_LOCK,FOREGROUND_SERVICE,FOREGROUND_SERVICE_LOCATION
+android.permissions = INTERNET,ACCESS_COARSE_LOCATION,ACCESS_FINE_LOCATION,ACCESS_BACKGROUND_LOCATION,WAKE_LOCK,FOREGROUND_SERVICE,FOREGROUND_SERVICE_LOCATION,POST_NOTIFICATIONS
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host

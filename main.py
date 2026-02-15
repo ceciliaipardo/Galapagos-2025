@@ -1051,8 +1051,13 @@ class People(Screen):
 class PassengerCount(Screen):
     def setPassengerCount(self, count):
         global currentPass
-        # Append the count to the current passenger type
-        currentPass = f"{currentPass} - {count}"
+        # Only append count if currentPass has a passenger type
+        # Don't append if currentPass is empty or already has a count
+        if currentPass and ' - ' not in currentPass:
+            currentPass = f"{currentPass} - {count}"
+        else:
+            # If no passenger type set (shouldn't happen), just use the count
+            currentPass = count
         
     def clearPeople(self):
         global currentPass
@@ -1564,9 +1569,23 @@ class MainApp(App):
     
     def update_gps_location(self, **kwargs):
         global currentlat, currentlon
+        
+        # Validate GPS data
+        if 'lat' not in kwargs or 'lon' not in kwargs:
+            Logger.warning("GPS: Update received without coordinates")
+            return
+        
+        # Check GPS accuracy if available
+        accuracy = kwargs.get('accuracy', 999)
+        if accuracy > 50:  # More than 50 meters is poor accuracy
+            Logger.warning(f"GPS: Poor accuracy ({accuracy}m) - data may be unreliable")
+        
         currentlat = kwargs['lat']
         currentlon = kwargs['lon']
         now = datetime.now()
+        
+        Logger.info(f"GPS: Location updated - Lat: {currentlat:.6f}, Lon: {currentlon:.6f}, Accuracy: {accuracy}m")
+        
         localDBRecord(currentTripID, currentCompany, currentCar, currentDest, currentPass, currentCargo, currentlon, currentlat, now)
     
     def stopGPS(self):

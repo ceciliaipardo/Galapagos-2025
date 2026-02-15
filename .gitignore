@@ -24,3 +24,6 @@ kivy_*.txt
 # Local DBs
 *.sqlite3
 local_db.db
+.buildozer/
+bin/
+build/

@@ -892,7 +892,7 @@ WindowManager:
             Label:
                 text: app.translator.get_text('what_cargo')
                 font_name: 'CaviarDreams_Bold.ttf'
-                font_size: '24sp'
+                font_size: '26sp'
                 color: 0.1, 0.1, 0.1, 1
                 size_hint_y: None
                 height: '40dp'
@@ -902,13 +902,13 @@ WindowManager:
                 size_hint_y: None
                 height: '10dp'
 
-            # Luggage - Simple row
+            # Luggage
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint_y: None
                 height: '60dp'
                 spacing: '15dp'
-                padding: ['15dp', '10dp']
+                padding: ['10dp', '5dp']
                 canvas.before:
                     Color:
                         rgba: 0.05, 0.05, 0.05, 1
@@ -916,6 +916,7 @@ WindowManager:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): luggage_check.active = not luggage_check.active
                 CheckBox:
                     id: luggage_check
                     size_hint_x: None
@@ -925,12 +926,11 @@ WindowManager:
                 Label:
                     text: app.translator.get_text('luggage')
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '19sp'
+                    font_size: '18sp'
                     color: 1, 1, 1, 1
                     halign: 'left'
                     valign: 'middle'
                     text_size: self.size
-                    on_touch_down: if self.collide_point(*args[1].pos): luggage_check.active = not luggage_check.active; return True
 
             # Bike
             BoxLayout:
@@ -938,7 +938,7 @@ WindowManager:
                 size_hint_y: None
                 height: '60dp'
                 spacing: '15dp'
-                padding: ['15dp', '10dp']
+                padding: ['10dp', '5dp']
                 canvas.before:
                     Color:
                         rgba: 0.05, 0.05, 0.05, 1
@@ -946,6 +946,7 @@ WindowManager:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): bike_check.active = not bike_check.active
                 CheckBox:
                     id: bike_check
                     size_hint_x: None
@@ -955,12 +956,11 @@ WindowManager:
                 Label:
                     text: app.translator.get_text('bike')
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '19sp'
+                    font_size: '18sp'
                     color: 1, 1, 1, 1
                     halign: 'left'
                     valign: 'middle'
                     text_size: self.size
-                    on_touch_down: if self.collide_point(*args[1].pos): bike_check.active = not bike_check.active; return True
 
             # Work Equipment
             BoxLayout:
@@ -968,7 +968,7 @@ WindowManager:
                 size_hint_y: None
                 height: '60dp'
                 spacing: '15dp'
-                padding: ['15dp', '10dp']
+                padding: ['10dp', '5dp']
                 canvas.before:
                     Color:
                         rgba: 0.05, 0.05, 0.05, 1
@@ -976,6 +976,7 @@ WindowManager:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): work_check.active = not work_check.active
                 CheckBox:
                     id: work_check
                     size_hint_x: None
@@ -985,12 +986,11 @@ WindowManager:
                 Label:
                     text: app.translator.get_text('work_equipment')
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '19sp'
+                    font_size: '18sp'
                     color: 1, 1, 1, 1
                     halign: 'left'
                     valign: 'middle'
                     text_size: self.size
-                    on_touch_down: if self.collide_point(*args[1].pos): work_check.active = not work_check.active; return True
 
             # Food and Goods
             BoxLayout:
@@ -998,7 +998,7 @@ WindowManager:
                 size_hint_y: None
                 height: '60dp'
                 spacing: '15dp'
-                padding: ['15dp', '10dp']
+                padding: ['10dp', '5dp']
                 canvas.before:
                     Color:
                         rgba: 0.05, 0.05, 0.05, 1
@@ -1006,6 +1006,7 @@ WindowManager:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): food_check.active = not food_check.active
                 CheckBox:
                     id: food_check
                     size_hint_x: None
@@ -1015,12 +1016,11 @@ WindowManager:
                 Label:
                     text: app.translator.get_text('food_goods')
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '19sp'
+                    font_size: '18sp'
                     color: 1, 1, 1, 1
                     halign: 'left'
                     valign: 'middle'
                     text_size: self.size
-                    on_touch_down: if self.collide_point(*args[1].pos): food_check.active = not food_check.active; return True
 
             # Miscellaneous Cargo
             BoxLayout:
@@ -1028,7 +1028,7 @@ WindowManager:
                 size_hint_y: None
                 height: '60dp'
                 spacing: '15dp'
-                padding: ['15dp', '10dp']
+                padding: ['10dp', '5dp']
                 canvas.before:
                     Color:
                         rgba: 0.05, 0.05, 0.05, 1
@@ -1036,6 +1036,7 @@ WindowManager:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
+                on_touch_down: if self.collide_point(*args[1].pos): misc_check.active = not misc_check.active
                 CheckBox:
                     id: misc_check
                     size_hint_x: None
@@ -1045,12 +1046,11 @@ WindowManager:
                 Label:
                     text: app.translator.get_text('misc_cargo')
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '19sp'
+                    font_size: '18sp'
                     color: 1, 1, 1, 1
                     halign: 'left'
                     valign: 'middle'
                     text_size: self.size
-                    on_touch_down: if self.collide_point(*args[1].pos): misc_check.active = not misc_check.active; return True
 
             Widget:
                 size_hint_y: 0.1
@@ -1294,14 +1294,11 @@ WindowManager:
                 Label:
                     text: app.translator.get_text('trip_statistics')
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '16sp'
+                    font_size: '26sp'
                     color: 0.1, 0.1, 0.1, 1
                     size_hint_y: None
-                    height: '35dp'
+                    height: '45dp'
                     halign: 'center'
-                    valign: 'middle'
-                    text_size: self.size
-                    padding: ['10dp', 0]
 
                 Widget:
                     size_hint_y: None

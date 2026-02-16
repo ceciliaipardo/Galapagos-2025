@@ -902,170 +902,165 @@ WindowManager:
                 size_hint_y: None
                 height: '10dp'
 
-            # Luggage
-            Button:
+            # Luggage - Clickable BoxLayout
+            BoxLayout:
+                orientation: 'horizontal'
                 size_hint_y: None
                 height: '60dp'
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                on_release: luggage_check.active = not luggage_check.active
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: '15dp'
-                    padding: ['15dp', '10dp']
-                    canvas.before:
-                        Color:
-                            rgba: 0.05, 0.05, 0.05, 1
-                        RoundedRectangle:
-                            pos: self.pos
-                            size: self.size
-                            radius: [10, 10, 10, 10]
-                    CheckBox:
-                        id: luggage_check
-                        size_hint_x: None
-                        width: '40dp'
-                        color: 1, 1, 1, 1
-                        on_active: root.on_cargo_checkbox(self, self.active, 'Luggage')
-                    Label:
-                        text: app.translator.get_text('luggage')
-                        font_name: 'CaviarDreams_Bold.ttf'
-                        font_size: '18sp'
-                        color: 1, 1, 1, 1
-                        halign: 'left'
-                        valign: 'middle'
-                        text_size: self.size
+                spacing: '15dp'
+                padding: ['15dp', '10dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                CheckBox:
+                    id: luggage_check
+                    size_hint_x: None
+                    width: '40dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Luggage')
+                Button:
+                    text: app.translator.get_text('luggage')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    on_release: luggage_check.active = not luggage_check.active
 
             # Bike
-            Button:
+            BoxLayout:
+                orientation: 'horizontal'
                 size_hint_y: None
                 height: '60dp'
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                on_release: bike_check.active = not bike_check.active
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: '15dp'
-                    padding: ['15dp', '10dp']
-                    canvas.before:
-                        Color:
-                            rgba: 0.05, 0.05, 0.05, 1
-                        RoundedRectangle:
-                            pos: self.pos
-                            size: self.size
-                            radius: [10, 10, 10, 10]
-                    CheckBox:
-                        id: bike_check
-                        size_hint_x: None
-                        width: '40dp'
-                        color: 1, 1, 1, 1
-                        on_active: root.on_cargo_checkbox(self, self.active, 'Bike')
-                    Label:
-                        text: app.translator.get_text('bike')
-                        font_name: 'CaviarDreams_Bold.ttf'
-                        font_size: '18sp'
-                        color: 1, 1, 1, 1
-                        halign: 'left'
-                        valign: 'middle'
-                        text_size: self.size
+                spacing: '15dp'
+                padding: ['15dp', '10dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                CheckBox:
+                    id: bike_check
+                    size_hint_x: None
+                    width: '40dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Bike')
+                Button:
+                    text: app.translator.get_text('bike')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    on_release: bike_check.active = not bike_check.active
 
             # Work Equipment
-            Button:
+            BoxLayout:
+                orientation: 'horizontal'
                 size_hint_y: None
                 height: '60dp'
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                on_release: work_check.active = not work_check.active
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: '15dp'
-                    padding: ['15dp', '10dp']
-                    canvas.before:
-                        Color:
-                            rgba: 0.05, 0.05, 0.05, 1
-                        RoundedRectangle:
-                            pos: self.pos
-                            size: self.size
-                            radius: [10, 10, 10, 10]
-                    CheckBox:
-                        id: work_check
-                        size_hint_x: None
-                        width: '40dp'
-                        color: 1, 1, 1, 1
-                        on_active: root.on_cargo_checkbox(self, self.active, 'Work Equipment')
-                    Label:
-                        text: app.translator.get_text('work_equipment')
-                        font_name: 'CaviarDreams_Bold.ttf'
-                        font_size: '18sp'
-                        color: 1, 1, 1, 1
-                        halign: 'left'
-                        valign: 'middle'
-                        text_size: self.size
+                spacing: '15dp'
+                padding: ['15dp', '10dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                CheckBox:
+                    id: work_check
+                    size_hint_x: None
+                    width: '40dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Work Equipment')
+                Button:
+                    text: app.translator.get_text('work_equipment')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    on_release: work_check.active = not work_check.active
 
             # Food and Goods
-            Button:
+            BoxLayout:
+                orientation: 'horizontal'
                 size_hint_y: None
                 height: '60dp'
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                on_release: food_check.active = not food_check.active
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: '15dp'
-                    padding: ['15dp', '10dp']
-                    canvas.before:
-                        Color:
-                            rgba: 0.05, 0.05, 0.05, 1
-                        RoundedRectangle:
-                            pos: self.pos
-                            size: self.size
-                            radius: [10, 10, 10, 10]
-                    CheckBox:
-                        id: food_check
-                        size_hint_x: None
-                        width: '40dp'
-                        color: 1, 1, 1, 1
-                        on_active: root.on_cargo_checkbox(self, self.active, 'Food and Goods')
-                    Label:
-                        text: app.translator.get_text('food_goods')
-                        font_name: 'CaviarDreams_Bold.ttf'
-                        font_size: '18sp'
-                        color: 1, 1, 1, 1
-                        halign: 'left'
-                        valign: 'middle'
-                        text_size: self.size
+                spacing: '15dp'
+                padding: ['15dp', '10dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                CheckBox:
+                    id: food_check
+                    size_hint_x: None
+                    width: '40dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Food and Goods')
+                Button:
+                    text: app.translator.get_text('food_goods')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    on_release: food_check.active = not food_check.active
 
             # Miscellaneous Cargo
-            Button:
+            BoxLayout:
+                orientation: 'horizontal'
                 size_hint_y: None
                 height: '60dp'
-                background_normal: ''
-                background_color: 0, 0, 0, 0
-                on_release: misc_check.active = not misc_check.active
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: '15dp'
-                    padding: ['15dp', '10dp']
-                    canvas.before:
-                        Color:
-                            rgba: 0.05, 0.05, 0.05, 1
-                        RoundedRectangle:
-                            pos: self.pos
-                            size: self.size
-                            radius: [10, 10, 10, 10]
-                    CheckBox:
-                        id: misc_check
-                        size_hint_x: None
-                        width: '40dp'
-                        color: 1, 1, 1, 1
-                        on_active: root.on_cargo_checkbox(self, self.active, 'Miscellaneous Cargo')
-                    Label:
-                        text: app.translator.get_text('misc_cargo')
-                        font_name: 'CaviarDreams_Bold.ttf'
-                        font_size: '18sp'
-                        color: 1, 1, 1, 1
-                        halign: 'left'
-                        valign: 'middle'
-                        text_size: self.size
+                spacing: '15dp'
+                padding: ['15dp', '10dp']
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                CheckBox:
+                    id: misc_check
+                    size_hint_x: None
+                    width: '40dp'
+                    color: 1, 1, 1, 1
+                    on_active: root.on_cargo_checkbox(self, self.active, 'Miscellaneous Cargo')
+                Button:
+                    text: app.translator.get_text('misc_cargo')
+                    font_name: 'CaviarDreams_Bold.ttf'
+                    font_size: '18sp'
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 1, 1, 1, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    on_release: misc_check.active = not misc_check.active
 
             Widget:
                 size_hint_y: 0.1

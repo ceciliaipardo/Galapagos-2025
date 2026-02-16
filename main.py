@@ -623,7 +623,7 @@ class IndividualTripsPage(Screen):
                 date_str = datetime.today().strftime("%Y%m%d")
                 trips = supabase_api.get_individual_trips(currentUser, date=date_str)
                 Logger.info(f"Retrieved {len(trips) if trips else 0} trips for today")
-                self.populate_trips(trips)
+                self.populate_trips(trips if trips else [])
             except Exception as e:
                 Logger.error(f"Failed to load today's trips: {e}")
                 import traceback
@@ -641,6 +641,11 @@ class IndividualTripsPage(Screen):
                 # Get ALL trips
                 all_trips = supabase_api.get_individual_trips(currentUser, date=None)
                 
+                if not all_trips:
+                    Logger.info("No trips found")
+                    self.populate_trips([])
+                    return
+                
                 # Filter out today's trips
                 today_str = datetime.today().strftime('%Y-%m-%d')
                 past_trips = []
@@ -650,11 +655,12 @@ class IndividualTripsPage(Screen):
                         trip_date = start_time.strftime('%Y-%m-%d')
                         if trip_date != today_str:
                             past_trips.append(trip)
-                    except:
+                    except Exception as e:
+                        Logger.warning(f"Error parsing trip date: {e}")
                         pass
                 
                 Logger.info(f"Retrieved {len(past_trips)} past trips")
-                self.populate_trips(past_trips)
+                self.populate_trips(past_trips if past_trips else [])
             except Exception as e:
                 Logger.error(f"Failed to load past trips: {e}")
                 import traceback
@@ -666,50 +672,60 @@ class IndividualTripsPage(Screen):
     
     def populate_trips(self, trips):
         """Populate the trips list in the UI with condensed trip cards"""
-        from kivy.uix.boxlayout import BoxLayout
-        from kivy.uix.label import Label
-        from kivy.uix.widget import Widget
-        from kivy.uix.button import Button
-        from kivy.graphics import Color, RoundedRectangle
-        
-        # Get the trips container
-        trips_container = self.ids.trips_container
-        trips_container.clear_widgets()
-        
-        # Debug logging
-        Logger.info(f"Populate trips called with {len(trips) if trips else 0} trips")
-        if trips:
-            for idx, trip in enumerate(trips):
-                Logger.info(f"Trip {idx+1}: {trip.get('destination')} at {trip.get('start_time')}")
-        
-        if not trips or len(trips) == 0:
-            # No trips found
-            no_trips_label = Label(
-                text=translator.get_text('no_trips_today'),
-                font_name='CaviarDreams.ttf',
-                font_size='18sp',
-                color=(0.4, 0.4, 0.4, 1),
-                size_hint_y=None,
-                height='100dp',
-                halign='center'
-            )
-            trips_container.add_widget(no_trips_label)
-            return
-        
-        # Display each trip as a condensed clickable card
-        for idx, trip in enumerate(trips, 1):
-            Logger.info(f"Creating card for trip {idx}")
-            trip_card = self.create_condensed_trip_card(idx, trip)
-            trips_container.add_widget(trip_card)
-            Logger.info(f"Added card {idx} to container")
+        try:
+            from kivy.uix.boxlayout import BoxLayout
+            from kivy.uix.label import Label
+            from kivy.uix.widget import Widget
+            from kivy.uix.button import Button
+            from kivy.graphics import Color, RoundedRectangle
             
-            # Add spacing between trips
-            if idx < len(trips):
-                spacer = Widget(size_hint_y=None, height='10dp')
-                trips_container.add_widget(spacer)
-        
-        Logger.info(f"Total widgets in container: {len(trips_container.children)}")
-        Logger.info(f"Container minimum height: {trips_container.minimum_height}")
+            # Get the trips container
+            trips_container = self.ids.trips_container
+            trips_container.clear_widgets()
+            
+            # Debug logging
+            Logger.info(f"Populate trips called with {len(trips) if trips else 0} trips")
+            if trips:
+                for idx, trip in enumerate(trips):
+                    Logger.info(f"Trip {idx+1}: {trip.get('destination')} at {trip.get('start_time')}")
+            
+            if not trips or len(trips) == 0:
+                # No trips found
+                no_trips_label = Label(
+                    text=translator.get_text('no_trips_today'),
+                    font_name='CaviarDreams.ttf',
+                    font_size='18sp',
+                    color=(0.4, 0.4, 0.4, 1),
+                    size_hint_y=None,
+                    height='100dp',
+                    halign='center'
+                )
+                trips_container.add_widget(no_trips_label)
+                return
+            
+            # Display each trip as a condensed clickable card
+            for idx, trip in enumerate(trips, 1):
+                try:
+                    Logger.info(f"Creating card for trip {idx}")
+                    trip_card = self.create_condensed_trip_card(idx, trip)
+                    trips_container.add_widget(trip_card)
+                    Logger.info(f"Added card {idx} to container")
+                    
+                    # Add spacing between trips
+                    if idx < len(trips):
+                        spacer = Widget(size_hint_y=None, height='10dp')
+                        trips_container.add_widget(spacer)
+                except Exception as e:
+                    Logger.error(f"Error creating trip card {idx}: {e}")
+                    continue
+            
+            Logger.info(f"Total widgets in container: {len(trips_container.children)}")
+            Logger.info(f"Container minimum height: {trips_container.minimum_height}")
+        except Exception as e:
+            Logger.error(f"Critical error in populate_trips: {e}")
+            import traceback
+            Logger.error(traceback.format_exc())
+            self.show_error_message()
     
     def create_condensed_trip_card(self, trip_num, trip):
         """Create a condensed clickable card for a single trip"""

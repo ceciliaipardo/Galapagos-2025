@@ -27,10 +27,10 @@ class Translations:
                 'complete_registration': 'Complete your Registration:',
                 'name': 'Name:',
                 'phone_number': 'Phone Number:',
-                'car_company': 'Company 1:',
-                'car_number': 'Car Number 1:',
+                'car_company': 'Company:',
+                'car_number': 'Car Number:',
                 'check_another_company': 'Check this Box if you Drive for Another Company:',
-                'second_car_company': 'Company 2:',
+                'second_car_company': 'Other Company:',
                 'second_car_number': 'Car Number 2:',
                 'company_1': 'Company 1',
                 'company_2': 'Company 2',
@@ -42,6 +42,12 @@ class Translations:
                 'username_invalid': 'Username Invalid',
                 'phone_invalid': 'Phone Number Invalid',
                 'connection_required_register': 'Connection Required to Register New Account',
+                'select_company': 'Select Company',
+                'option1': 'Cotransli',
+                'option2': 'Citran',
+                'option3': 'Los Túneles',
+                'option4': '12 de febrero',
+                'option5': 'Transgaltour',
                 
                 # Statistics Screen
                 'statistics_today': 'Statistics for Today',
@@ -90,6 +96,7 @@ class Translations:
                 # Cargo Screen
                 'what_cargo': 'What kind of cargo are they carrying?',
                 'luggage': 'Luggage',
+                'bike': 'Bike',
                 'work_equipment': 'Work Equipment',
                 'food_goods': 'Food and Goods',
                 'bicycles': 'Bicycle',
@@ -107,6 +114,7 @@ class Translations:
                 'trip_duration': 'Trip Duration:',
                 'estimated_fuel': 'Estimated Fuel Used:',
                 'start_next_trip': 'Start Your Next Trip',
+                'view_all_trips': 'View All Trips',
                 'trip_too_short': 'Trip Too Short',
                 
                 # Individual Trips View
@@ -143,10 +151,10 @@ class Translations:
                 'complete_registration': 'Complete su Registro:',
                 'name': 'Nombre:',
                 'phone_number': 'Número de Teléfono:',
-                'car_company': 'Compañía 1:',
-                'car_number': 'Número de Auto 1:',
+                'car_company': 'Compañía:',
+                'car_number': 'Número de Auto:',
                 'check_another_company': 'Marque esta casilla si maneja para otra compañía:',
-                'second_car_company': 'Compañía 2:',
+                'second_car_company': 'Otra Compañía:',
                 'second_car_number': 'Número de Auto 2:',
                 'company_1': 'Compañía 1',
                 'company_2': 'Compañía 2',
@@ -158,6 +166,12 @@ class Translations:
                 'username_invalid': 'Usuario Inválido',
                 'phone_invalid': 'Número de Teléfono Inválido',
                 'connection_required_register': 'Se Requiere Conexión para Registrar Nueva Cuenta',
+                'select_company': 'Seleccionar Compañía',
+                'option1': 'Cotransli',
+                'option2': 'Citran',
+                'option3': 'Los Túneles',
+                'option4': '12 de febrero',
+                'option5': 'Transgaltour',
                 
                 # Statistics Screen
                 'statistics_today': 'Estadísticas de Hoy',
@@ -206,6 +220,7 @@ class Translations:
                 # Cargo Screen
                 'what_cargo': '¿Qué tipo de carga llevan?',
                 'luggage': 'Equipaje',
+                'bike': 'Bicicleta',
                 'work_equipment': 'Equipo de Trabajo',
                 'food_goods': 'Comida y Productos',
                 'bicycles': 'Bicicleta',
@@ -223,6 +238,7 @@ class Translations:
                 'trip_duration': 'Duración del Viaje:',
                 'estimated_fuel': 'Combustible Estimado Usado:',
                 'start_next_trip': 'Iniciar su Próximo Viaje',
+                'view_all_trips': 'Ver Todos los Viajes',
                 'trip_too_short': 'Viaje Muy Corto',
                 
                 # Individual Trips View

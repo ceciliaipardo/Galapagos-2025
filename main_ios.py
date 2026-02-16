@@ -1365,42 +1365,72 @@ class Register1(Screen):
 
 class Register2(Screen):
     def on_pre_enter(self):
-        # Update all text to current language with exact matching
+        # Update all text to current language - skip TextInput widgets
         for widget in self.walk():
-            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text'):
-                # Main title
+            # Skip TextInput widgets completely
+            if widget.__class__.__name__ == 'TextInput':
+                continue
+            if widget.__class__.__name__ == 'Label' and hasattr(widget, 'text') and widget.text:
+                # Update labels with translation
                 if 'Complete your Registration' in widget.text or 'Complete su Registro' in widget.text:
                     widget.text = translator.get_text('complete_registration')
-                # Company 1 label
-                elif 'Company 1:' in widget.text or 'Compañía 1:' in widget.text:
-                    widget.text = translator.get_text('car_company')
-                # Car Number 1 label
-                elif 'Car Number 1:' in widget.text or 'Número de Auto 1:' in widget.text:
+                elif 'Car Number:' in widget.text or 'Número de Auto:' in widget.text:
                     widget.text = translator.get_text('car_number')
-                # Checkbox label
-                elif 'Check this Box if you Drive for Another Company' in widget.text or 'Marque esta casilla si maneja para otra compañía' in widget.text:
-                    widget.text = translator.get_text('check_another_company')
-                # Company 2 label
-                elif 'Company 2:' in widget.text or 'Compañía 2:' in widget.text:
+                elif 'Company:' in widget.text or 'Compañía:' in widget.text:
+                    widget.text = translator.get_text('car_company')
+                elif 'Other Company:' in widget.text or 'Otra Compañía:' in widget.text:
                     widget.text = translator.get_text('second_car_company')
-                # Car Number 2 label  
-                elif 'Car Number 2:' in widget.text or 'Número de Auto 2:' in widget.text:
-                    widget.text = translator.get_text('second_car_number')
-            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text'):
-                if 'Done' in widget.text or 'Listo' in widget.text:
-                    widget.text = translator.get_text('done')
+                elif 'Check this Box' in widget.text or 'Marque esta casilla' in widget.text:
+                    widget.text = translator.get_text('check_another_company')
+            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
+                if widget.text not in ['←', '', 'EN', 'ES']:
+                    if 'Done' in widget.text or 'Listo' in widget.text:
+                        widget.text = translator.get_text('done')
         
-    def register(self, username, password, name, phone, comp1, car1, comp2, car2):
+        # Update the Spinner values when entering the screen to match current language
+        if hasattr(self.ids, 'CompanySpinner'):
+            self.ids.CompanySpinner.text = translator.get_text('select_company')
+            self.ids.CompanySpinner.values = [
+                translator.get_text('option1'),
+                translator.get_text('option2'),
+                translator.get_text('option3'),
+                translator.get_text('option4'),
+                translator.get_text('option5')
+            ]
+        
+    def register(self, username, password, name, phone, car_number):
         if(DBCheckConnection()):
-            DBRegister(username, password, name, phone, comp1, car1, comp2, car2)
+            # Get company from spinner
+            company = self.ids.CompanySpinner.text
+            
+            # Check if user selected a company or left it as default
+            if company == translator.get_text('select_company'):
+                self.ids.Incorrect.text = "Please select a company"
+                return
+            
+            # Check if additional company checkbox is checked
+            additional_company = ''
+            additional_car = ''
+            if hasattr(self.ids, 'AnotherCompanyCheck') and self.ids.AnotherCompanyCheck.active:
+                if hasattr(self.ids, 'AdditionalCompanyReg'):
+                    additional_company = self.ids.AdditionalCompanyReg.text
+                # Note: There's no second car number input in the main branch design
+                
+            # Register with company as company1 and car_number as comp1num
+            DBRegister(username, password, name, phone, company, car_number, additional_company, '')
+            
+            # Clear form fields
             self.manager.get_screen('Register1').ids.UsernameReg.text = ''
             self.manager.get_screen('Register1').ids.PasswordReg.text = ''
             self.manager.get_screen('Register1').ids.NameReg.text = ''
             self.manager.get_screen('Register1').ids.PhoneReg.text = ''
-            self.ids.Company1Reg.text = ''
             self.ids.Car1NumReg.text = ''
-            self.ids.Company2Reg.text = ''
-            self.ids.Car2NumReg.text = ''
+            self.ids.CompanySpinner.text = translator.get_text('select_company')
+            if hasattr(self.ids, 'AdditionalCompanyReg'):
+                self.ids.AdditionalCompanyReg.text = ''
+            if hasattr(self.ids, 'AnotherCompanyCheck'):
+                self.ids.AnotherCompanyCheck.active = False
+                
             self.manager.current = "Welcome"
             self.manager.transition.direction = "up"
         else:
@@ -1512,25 +1542,49 @@ class PassengerCount(Screen):
         currentPass = ''
 
 class Cargo(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.selected_cargo = []
+    
     def on_pre_enter(self):
-        # Update all text to current language
-        for widget in self.walk():
-            if widget.__class__.__name__ == 'Label':
-                widget.text = translator.get_text('what_cargo')
-            elif widget.__class__.__name__ == 'Button' and hasattr(widget, 'text') and widget.text:
-                if widget.text not in ['←', '', 'EN', 'ES']:
-                    if 'Luggage' in widget.text or 'Equipaje' in widget.text:
-                        widget.text = translator.get_text('luggage')
-                    elif 'Work Equipment' in widget.text or 'Equipo de Trabajo' in widget.text or 'Trabajo' in widget.text:
-                        widget.text = translator.get_text('work_equipment')
-                    elif 'Food' in widget.text or 'Comida' in widget.text:
-                        widget.text = translator.get_text('food_goods')
-                    elif 'Bicycle' in widget.text or 'Bicicleta' in widget.text:
-                        widget.text = translator.get_text('bicycles')
-                    elif 'Varied Load' in widget.text or 'Carga Variada' in widget.text or 'Variada' in widget.text:
-                        widget.text = translator.get_text('misc_cargo')
+        # Reset checkboxes and selection
+        self.selected_cargo = []
+        if hasattr(self.ids, 'luggage_check'):
+            self.ids.luggage_check.active = False
+        if hasattr(self.ids, 'bike_check'):
+            self.ids.bike_check.active = False
+        if hasattr(self.ids, 'work_check'):
+            self.ids.work_check.active = False
+        if hasattr(self.ids, 'food_check'):
+            self.ids.food_check.active = False
+        if hasattr(self.ids, 'misc_check'):
+            self.ids.misc_check.active = False
+    
+    def on_cargo_checkbox(self, checkbox, is_active, cargo_type):
+        """Handle checkbox state changes"""
+        if is_active:
+            if cargo_type not in self.selected_cargo:
+                self.selected_cargo.append(cargo_type)
+        else:
+            if cargo_type in self.selected_cargo:
+                self.selected_cargo.remove(cargo_type)
+    
+    def proceed_to_next(self):
+        """Proceed to next screen with selected cargo"""
+        global currentCargo
+        if self.selected_cargo:
+            # Join selected cargo types with commas
+            currentCargo = ', '.join(self.selected_cargo)
+            self.manager.current = "FinishTrip"
+            self.manager.transition.direction = "up"
+        else:
+            # No cargo selected, set to "None"
+            currentCargo = "None"
+            self.manager.current = "FinishTrip"
+            self.manager.transition.direction = "up"
         
     def setCargo(self, cargo):
+        """Legacy method for compatibility"""
         global currentCargo
         currentCargo = cargo
         
@@ -1631,21 +1685,41 @@ class TripStats(Screen):
                     elif widget.text.lower() in ['home', 'inicio']:
                         widget.text = translator.get_text('home')
         
+        # Refresh trip data with current language if we have a trip ID
+        if currentTripID:
+            self.refresh_trip_data()
+    
+    def refresh_trip_data(self):
+        """Refresh the trip data display with current language"""
+        try:
+            statistics = localDBGetTripStats(currentTripID)
+            # Update destination and passengers/cargo (these are plain text, no translation needed)
+            self.ids.Destination.text = str(statistics[0])
+            self.ids.PassengersCargo.text = str(statistics[1])
+            # Update distance with translated units
+            self.ids.tripDist.text = "{} {}".format(statistics[2], translator.get_text('miles'))
+            # Update time with translated units
+            hours = int(statistics[3].seconds/3600)
+            minutes = int((statistics[3].seconds-hours*3600)/60)
+            seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
+            self.ids.tripTime.text = '{} {}, {} {}, {} {}'.format(
+                hours, translator.get_text('hours'), 
+                minutes, translator.get_text('minutes'), 
+                seconds, translator.get_text('seconds')
+            )
+            # Update fuel with translated units
+            self.ids.tripFuel.text = "{} {}".format(statistics[4], translator.get_text('gallons'))
+        except Exception as e:
+            Logger.error(f"Error refreshing trip data: {e}")
+        
     def on_enter(self):
         # Only fetch statistics if we have a valid trip ID
         if not currentTripID:
             Logger.warning("TripStats: No trip ID available, skipping data load")
             return
-            
-        statistics = localDBGetTripStats(currentTripID)
-        self.ids.Destination.text = str(statistics[0])
-        self.ids.PassengersCargo.text = str(statistics[1])
-        self.ids.tripDist.text = "{} {}".format(statistics[2], translator.get_text('miles'))
-        hours = int(statistics[3].seconds/3600)
-        minutes = int((statistics[3].seconds-hours*3600)/60)
-        seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
-        self.ids.tripTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
-        self.ids.tripFuel.text = "{} {}".format(statistics[4], translator.get_text('gallons'))
+        
+        # Display trip data using the refresh method
+        self.refresh_trip_data()
         
         # Upload data immediately when entering the screen (only once)
         if not self.data_uploaded and DBCheckConnection():
@@ -1774,17 +1848,19 @@ class MainApp(App):
         currentlat = 0
         currentlon = 0
     
-    def handle_checkbox_active(self, is_checked):
-        if is_checked:
-            self.root.get_screen('Register2').ids.CarCompanyTwo.opacity = 1
-            self.root.get_screen('Register2').ids.Company2Reg.opacity = 1
-            self.root.get_screen('Register2').ids.CarNumberTwo.opacity = 1
-            self.root.get_screen('Register2').ids.Car2NumReg.opacity = 1
-        else:
-            self.root.get_screen('Register2').ids.CarCompanyTwo.opacity = 0
-            self.root.get_screen('Register2').ids.Company2Reg.opacity = 0
-            self.root.get_screen('Register2').ids.CarNumberTwo.opacity = 0
-            self.root.get_screen('Register2').ids.Car2NumReg.opacity = 0
+    def handle_another_company_checkbox(self, is_checked):
+        """Handle the checkbox for entering an additional company"""
+        register2_screen = self.root.get_screen('Register2')
+        if hasattr(register2_screen.ids, 'AdditionalCompanyBox'):
+            if is_checked:
+                register2_screen.ids.AdditionalCompanyBox.opacity = 1
+                if hasattr(register2_screen.ids, 'AdditionalCompanyReg'):
+                    register2_screen.ids.AdditionalCompanyReg.disabled = False
+            else:
+                register2_screen.ids.AdditionalCompanyBox.opacity = 0
+                if hasattr(register2_screen.ids, 'AdditionalCompanyReg'):
+                    register2_screen.ids.AdditionalCompanyReg.disabled = True
+                    register2_screen.ids.AdditionalCompanyReg.text = ''
     
     def get_image_path(self, image_name):
         """Get the correct image path based on current language"""

@@ -1051,8 +1051,8 @@ class People(Screen):
 class PassengerCount(Screen):
     def setPassengerCount(self, count):
         global currentPass
-        # Append the count to the current passenger type
-        currentPass = f"{currentPass} - {count}"
+        # Save ONLY the count number (e.g., "3"), not "PassengerType - 3"
+        currentPass = count
         
     def clearPeople(self):
         global currentPass

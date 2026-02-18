@@ -1051,8 +1051,14 @@ class People(Screen):
 class PassengerCount(Screen):
     def setPassengerCount(self, count):
         global currentPass
-        # Save ONLY the count number (e.g., "3"), not "PassengerType - 3"
-        currentPass = count
+        # Combine passenger type (from People screen) with count
+        # currentPass already has the passenger type from the People screen
+        if currentPass and currentPass != '':
+            # Append the count to the passenger type: "Students - 3"
+            currentPass = f"{currentPass} - {count}"
+        else:
+            # Fallback if passenger type is missing
+            currentPass = count
         
     def clearPeople(self):
         global currentPass
@@ -1095,6 +1101,11 @@ class Cargo(Screen):
         currentPass = ''
 
 class FinishTrip(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        from kivy.clock import Clock
+        self.update_event = None
+    
     def on_enter(self):
         try:
             app = App.get_running_app()
@@ -1107,8 +1118,32 @@ class FinishTrip(Screen):
             startTrip()
         except Exception as e:
             Logger.error(f"Failed to start trip: {e}")
+        
+        # Start updating the live distance display
+        from kivy.clock import Clock
+        self.update_event = Clock.schedule_interval(self.update_live_stats, 2)
+    
+    def update_live_stats(self, dt):
+        """Update live distance and coordinates display every 2 seconds"""
+        try:
+            global currentlat, currentlon
+            dist = getTripDistance(currentTripID)
+            
+            # Update distance with 3 decimal places
+            if hasattr(self.ids, 'live_distance'):
+                self.ids.live_distance.text = f"{dist:.3f} km"
+            
+            # Update coordinates
+            if hasattr(self.ids, 'live_coords'):
+                self.ids.live_coords.text = f"GPS: {currentlat:.6f}, {currentlon:.6f}"
+        except Exception as e:
+            Logger.error(f"Error updating live stats: {e}")
     
     def endTrip(self):
+        # Stop the live update timer
+        if self.update_event:
+            self.update_event.cancel()
+        
         try:
             app = App.get_running_app()
             if app:
@@ -1118,7 +1153,7 @@ class FinishTrip(Screen):
         
         try:
             now = datetime.now()
-            dist = round(getTripDistance(currentTripID),3) # rounds to the nearest 5ft
+            dist = round(getTripDistance(currentTripID), 3) # rounds to 3 decimal places
             tripTime = now - localDBGetTripStart(currentTripID)
             tripFuel = round(dist/mpg, 3)
             localDBRecord(currentTripID, currentCompany, currentCar, 'End Trip', tripTime, dist, tripFuel, '', now)

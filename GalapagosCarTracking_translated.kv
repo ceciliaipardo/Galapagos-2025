@@ -902,158 +902,108 @@ WindowManager:
                 size_hint_y: None
                 height: '10dp'
 
-            # Luggage
-            BoxLayout:
-                orientation: 'horizontal'
+            # Luggage - Tap to toggle
+            Button:
+                id: luggage_btn
+                text: app.translator.get_text('luggage')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '18sp'
                 size_hint_y: None
                 height: '60dp'
-                spacing: '15dp'
-                padding: ['10dp', '5dp']
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
                 canvas.before:
                     Color:
-                        rgba: 0.05, 0.05, 0.05, 1
+                        rgba: self.background_color if self.background_color[3] > 0 else (0.05, 0.05, 0.05, 1)
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
-                on_touch_down: if self.collide_point(*args[1].pos): luggage_check.active = not luggage_check.active
-                CheckBox:
-                    id: luggage_check
-                    size_hint_x: None
-                    width: '50dp'
-                    color: 1, 1, 1, 1
-                    on_active: root.on_cargo_checkbox(self, self.active, 'Luggage')
-                Label:
-                    text: app.translator.get_text('luggage')
-                    font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '18sp'
-                    color: 1, 1, 1, 1
-                    halign: 'left'
-                    valign: 'middle'
-                    text_size: self.size
+                on_release: root.toggle_cargo('Luggage', 'luggage_btn')
 
             # Bike
-            BoxLayout:
-                orientation: 'horizontal'
+            Button:
+                id: bike_btn
+                text: app.translator.get_text('bike')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '18sp'
                 size_hint_y: None
                 height: '60dp'
-                spacing: '15dp'
-                padding: ['10dp', '5dp']
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
                 canvas.before:
                     Color:
-                        rgba: 0.05, 0.05, 0.05, 1
+                        rgba: self.background_color if self.background_color[3] > 0 else (0.05, 0.05, 0.05, 1)
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
-                on_touch_down: if self.collide_point(*args[1].pos): bike_check.active = not bike_check.active
-                CheckBox:
-                    id: bike_check
-                    size_hint_x: None
-                    width: '50dp'
-                    color: 1, 1, 1, 1
-                    on_active: root.on_cargo_checkbox(self, self.active, 'Bike')
-                Label:
-                    text: app.translator.get_text('bike')
-                    font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '18sp'
-                    color: 1, 1, 1, 1
-                    halign: 'left'
-                    valign: 'middle'
-                    text_size: self.size
+                on_release: root.toggle_cargo('Bike', 'bike_btn')
 
             # Work Equipment
-            BoxLayout:
-                orientation: 'horizontal'
+            Button:
+                id: work_btn
+                text: app.translator.get_text('work_equipment')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '18sp'
                 size_hint_y: None
                 height: '60dp'
-                spacing: '15dp'
-                padding: ['10dp', '5dp']
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
                 canvas.before:
                     Color:
-                        rgba: 0.05, 0.05, 0.05, 1
+                        rgba: self.background_color if self.background_color[3] > 0 else (0.05, 0.05, 0.05, 1)
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
-                on_touch_down: if self.collide_point(*args[1].pos): work_check.active = not work_check.active
-                CheckBox:
-                    id: work_check
-                    size_hint_x: None
-                    width: '50dp'
-                    color: 1, 1, 1, 1
-                    on_active: root.on_cargo_checkbox(self, self.active, 'Work Equipment')
-                Label:
-                    text: app.translator.get_text('work_equipment')
-                    font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '18sp'
-                    color: 1, 1, 1, 1
-                    halign: 'left'
-                    valign: 'middle'
-                    text_size: self.size
+                on_release: root.toggle_cargo('Work Equipment', 'work_btn')
 
             # Food and Goods
-            BoxLayout:
-                orientation: 'horizontal'
+            Button:
+                id: food_btn
+                text: app.translator.get_text('food_goods')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '18sp'
                 size_hint_y: None
                 height: '60dp'
-                spacing: '15dp'
-                padding: ['10dp', '5dp']
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
                 canvas.before:
                     Color:
-                        rgba: 0.05, 0.05, 0.05, 1
+                        rgba: self.background_color if self.background_color[3] > 0 else (0.05, 0.05, 0.05, 1)
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
-                on_touch_down: if self.collide_point(*args[1].pos): food_check.active = not food_check.active
-                CheckBox:
-                    id: food_check
-                    size_hint_x: None
-                    width: '50dp'
-                    color: 1, 1, 1, 1
-                    on_active: root.on_cargo_checkbox(self, self.active, 'Food and Goods')
-                Label:
-                    text: app.translator.get_text('food_goods')
-                    font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '18sp'
-                    color: 1, 1, 1, 1
-                    halign: 'left'
-                    valign: 'middle'
-                    text_size: self.size
+                on_release: root.toggle_cargo('Food and Goods', 'food_btn')
 
             # Miscellaneous Cargo
-            BoxLayout:
-                orientation: 'horizontal'
+            Button:
+                id: misc_btn
+                text: app.translator.get_text('misc_cargo')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '18sp'
                 size_hint_y: None
                 height: '60dp'
-                spacing: '15dp'
-                padding: ['10dp', '5dp']
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
                 canvas.before:
                     Color:
-                        rgba: 0.05, 0.05, 0.05, 1
+                        rgba: self.background_color if self.background_color[3] > 0 else (0.05, 0.05, 0.05, 1)
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
                         radius: [10, 10, 10, 10]
-                on_touch_down: if self.collide_point(*args[1].pos): misc_check.active = not misc_check.active
-                CheckBox:
-                    id: misc_check
-                    size_hint_x: None
-                    width: '50dp'
-                    color: 1, 1, 1, 1
-                    on_active: root.on_cargo_checkbox(self, self.active, 'Miscellaneous Cargo')
-                Label:
-                    text: app.translator.get_text('misc_cargo')
-                    font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '18sp'
-                    color: 1, 1, 1, 1
-                    halign: 'left'
-                    valign: 'middle'
-                    text_size: self.size
+                on_release: root.toggle_cargo('Miscellaneous Cargo', 'misc_btn')
 
             Widget:
-                size_hint_y: 0.1
+                size_hint_y: 0.02
 
             # Next Button
             Button:
@@ -1076,7 +1026,7 @@ WindowManager:
                     root.proceed_to_next()
 
             Widget:
-                size_hint_y: 0.05
+                size_hint_y: 0.02
 
 <StartTrip>:
     name: "StartTrip"
@@ -1212,74 +1162,24 @@ WindowManager:
 
         BoxLayout:
             orientation: 'vertical'
-            padding: ['30dp', '100dp', '30dp', '40dp']
-            spacing: '20dp'
+            padding: ['30dp', '120dp', '30dp', '60dp']
+            spacing: '30dp'
 
             Label:
                 text: app.translator.get_text('click_complete')
                 font_name: 'CaviarDreams.ttf'
                 font_size: '19sp'
                 color: 0.3, 0.3, 0.3, 1
-                size_hint_y: None
-                height: '60dp'
+                size_hint_y: 0.15
                 halign: 'center'
                 valign: 'middle'
                 text_size: self.size
-
-            # Live Stats Card
-            BoxLayout:
-                orientation: 'vertical'
-                size_hint_y: None
-                height: '200dp'
-                padding: ['20dp', '20dp']
-                spacing: '15dp'
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [12, 12, 12, 12]
-                
-                Label:
-                    text: 'Trip in Progress...'
-                    font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '20sp'
-                    color: 0.1, 0.1, 0.1, 1
-                    size_hint_y: None
-                    height: '30dp'
-                    halign: 'center'
-                
-                Label:
-                    id: live_distance
-                    text: '0.000 km'
-                    font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '32sp'
-                    color: 0.05, 0.05, 0.05, 1
-                    size_hint_y: None
-                    height: '50dp'
-                    halign: 'center'
-                
-                Label:
-                    id: live_coords
-                    text: 'GPS: 0.000000, 0.000000'
-                    font_name: 'CaviarDreams.ttf'
-                    font_size: '14sp'
-                    color: 0.4, 0.4, 0.4, 1
-                    size_hint_y: None
-                    height: '25dp'
-                    halign: 'center'
-
-            Widget:
-                size_hint_y: None
-                height: '20dp'
 
             Button:
                 text: app.translator.get_text('complete')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '24sp'
-                size_hint_y: None
-                height: '75dp'
+                size_hint_y: 0.22
                 background_normal: ''
                 background_color: 0, 0, 0, 0
                 color: 1, 1, 1, 1
@@ -1296,7 +1196,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Widget:
-                size_hint_y: 0.15
+                size_hint_y: 0.55
 
 <TripStats>:
     name: "TripStats"

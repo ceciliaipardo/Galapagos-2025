@@ -1067,30 +1067,52 @@ class PassengerCount(Screen):
 class Cargo(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.selected_cargo = []
+        self.selected_cargo = {}  # Changed to dict to track button states
     
     def on_pre_enter(self):
-        # Reset all checkboxes
-        self.selected_cargo = []
+        # Reset all selections
+        self.selected_cargo = {
+            'Luggage': False,
+            'Bike': False,
+            'Work Equipment': False,
+            'Food and Goods': False,
+            'Miscellaneous Cargo': False
+        }
+        # Update button states
         if hasattr(self, 'ids'):
-            self.ids.luggage_check.active = False
-            self.ids.bike_check.active = False
-            self.ids.work_check.active = False
-            self.ids.food_check.active = False
-            self.ids.misc_check.active = False
+            self.update_button_appearance('luggage_btn', False)
+            self.update_button_appearance('bike_btn', False)
+            self.update_button_appearance('work_btn', False)
+            self.update_button_appearance('food_btn', False)
+            self.update_button_appearance('misc_btn', False)
     
-    def on_cargo_checkbox(self, checkbox, value, cargo_type):
-        if value:
-            if cargo_type not in self.selected_cargo:
-                self.selected_cargo.append(cargo_type)
-        else:
-            if cargo_type in self.selected_cargo:
-                self.selected_cargo.remove(cargo_type)
+    def toggle_cargo(self, cargo_type, button_id):
+        """Toggle cargo selection and update button appearance"""
+        # Toggle the selection state
+        self.selected_cargo[cargo_type] = not self.selected_cargo[cargo_type]
+        # Update button appearance
+        self.update_button_appearance(button_id, self.selected_cargo[cargo_type])
+    
+    def update_button_appearance(self, button_id, is_selected):
+        """Update button to show selected/unselected state"""
+        if hasattr(self, 'ids'):
+            button = getattr(self.ids, button_id, None)
+            if button:
+                if is_selected:
+                    # Selected: white background, dark text, checkmark
+                    button.background_color = (1, 1, 1, 1)
+                    button.color = (0.05, 0.05, 0.05, 1)
+                else:
+                    # Unselected: dark background, white text
+                    button.background_color = (0, 0, 0, 0)
+                    button.color = (1, 1, 1, 1)
     
     def proceed_to_next(self):
         global currentCargo
-        if self.selected_cargo:
-            currentCargo = ', '.join(self.selected_cargo)
+        # Get list of selected items
+        selected_items = [cargo for cargo, selected in self.selected_cargo.items() if selected]
+        if selected_items:
+            currentCargo = ', '.join(selected_items)
         else:
             currentCargo = 'None'
         self.manager.current = "FinishTrip"
@@ -1101,11 +1123,6 @@ class Cargo(Screen):
         currentPass = ''
 
 class FinishTrip(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        from kivy.clock import Clock
-        self.update_event = None
-    
     def on_enter(self):
         try:
             app = App.get_running_app()
@@ -1118,32 +1135,8 @@ class FinishTrip(Screen):
             startTrip()
         except Exception as e:
             Logger.error(f"Failed to start trip: {e}")
-        
-        # Start updating the live distance display
-        from kivy.clock import Clock
-        self.update_event = Clock.schedule_interval(self.update_live_stats, 2)
-    
-    def update_live_stats(self, dt):
-        """Update live distance and coordinates display every 2 seconds"""
-        try:
-            global currentlat, currentlon
-            dist = getTripDistance(currentTripID)
-            
-            # Update distance with 3 decimal places
-            if hasattr(self.ids, 'live_distance'):
-                self.ids.live_distance.text = f"{dist:.3f} km"
-            
-            # Update coordinates
-            if hasattr(self.ids, 'live_coords'):
-                self.ids.live_coords.text = f"GPS: {currentlat:.6f}, {currentlon:.6f}"
-        except Exception as e:
-            Logger.error(f"Error updating live stats: {e}")
     
     def endTrip(self):
-        # Stop the live update timer
-        if self.update_event:
-            self.update_event.cancel()
-        
         try:
             app = App.get_running_app()
             if app:

@@ -1157,13 +1157,13 @@ class Cargo(Screen):
                 if cargo_type and cargo_type in translation_map:
                     base_text = app.translator.get_text(translation_map[cargo_type])
                     if is_selected:
-                        # Selected: add checkmark
+                        # Selected: add checkmark and green background
                         button.text = f"✓ {base_text}"
-                        button.background_color = (0.2, 0.7, 0.2, 1)  # Green tint
+                        button.background_color = (0.2, 0.7, 0.2, 1)  # Green
                     else:
-                        # Unselected: no checkmark
+                        # Unselected: no checkmark, dark gray background
                         button.text = base_text
-                        button.background_color = (0, 0, 0, 0)
+                        button.background_color = (0.05, 0.05, 0.05, 1)  # Dark gray (visible!)
     
     def proceed_to_next(self):
         global currentCargo

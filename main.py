@@ -733,15 +733,21 @@ class IndividualTripsPage(Screen):
             trips_container.add_widget(no_trips_label)
             return
         
+        # Display trips with most recent at top, numbered in descending order
+        # Database returns trips in reverse chronological order (newest first)
+        total_trips = len(trips)
+        
         # Display each trip as a condensed clickable card
-        for idx, trip in enumerate(trips, 1):
-            Logger.info(f"Creating card for trip {idx}")
-            trip_card = self.create_condensed_trip_card(idx, trip)
+        for idx, trip in enumerate(trips):
+            # Number from highest to lowest (most recent = highest number)
+            trip_num = total_trips - idx
+            Logger.info(f"Creating card for trip {trip_num}")
+            trip_card = self.create_condensed_trip_card(trip_num, trip)
             trips_container.add_widget(trip_card)
-            Logger.info(f"Added card {idx} to container")
+            Logger.info(f"Added card {trip_num} to container")
             
             # Add spacing between trips
-            if idx < len(trips):
+            if idx < len(trips) - 1:
                 spacer = Widget(size_hint_y=None, height='10dp')
                 trips_container.add_widget(spacer)
         
@@ -1117,32 +1123,47 @@ class Cargo(Screen):
         }
         # Update button states
         if hasattr(self, 'ids'):
-            self.update_button_appearance('luggage_btn', False)
-            self.update_button_appearance('bike_btn', False)
-            self.update_button_appearance('work_btn', False)
-            self.update_button_appearance('food_btn', False)
-            self.update_button_appearance('misc_btn', False)
+            self.update_button_appearance('luggage_btn', False, 'Luggage')
+            self.update_button_appearance('bike_btn', False, 'Bike')
+            self.update_button_appearance('work_btn', False, 'Work Equipment')
+            self.update_button_appearance('food_btn', False, 'Food and Goods')
+            self.update_button_appearance('misc_btn', False, 'Miscellaneous Cargo')
     
     def toggle_cargo(self, cargo_type, button_id):
         """Toggle cargo selection and update button appearance"""
         # Toggle the selection state
         self.selected_cargo[cargo_type] = not self.selected_cargo[cargo_type]
         # Update button appearance
-        self.update_button_appearance(button_id, self.selected_cargo[cargo_type])
+        self.update_button_appearance(button_id, self.selected_cargo[cargo_type], cargo_type)
     
-    def update_button_appearance(self, button_id, is_selected):
+    def update_button_appearance(self, button_id, is_selected, cargo_type=None):
         """Update button to show selected/unselected state"""
         if hasattr(self, 'ids'):
             button = getattr(self.ids, button_id, None)
             if button:
-                if is_selected:
-                    # Selected: white background, dark text, checkmark
-                    button.background_color = (1, 1, 1, 1)
-                    button.color = (0.05, 0.05, 0.05, 1)
-                else:
-                    # Unselected: dark background, white text
-                    button.background_color = (0, 0, 0, 0)
-                    button.color = (1, 1, 1, 1)
+                # Get the translated cargo text
+                from kivy.app import App
+                app = App.get_running_app()
+                
+                # Map cargo types to translation keys
+                translation_map = {
+                    'Luggage': 'luggage',
+                    'Bike': 'bike',
+                    'Work Equipment': 'work_equipment',
+                    'Food and Goods': 'food_goods',
+                    'Miscellaneous Cargo': 'misc_cargo'
+                }
+                
+                if cargo_type and cargo_type in translation_map:
+                    base_text = app.translator.get_text(translation_map[cargo_type])
+                    if is_selected:
+                        # Selected: add checkmark
+                        button.text = f"✓ {base_text}"
+                        button.background_color = (0.2, 0.7, 0.2, 1)  # Green tint
+                    else:
+                        # Unselected: no checkmark
+                        button.text = base_text
+                        button.background_color = (0, 0, 0, 0)
     
     def proceed_to_next(self):
         global currentCargo
@@ -1259,8 +1280,19 @@ class TripStats(Screen):
             Logger.error(traceback.format_exc())
     
     def on_pre_leave(self):
-        if(DBCheckConnection()):
-            localDBDumptoServer()
+        """Upload trip data to server before leaving screen"""
+        try:
+            if DBCheckConnection():
+                Logger.info("TripStats: Attempting to upload trip data to server")
+                localDBDumptoServer()
+                Logger.info("TripStats: Trip data uploaded successfully")
+            else:
+                Logger.warning("TripStats: No connection available, trip data not uploaded")
+        except Exception as e:
+            Logger.error(f"TripStats on_pre_leave error: {e}")
+            import traceback
+            Logger.error(traceback.format_exc())
+            # Don't crash - just log the error and continue
         
     def clearCurrent(self):
         # DON'T clear the globals here - they're needed for upload in on_pre_leave

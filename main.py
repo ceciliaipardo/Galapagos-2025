@@ -1402,6 +1402,7 @@ class WindowManager(ScreenManager):
 class MainApp(App):
     # Observable property that triggers KV re-evaluation when language changes
     language = StringProperty('es')
+    language_button_text = StringProperty('EN')  # Shows which language to switch TO
     
     # Create observable string properties for all translatable text
     welcome_text = StringProperty()
@@ -1507,6 +1508,12 @@ class MainApp(App):
     def toggle_language(self):
         """Toggle between English and Spanish"""
         self.translator.toggle_language()
+        
+        # Update button text to show which language to switch TO
+        current_lang = self.translator.get_current_language()
+        self.language_button_text = 'EN' if current_lang == 'es' else 'ES'
+        Logger.info(f"Language toggled to: {current_lang}, button now shows: {self.language_button_text}")
+        
         self.update_text_properties()
         self.update_all_screen_texts()
         self.update_all_images()

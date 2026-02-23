@@ -13,6 +13,7 @@ WindowManager:
     Cargo:
     People:
     PassengerCount:
+    StartTripConfirmation:
     FinishTrip:
     TripStats:
 
@@ -629,7 +630,7 @@ WindowManager:
                 size_hint_y: 0.02
 
             Button:
-                text: app.translator.get_text('students')
+                text: app.students_text
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -652,7 +653,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('tourists')
+                text: app.tourists_text
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -675,7 +676,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('locals')
+                text: app.locals_text
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -1028,6 +1029,63 @@ WindowManager:
             Widget:
                 size_hint_y: 0.02
 
+<StartTripConfirmation>:
+    name: "StartTripConfirmation"
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0.98, 0.98, 0.98, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Language Toggle
+        Button:
+            size_hint: (None, None)
+            size: ('53dp', '53dp')
+            pos_hint: {'right': 0.95, 'top': 0.97}
+            background_normal: 'globe_icon.png'
+            background_down: 'globe_icon.png'
+            background_color: 1, 1, 1, 1
+            on_release: app.toggle_language()
+
+        # Back Button
+        Button:
+            text: '←'
+            font_name: 'CaviarDreams_Bold.ttf'
+            font_size: '28sp'
+            size_hint: (None, None)
+            size: ('60dp', '60dp')
+            pos_hint: {'x': 0.05, 'top': 0.97}
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 0.2, 0.2, 0.2, 1
+            on_release:
+                app.root.current = "Cargo"
+                root.manager.transition.direction = "down"
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: ['30dp', '200dp', '30dp', '200dp']
+
+            # Big Start Trip Button
+            Button:
+                text: app.start_trip_text
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '32sp'
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [20, 20, 20, 20]
+                on_release:
+                    root.start_trip_now()
+
 <StartTrip>:
     name: "StartTrip"
     FloatLayout:
@@ -1157,7 +1215,7 @@ WindowManager:
             background_color: 0, 0, 0, 0
             color: 0.2, 0.2, 0.2, 1
             on_release:
-                app.root.current = "Cargo"
+                app.root.current = "StartTripConfirmation"
                 root.manager.transition.direction = "down"
 
         BoxLayout:
@@ -1211,7 +1269,7 @@ WindowManager:
         # Language Toggle
         Button:
             size_hint: (None, None)
-            size: ('53dp', '53dp')
+            size: ('50dp', '50dp')
             pos_hint: {'right': 0.95, 'top': 0.97}
             background_normal: 'globe_icon.png'
             background_down: 'globe_icon.png'
@@ -1222,9 +1280,9 @@ WindowManager:
         Button:
             text: '←'
             font_name: 'CaviarDreams_Bold.ttf'
-            font_size: '28sp'
+            font_size: '26sp'
             size_hint: (None, None)
-            size: ('60dp', '60dp')
+            size: ('55dp', '55dp')
             pos_hint: {'x': 0.05, 'top': 0.97}
             background_normal: ''
             background_color: 0, 0, 0, 0
@@ -1234,33 +1292,36 @@ WindowManager:
                 root.manager.transition.direction = "down"
 
         ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            
             BoxLayout:
                 orientation: 'vertical'
-                padding: ['30dp', '95dp', '30dp', '30dp']
-                spacing: '12dp'
+                padding: ['20dp', '80dp', '20dp', '20dp']
+                spacing: '10dp'
                 size_hint_y: None
                 height: self.minimum_height
 
                 Label:
-                    text: app.translator.get_text('trip_statistics')
+                    text: app.trip_statistics_text
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '26sp'
+                    font_size: '22sp'
                     color: 0.1, 0.1, 0.1, 1
                     size_hint_y: None
-                    height: '45dp'
+                    height: '40dp'
                     halign: 'center'
 
                 Widget:
                     size_hint_y: None
                     height: '5dp'
 
-                # Compact Stats Card
+                # Compact Stats Card - Auto-sizing height
                 BoxLayout:
                     orientation: 'vertical'
                     size_hint_y: None
-                    height: '380dp'
-                    padding: ['15dp', '15dp']
-                    spacing: '8dp'
+                    height: self.minimum_height
+                    padding: ['12dp', '12dp']
+                    spacing: '6dp'
                     canvas.before:
                         Color:
                             rgba: 1, 1, 1, 1
@@ -1273,12 +1334,12 @@ WindowManager:
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '35dp'
-                        spacing: '10dp'
+                        height: '30dp'
+                        spacing: '8dp'
                         Label:
-                            text: app.translator.get_text('destination')
+                            text: app.destination_text
                             font_name: 'CaviarDreams_Bold.ttf'
-                            font_size: '14sp'
+                            font_size: '13sp'
                             color: 0.4, 0.4, 0.4, 1
                             size_hint_x: 0.4
                             halign: 'left'
@@ -1288,7 +1349,7 @@ WindowManager:
                             id: Destination
                             text: ''
                             font_name: 'CaviarDreams.ttf'
-                            font_size: '16sp'
+                            font_size: '14sp'
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_x: 0.6
                             halign: 'left'
@@ -1299,12 +1360,12 @@ WindowManager:
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '35dp'
-                        spacing: '10dp'
+                        height: '30dp'
+                        spacing: '8dp'
                         Label:
-                            text: app.translator.get_text('passengers_cargo')
+                            text: app.passengers_cargo_text
                             font_name: 'CaviarDreams_Bold.ttf'
-                            font_size: '14sp'
+                            font_size: '13sp'
                             color: 0.4, 0.4, 0.4, 1
                             size_hint_x: 0.4
                             halign: 'left'
@@ -1314,7 +1375,7 @@ WindowManager:
                             id: PassengersCargo
                             text: ''
                             font_name: 'CaviarDreams.ttf'
-                            font_size: '16sp'
+                            font_size: '14sp'
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_x: 0.6
                             halign: 'left'
@@ -1323,18 +1384,18 @@ WindowManager:
 
                     Widget:
                         size_hint_y: None
-                        height: '5dp'
+                        height: '3dp'
 
                     # Distance
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '35dp'
-                        spacing: '10dp'
+                        height: '30dp'
+                        spacing: '8dp'
                         Label:
-                            text: app.translator.get_text('distance_driven')
+                            text: app.distance_driven_text
                             font_name: 'CaviarDreams_Bold.ttf'
-                            font_size: '14sp'
+                            font_size: '13sp'
                             color: 0.4, 0.4, 0.4, 1
                             size_hint_x: 0.4
                             halign: 'left'
@@ -1344,7 +1405,7 @@ WindowManager:
                             id: tripDist
                             text: ''
                             font_name: 'CaviarDreams.ttf'
-                            font_size: '16sp'
+                            font_size: '14sp'
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_x: 0.6
                             halign: 'left'
@@ -1355,12 +1416,12 @@ WindowManager:
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '35dp'
-                        spacing: '10dp'
+                        height: '30dp'
+                        spacing: '8dp'
                         Label:
-                            text: app.translator.get_text('trip_duration')
+                            text: app.trip_duration_text
                             font_name: 'CaviarDreams_Bold.ttf'
-                            font_size: '14sp'
+                            font_size: '13sp'
                             color: 0.4, 0.4, 0.4, 1
                             size_hint_x: 0.4
                             halign: 'left'
@@ -1370,7 +1431,7 @@ WindowManager:
                             id: tripTime
                             text: ''
                             font_name: 'CaviarDreams.ttf'
-                            font_size: '16sp'
+                            font_size: '14sp'
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_x: 0.6
                             halign: 'left'
@@ -1381,12 +1442,12 @@ WindowManager:
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '35dp'
-                        spacing: '10dp'
+                        height: '30dp'
+                        spacing: '8dp'
                         Label:
-                            text: app.translator.get_text('estimated_fuel')
+                            text: app.estimated_fuel_text
                             font_name: 'CaviarDreams_Bold.ttf'
-                            font_size: '14sp'
+                            font_size: '13sp'
                             color: 0.4, 0.4, 0.4, 1
                             size_hint_x: 0.4
                             halign: 'left'
@@ -1396,7 +1457,7 @@ WindowManager:
                             id: tripFuel
                             text: ''
                             font_name: 'CaviarDreams.ttf'
-                            font_size: '16sp'
+                            font_size: '14sp'
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_x: 0.6
                             halign: 'left'
@@ -1405,19 +1466,19 @@ WindowManager:
 
                 Widget:
                     size_hint_y: None
-                    height: '30dp'
+                    height: '15dp'
 
                 # Three action buttons in a row
                 BoxLayout:
                     orientation: 'horizontal'
                     size_hint_y: None
-                    height: '70dp'
-                    spacing: '10dp'
+                    height: '60dp'
+                    spacing: '8dp'
                     
                     Button:
-                        text: app.translator.get_text('home')
+                        text: app.home_text2
                         font_name: 'CaviarDreams.ttf'
-                        font_size: '14sp'
+                        font_size: '12sp'
                         background_normal: ''
                         background_color: 0, 0, 0, 0
                         color: 0.4, 0.4, 0.4, 1
@@ -1434,9 +1495,9 @@ WindowManager:
                             root.manager.transition.direction = "down"
                     
                     Button:
-                        text: app.translator.get_text('view_all_trips')
+                        text: app.view_all_trips_text
                         font_name: 'CaviarDreams.ttf'
-                        font_size: '14sp'
+                        font_size: '12sp'
                         background_normal: ''
                         background_color: 0, 0, 0, 0
                         color: 0.4, 0.4, 0.4, 1
@@ -1452,11 +1513,11 @@ WindowManager:
                             root.manager.transition.direction = "left"
 
                 Button:
-                    text: app.translator.get_text('start_next_trip')
+                    text: app.start_next_trip_text
                     font_name: 'CaviarDreams_Bold.ttf'
-                    font_size: '18sp'
+                    font_size: '16sp'
                     size_hint_y: None
-                    height: '65dp'
+                    height: '55dp'
                     background_normal: ''
                     background_color: 0, 0, 0, 0
                     color: 1, 1, 1, 1
@@ -1474,7 +1535,7 @@ WindowManager:
 
                 Widget:
                     size_hint_y: None
-                    height: '30dp'
+                    height: '20dp'
 
 <HomeStatsPage>:
     name: "HomeStatsPage"
@@ -1727,7 +1788,7 @@ WindowManager:
 
             # Title
             Label:
-                text: app.translator.get_text('all_trips')
+                text: app.all_trips_text
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '24sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -1743,15 +1804,16 @@ WindowManager:
                 spacing: '10dp'
                 
                 Button:
-                    text: app.translator.get_text('today')
+                    id: today_btn
+                    text: app.today_text
                     font_name: 'CaviarDreams_Bold.ttf'
                     font_size: '16sp'
                     background_normal: ''
-                    background_color: 0, 0, 0, 0
+                    background_color: 0.05, 0.05, 0.05, 1
                     color: 1, 1, 1, 1
                     canvas.before:
                         Color:
-                            rgba: 0.05, 0.05, 0.05, 1
+                            rgba: self.background_color
                         RoundedRectangle:
                             pos: self.pos
                             size: self.size
@@ -1760,15 +1822,16 @@ WindowManager:
                         root.load_todays_trips()
                 
                 Button:
-                    text: app.translator.get_text('past')
+                    id: past_btn
+                    text: app.past_text
                     font_name: 'CaviarDreams_Bold.ttf'
                     font_size: '16sp'
                     background_normal: ''
-                    background_color: 0, 0, 0, 0
+                    background_color: 0.92, 0.92, 0.92, 1
                     color: 0.4, 0.4, 0.4, 1
                     canvas.before:
                         Color:
-                            rgba: 0.92, 0.92, 0.92, 1
+                            rgba: self.background_color
                         RoundedRectangle:
                             pos: self.pos
                             size: self.size

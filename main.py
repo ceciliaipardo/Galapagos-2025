@@ -591,11 +591,11 @@ class HomeStatsPage(Screen):
                 hours = int(statistics[3].seconds/3600)
                 minutes = int((statistics[3].seconds-hours*3600)/60)
                 seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
-                self.ids.TotalTime.text = '{} Hours, {} Minutes, {} Seconds'.format(hours, minutes, seconds)
+                self.ids.TotalTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
                 hours = int(statistics[4].seconds/3600)
                 minutes = int((statistics[4].seconds-hours*3600)/60)
                 seconds = int(statistics[4].seconds - hours*3600 - minutes*60)
-                self.ids.TimeBetween.text = '{} Hours, {} Minutes, {} Seconds'.format(hours, minutes, seconds)
+                self.ids.TimeBetween.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
             except:
                 self.ids.NumberOfTrips.text = "No Data Available"
                 self.ids.MilesDriven.text = "No Data Available"
@@ -610,12 +610,47 @@ class HomeStatsPage(Screen):
             self.ids.TimeBetween.text = "Connection Required"
 
 class IndividualTripsPage(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.current_view = 'today'  # Track which view is active
+    
     def on_pre_enter(self):
         """Load and display today's trips by default"""
         self.load_todays_trips()
     
+    def refresh_current_view(self):
+        """Refresh the currently displayed view (used when language changes)"""
+        if self.current_view == 'today':
+            self.load_todays_trips()
+        else:
+            self.load_past_trips()
+    
+    def update_button_styles(self):
+        """Update button styles based on current view"""
+        if hasattr(self, 'ids'):
+            today_btn = self.ids.get('today_btn')
+            past_btn = self.ids.get('past_btn')
+            
+            if today_btn and past_btn:
+                if self.current_view == 'today':
+                    # Today is selected - black background, white text
+                    today_btn.background_color = (0.05, 0.05, 0.05, 1)
+                    today_btn.color = (1, 1, 1, 1)
+                    # Past is unselected - light background, dark text
+                    past_btn.background_color = (0.92, 0.92, 0.92, 1)
+                    past_btn.color = (0.4, 0.4, 0.4, 1)
+                else:
+                    # Past is selected - black background, white text
+                    past_btn.background_color = (0.05, 0.05, 0.05, 1)
+                    past_btn.color = (1, 1, 1, 1)
+                    # Today is unselected - light background, dark text
+                    today_btn.background_color = (0.92, 0.92, 0.92, 1)
+                    today_btn.color = (0.4, 0.4, 0.4, 1)
+    
     def load_todays_trips(self):
         """Load only today's trips"""
+        self.current_view = 'today'
+        self.update_button_styles()
         Logger.info(f"Loading TODAY's trips for user: {currentUser}")
         if(DBCheckConnection()):
             try:
@@ -635,6 +670,8 @@ class IndividualTripsPage(Screen):
     
     def load_past_trips(self):
         """Load all past trips (excluding today)"""
+        self.current_view = 'past'
+        self.update_button_styles()
         Logger.info(f"Loading PAST trips for user: {currentUser}")
         if(DBCheckConnection()):
             try:
@@ -1115,15 +1152,17 @@ class Cargo(Screen):
             currentCargo = ', '.join(selected_items)
         else:
             currentCargo = 'None'
-        self.manager.current = "FinishTrip"
+        self.manager.current = "StartTripConfirmation"
         self.manager.transition.direction = "up"
         
     def clearPassengerCount(self):
         global currentPass
         currentPass = ''
 
-class FinishTrip(Screen):
-    def on_enter(self):
+class StartTripConfirmation(Screen):
+    """Screen to confirm and initiate trip tracking"""
+    def start_trip_now(self):
+        """Initialize GPS tracking and start the trip"""
         try:
             app = App.get_running_app()
             if app:
@@ -1135,6 +1174,15 @@ class FinishTrip(Screen):
             startTrip()
         except Exception as e:
             Logger.error(f"Failed to start trip: {e}")
+        
+        # Navigate to FinishTrip screen
+        self.manager.current = "FinishTrip"
+        self.manager.transition.direction = "up"
+
+class FinishTrip(Screen):
+    def on_enter(self):
+        # GPS is now started in StartTripConfirmation screen
+        pass
     
     def endTrip(self):
         try:
@@ -1162,27 +1210,53 @@ class FinishTrip(Screen):
         
 class TripStats(Screen):
     def on_enter(self):
-        statistics = localDBGetTripStats(currentTripID)
-        
-        # Translate destination text if it's a known destination
-        destination = str(statistics[0])
-        if destination == "Other":
-            destination = translator.get_text('other')
-        elif destination == "The Highlands":
-            destination = translator.get_text('the_highlands')
-        elif destination == "Puerto Ayora":
-            destination = translator.get_text('puerto_ayora')
-        elif destination == "Airport":
-            destination = translator.get_text('airport')
-        
-        self.ids.Destination.text = destination
-        self.ids.PassengersCargo.text = str(statistics[1])
-        self.ids.tripDist.text = "{} {}".format(statistics[2], translator.get_text('km'))
-        hours = int(statistics[3].seconds/3600)
-        minutes = int((statistics[3].seconds-hours*3600)/60)
-        seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
-        self.ids.tripTime.text = '{} Hours, {} Minutes, {} Seconds'.format(hours, minutes, seconds)
-        self.ids.tripFuel.text = "{} {}".format(statistics[4], translator.get_text('gallons'))
+        self.refresh_display()
+    
+    def refresh_display(self):
+        """Refresh the trip statistics display with current language"""
+        try:
+            Logger.info("TripStats refresh_display called")
+            Logger.info(f"Current trip ID: {currentTripID}")
+            
+            if not currentTripID:
+                Logger.warning("No current trip ID")
+                return
+            
+            statistics = localDBGetTripStats(currentTripID)
+            Logger.info(f"Got statistics: {statistics}")
+            
+            # Translate destination text if it's a known destination
+            destination = str(statistics[0])
+            if destination == "Other":
+                destination = translator.get_text('other')
+            elif destination == "The Highlands":
+                destination = translator.get_text('the_highlands')
+            elif destination == "Puerto Ayora":
+                destination = translator.get_text('puerto_ayora')
+            elif destination == "Airport":
+                destination = translator.get_text('airport')
+            elif destination == "Trip Too Short":
+                destination = translator.get_text('trip_too_short')
+            
+            # Translate passenger/cargo info
+            passengers_cargo = str(statistics[1])
+            if passengers_cargo == "Trip Too Short":
+                passengers_cargo = translator.get_text('trip_too_short')
+            
+            Logger.info(f"Setting destination to: {destination}")
+            self.ids.Destination.text = destination
+            self.ids.PassengersCargo.text = passengers_cargo
+            self.ids.tripDist.text = "{} {}".format(statistics[2], translator.get_text('km'))
+            hours = int(statistics[3].seconds/3600)
+            minutes = int((statistics[3].seconds-hours*3600)/60)
+            seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
+            self.ids.tripTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
+            self.ids.tripFuel.text = "{} {}".format(statistics[4], translator.get_text('gallons'))
+            Logger.info("TripStats refresh_display completed successfully")
+        except Exception as e:
+            Logger.error(f"Error in refresh_display: {e}")
+            import traceback
+            Logger.error(traceback.format_exc())
     
     def on_pre_leave(self):
         if(DBCheckConnection()):
@@ -1311,6 +1385,21 @@ class MainApp(App):
     next_text = StringProperty()
     done_text = StringProperty()
     complete_text = StringProperty()
+    all_trips_text = StringProperty()
+    today_text = StringProperty()
+    past_text = StringProperty()
+    students_text = StringProperty()
+    tourists_text = StringProperty()
+    locals_text = StringProperty()
+    trip_statistics_text = StringProperty()
+    destination_text = StringProperty()
+    passengers_cargo_text = StringProperty()
+    distance_driven_text = StringProperty()
+    trip_duration_text = StringProperty()
+    estimated_fuel_text = StringProperty()
+    home_text2 = StringProperty()
+    view_all_trips_text = StringProperty()
+    start_next_trip_text = StringProperty()
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1332,6 +1421,21 @@ class MainApp(App):
         self.next_text = self.translator.get_text('next')
         self.done_text = self.translator.get_text('done')
         self.complete_text = self.translator.get_text('complete')
+        self.all_trips_text = self.translator.get_text('all_trips')
+        self.today_text = self.translator.get_text('today')
+        self.past_text = self.translator.get_text('past')
+        self.students_text = self.translator.get_text('students')
+        self.tourists_text = self.translator.get_text('tourists')
+        self.locals_text = self.translator.get_text('locals')
+        self.trip_statistics_text = self.translator.get_text('trip_statistics')
+        self.destination_text = self.translator.get_text('destination')
+        self.passengers_cargo_text = self.translator.get_text('passengers_cargo')
+        self.distance_driven_text = self.translator.get_text('distance_driven')
+        self.trip_duration_text = self.translator.get_text('trip_duration')
+        self.estimated_fuel_text = self.translator.get_text('estimated_fuel')
+        self.home_text2 = self.translator.get_text('home')
+        self.view_all_trips_text = self.translator.get_text('view_all_trips')
+        self.start_next_trip_text = self.translator.get_text('start_next_trip')
     
     def build(self):
         # Load the KV file
@@ -1374,6 +1478,25 @@ class MainApp(App):
         self.update_text_properties()
         self.update_all_screen_texts()
         self.update_all_images()
+        
+        # Refresh screens with dynamic content
+        try:
+            current_screen_name = self.root.current
+            Logger.info(f"Current screen: {current_screen_name}")
+            
+            if current_screen_name == 'IndividualTripsPage':
+                trips_screen = self.root.get_screen('IndividualTripsPage')
+                trips_screen.refresh_current_view()
+                Logger.info("Refreshed IndividualTripsPage")
+            elif current_screen_name == 'TripStats':
+                Logger.info("Attempting to refresh TripStats")
+                trip_stats_screen = self.root.get_screen('TripStats')
+                trip_stats_screen.refresh_display()
+                Logger.info("TripStats refresh complete")
+        except Exception as e:
+            Logger.error(f"Error refreshing screens: {e}")
+            import traceback
+            Logger.error(traceback.format_exc())
     
     def update_all_images(self):
         """Update all button background images based on current language"""

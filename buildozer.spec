@@ -58,8 +58,8 @@ requirements = python3,kivy,kivymd,plyer
 orientation = portrait
 
 # (list) List of service to declare
-# Temporarily disabled to fix pyjnius build issue - GPS handled by main app
-# services = GPS:gps_service.py
+# GPS background service for continuous location tracking during trips
+services = GPS:gps_service.py:foreground
 
 #
 # OSX Specific

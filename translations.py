@@ -135,7 +135,12 @@ class Translations:
                 'language': 'Language',
                 'english': 'English',
                 'spanish': 'Español',
-                'translate': 'Translate'
+                'translate': 'Translate',
+                
+                # Time units
+                'hours': 'Hours',
+                'minutes': 'Minutes',
+                'seconds': 'Seconds'
             },
             'es': {
                 # Welcome Screen
@@ -266,7 +271,12 @@ class Translations:
                 'language': 'Idioma',
                 'english': 'English',
                 'spanish': 'Español',
-                'translate': 'Traducir'
+                'translate': 'Traducir',
+                
+                # Time units
+                'hours': 'Horas',
+                'minutes': 'Minutos',
+                'seconds': 'Segundos'
             }
         }
     

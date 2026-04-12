@@ -52,7 +52,7 @@ WindowManager:
 
             # Logo/Title Area
             Label:
-                text: app.translator.get_text('welcome')
+                text: app.language and app.translator.get_text('welcome')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '36sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -87,7 +87,7 @@ WindowManager:
                     spacing: '8dp'
                     
                     Label:
-                        text: app.translator.get_text('username')
+                        text: app.language and app.translator.get_text('username')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -119,7 +119,7 @@ WindowManager:
                     spacing: '8dp'
                     
                     Label:
-                        text: app.translator.get_text('password')
+                        text: app.language and app.translator.get_text('password')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -147,7 +147,7 @@ WindowManager:
 
             # Login Button
             Button:
-                text: app.translator.get_text('login')
+                text: app.language and app.translator.get_text('login')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.11
@@ -169,7 +169,7 @@ WindowManager:
 
             # Register Link
             Button:
-                text: app.translator.get_text('register_link')
+                text: app.language and app.translator.get_text('register_link')
                 font_name: 'CaviarDreams.ttf'
                 font_size: '14sp'
                 size_hint_y: 0.07
@@ -217,7 +217,7 @@ WindowManager:
             spacing: '20dp'
 
             Label:
-                text: app.translator.get_text('home')
+                text: app.language and app.translator.get_text('home')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '32sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -229,7 +229,7 @@ WindowManager:
 
             # Start Trip Button
             Button:
-                text: app.translator.get_text('start_trip')
+                text: app.language and app.translator.get_text('start_trip')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '22sp'
                 size_hint_y: 0.16
@@ -244,13 +244,12 @@ WindowManager:
                         size: self.size
                         radius: [15, 15, 15, 15]
                 on_release:
-                    root.autoSelectFirstCar()
-                    app.root.current = "Destination"
+                    app.root.current = "StartTrip"
                     root.manager.transition.direction = "up"
 
             # Stats Button
             Button:
-                text: app.translator.get_text('get_stats')
+                text: app.language and app.translator.get_text('get_stats')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '22sp'
                 size_hint_y: 0.16
@@ -273,7 +272,7 @@ WindowManager:
 
             # Logout Button
             Button:
-                text: app.translator.get_text('log_out')
+                text: app.language and app.translator.get_text('log_out')
                 font_name: 'CaviarDreams.ttf'
                 font_size: '17sp'
                 size_hint_y: 0.11
@@ -345,7 +344,7 @@ WindowManager:
             spacing: '15dp'
 
             Label:
-                text: app.translator.get_text('where_going')
+                text: app.language and app.translator.get_text('where_going')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '26sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -357,7 +356,7 @@ WindowManager:
 
             # Option Buttons
             Button:
-                text: app.translator.get_text('the_highlands')
+                text: app.language and app.translator.get_text('the_highlands')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -380,7 +379,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('puerto_ayora')
+                text: app.language and app.translator.get_text('puerto_ayora')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -403,7 +402,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('airport')
+                text: app.language and app.translator.get_text('airport')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -426,7 +425,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('other')
+                text: app.language and app.translator.get_text('other')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -501,7 +500,7 @@ WindowManager:
             spacing: '15dp'
 
             Label:
-                text: app.translator.get_text('where_from')
+                text: app.language and app.translator.get_text('where_from')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '26sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -513,7 +512,7 @@ WindowManager:
 
             # Option Buttons
             Button:
-                text: app.translator.get_text('the_highlands')
+                text: app.language and app.translator.get_text('the_highlands')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -536,7 +535,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('puerto_ayora')
+                text: app.language and app.translator.get_text('puerto_ayora')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -559,7 +558,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('airport')
+                text: app.language and app.translator.get_text('airport')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -582,7 +581,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('other')
+                text: app.language and app.translator.get_text('other')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.14
@@ -657,7 +656,7 @@ WindowManager:
             spacing: '15dp'
 
             Label:
-                text: app.translator.get_text('who_driving')
+                text: app.language and app.translator.get_text('who_driving')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '24sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -791,7 +790,7 @@ WindowManager:
             spacing: '15dp'
 
             Label:
-                text: app.translator.get_text('passenger_count')
+                text: app.language and app.translator.get_text('passenger_count')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '26sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -802,7 +801,7 @@ WindowManager:
                 size_hint_y: 0.02
 
             Button:
-                text: app.translator.get_text('1_passenger')
+                text: app.language and app.translator.get_text('1_passenger')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.12
@@ -825,7 +824,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('2_passengers')
+                text: app.language and app.translator.get_text('2_passengers')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.12
@@ -848,7 +847,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('3_passengers')
+                text: app.language and app.translator.get_text('3_passengers')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.12
@@ -871,7 +870,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Button:
-                text: app.translator.get_text('4_passengers')
+                text: app.language and app.translator.get_text('4_passengers')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
                 size_hint_y: 0.12
@@ -893,6 +892,30 @@ WindowManager:
                     app.root.current = "Cargo"
                     root.manager.transition.direction = "up"
 
+            Button:
+                text: app.language and app.translator.get_text('5_plus_passengers')
+                font_name: 'CaviarDreams_Bold.ttf'
+                font_size: '19sp'
+                size_hint_y: 0.12
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                background_normal: ''
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgba: 0.05, 0.05, 0.05, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10, 10, 10, 10]
+                on_release:
+                    root.setPassengerCount('5+')
+                    app.root.current = "Cargo"
+                    root.manager.transition.direction = "up"
+
+            Widget:
             Widget:
                 size_hint_y: 0.4
 
@@ -947,7 +970,7 @@ WindowManager:
             spacing: '12dp'
 
             Label:
-                text: app.translator.get_text('what_cargo')
+                text: app.language and app.translator.get_text('what_cargo')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '26sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -962,7 +985,7 @@ WindowManager:
             # Luggage - Tap to toggle
             Button:
                 id: luggage_btn
-                text: app.translator.get_text('luggage')
+                text: app.language and app.translator.get_text('luggage')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
@@ -975,7 +998,7 @@ WindowManager:
             # Bike
             Button:
                 id: bike_btn
-                text: app.translator.get_text('bike')
+                text: app.language and app.translator.get_text('bike')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
@@ -988,7 +1011,7 @@ WindowManager:
             # Work Equipment
             Button:
                 id: work_btn
-                text: app.translator.get_text('work_equipment')
+                text: app.language and app.translator.get_text('work_equipment')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
@@ -1001,7 +1024,7 @@ WindowManager:
             # Food and Goods
             Button:
                 id: food_btn
-                text: app.translator.get_text('food_goods')
+                text: app.language and app.translator.get_text('food_goods')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
@@ -1014,7 +1037,7 @@ WindowManager:
             # Miscellaneous Cargo
             Button:
                 id: misc_btn
-                text: app.translator.get_text('misc_cargo')
+                text: app.language and app.translator.get_text('misc_cargo')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
@@ -1029,7 +1052,7 @@ WindowManager:
 
             # Next Button
             Button:
-                text: app.translator.get_text('next')
+                text: app.language and app.translator.get_text('next')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '20sp'
                 size_hint_y: None
@@ -1163,7 +1186,7 @@ WindowManager:
             spacing: '20dp'
 
             Label:
-                text: app.translator.get_text('which_car')
+                text: app.language and app.translator.get_text('which_car')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '26sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -1269,7 +1292,7 @@ WindowManager:
             spacing: '30dp'
 
             Label:
-                text: app.translator.get_text('click_complete')
+                text: app.language and app.translator.get_text('click_complete')
                 font_name: 'CaviarDreams.ttf'
                 font_size: '19sp'
                 color: 0.3, 0.3, 0.3, 1
@@ -1279,7 +1302,7 @@ WindowManager:
                 text_size: self.size
 
             Button:
-                text: app.translator.get_text('complete')
+                text: app.language and app.translator.get_text('complete')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '24sp'
                 size_hint_y: 0.22
@@ -1643,7 +1666,7 @@ WindowManager:
 
             # Title
             Label:
-                text: app.translator.get_text('statistics_today')
+                text: app.language and app.translator.get_text('statistics_today')
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '24sp'
                 color: 0.1, 0.1, 0.1, 1
@@ -1670,7 +1693,7 @@ WindowManager:
                     size_hint_y: 0.2
                     spacing: '10dp'
                     Label:
-                        text: app.translator.get_text('number_of_trips') + ':'
+                        text: app.language and app.translator.get_text('number_of_trips') + ':'
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '14sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -1695,7 +1718,7 @@ WindowManager:
                     size_hint_y: 0.2
                     spacing: '10dp'
                     Label:
-                        text: app.translator.get_text('kilometers_driven') + ':'
+                        text: app.language and app.translator.get_text('kilometers_driven') + ':'
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '14sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -1720,7 +1743,7 @@ WindowManager:
                     size_hint_y: 0.2
                     spacing: '10dp'
                     Label:
-                        text: app.translator.get_text('estimated_gas') + ':'
+                        text: app.language and app.translator.get_text('estimated_gas') + ':'
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '14sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -1745,7 +1768,7 @@ WindowManager:
                     size_hint_y: 0.2
                     spacing: '10dp'
                     Label:
-                        text: app.translator.get_text('total_time') + ':'
+                        text: app.language and app.translator.get_text('total_time') + ':'
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '14sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -1770,7 +1793,7 @@ WindowManager:
                     size_hint_y: 0.2
                     spacing: '10dp'
                     Label:
-                        text: app.translator.get_text('time_between') + ':'
+                        text: app.language and app.translator.get_text('time_between') + ':'
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '14sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -1791,7 +1814,7 @@ WindowManager:
 
             # Toggle Button - View Individual Trips
             Button:
-                text: app.translator.get_text('view_individual_trips')
+                text: app.language and app.translator.get_text('view_individual_trips')
                 font_name: 'CaviarDreams.ttf'
                 font_size: '16sp'
                 size_hint_y: None
@@ -1989,7 +2012,7 @@ WindowManager:
                         height: '35dp'
                         spacing: '10dp'
                         Label:
-                            text: app.translator.get_text('destination')
+                            text: app.language and app.translator.get_text('destination')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '14sp'
                             color: 0.4, 0.4, 0.4, 1
@@ -2015,7 +2038,7 @@ WindowManager:
                         height: '35dp'
                         spacing: '10dp'
                         Label:
-                            text: app.translator.get_text('starting_point')
+                            text: app.language and app.translator.get_text('starting_point')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '14sp'
                             color: 0.4, 0.4, 0.4, 1
@@ -2045,7 +2068,7 @@ WindowManager:
                         height: '35dp'
                         spacing: '10dp'
                         Label:
-                            text: app.translator.get_text('passengers')
+                            text: app.language and app.translator.get_text('passengers')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '14sp'
                             color: 0.4, 0.4, 0.4, 1
@@ -2071,7 +2094,7 @@ WindowManager:
                         height: '35dp'
                         spacing: '10dp'
                         Label:
-                            text: app.translator.get_text('cargo')
+                            text: app.language and app.translator.get_text('cargo')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '14sp'
                             color: 0.4, 0.4, 0.4, 1
@@ -2101,7 +2124,7 @@ WindowManager:
                         height: '35dp'
                         spacing: '10dp'
                         Label:
-                            text: app.translator.get_text('distance')
+                            text: app.language and app.translator.get_text('distance')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '14sp'
                             color: 0.4, 0.4, 0.4, 1
@@ -2127,7 +2150,7 @@ WindowManager:
                         height: '35dp'
                         spacing: '10dp'
                         Label:
-                            text: app.translator.get_text('duration')
+                            text: app.language and app.translator.get_text('duration')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '14sp'
                             color: 0.4, 0.4, 0.4, 1
@@ -2153,7 +2176,7 @@ WindowManager:
                         height: '35dp'
                         spacing: '10dp'
                         Label:
-                            text: app.translator.get_text('fuel')
+                            text: app.language and app.translator.get_text('fuel')
                             font_name: 'CaviarDreams_Bold.ttf'
                             font_size: '14sp'
                             color: 0.4, 0.4, 0.4, 1
@@ -2260,7 +2283,7 @@ WindowManager:
                 height: self.minimum_height
 
                 Label:
-                    text: app.translator.get_text('fill_out_following')
+                    text: app.language and app.translator.get_text('fill_out_following')
                     font_name: 'CaviarDreams_Bold.ttf'
                     font_size: '26sp'
                     color: 0.1, 0.1, 0.1, 1
@@ -2288,7 +2311,7 @@ WindowManager:
                     height: '80dp'
                     spacing: '8dp'
                     Label:
-                        text: app.translator.get_text('name')
+                        text: app.language and app.translator.get_text('name')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2318,7 +2341,7 @@ WindowManager:
                     height: '80dp'
                     spacing: '8dp'
                     Label:
-                        text: app.translator.get_text('username')
+                        text: app.language and app.translator.get_text('username')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2348,7 +2371,7 @@ WindowManager:
                     height: '80dp'
                     spacing: '8dp'
                     Label:
-                        text: app.translator.get_text('password')
+                        text: app.language and app.translator.get_text('password')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2379,7 +2402,7 @@ WindowManager:
                     height: '80dp'
                     spacing: '8dp'
                     Label:
-                        text: app.translator.get_text('phone_number')
+                        text: app.language and app.translator.get_text('phone_number')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2408,7 +2431,7 @@ WindowManager:
                     height: '10dp'
 
                 Button:
-                    text: app.translator.get_text('next')
+                    text: app.language and app.translator.get_text('next')
                     font_name: 'CaviarDreams_Bold.ttf'
                     font_size: '20sp'
                     size_hint_y: None
@@ -2491,7 +2514,7 @@ WindowManager:
                 height: self.minimum_height
 
                 Label:
-                    text: app.translator.get_text('complete_registration')
+                    text: app.language and app.translator.get_text('complete_registration')
                     font_name: 'CaviarDreams_Bold.ttf'
                     font_size: '26sp'
                     color: 0.1, 0.1, 0.1, 1
@@ -2519,7 +2542,7 @@ WindowManager:
                     height: '80dp'
                     spacing: '8dp'
                     Label:
-                        text: app.translator.get_text('car_number')
+                        text: app.language and app.translator.get_text('car_number')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2553,7 +2576,7 @@ WindowManager:
                     height: '80dp'
                     spacing: '8dp'
                     Label:
-                        text: app.translator.get_text('car_company')
+                        text: app.language and app.translator.get_text('car_company')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2564,7 +2587,7 @@ WindowManager:
                         padding: ['10dp', 0]
                     Spinner:
                         id: CompanySpinner
-                        text: app.translator.get_text('select_company')
+                        text: app.language and app.translator.get_text('select_company')
                         values: [app.translator.get_text('option1'), app.translator.get_text('option2'), app.translator.get_text('option3'), app.translator.get_text('option4'), app.translator.get_text('option5')]
                         font_name: 'CaviarDreams.ttf'
                         font_size: '18sp'
@@ -2593,7 +2616,7 @@ WindowManager:
                         color: 0, 0, 0, 1
                         on_active: app.handle_another_company_checkbox(self.active)
                     Label:
-                        text: app.translator.get_text('check_another_company')
+                        text: app.language and app.translator.get_text('check_another_company')
                         font_name: 'CaviarDreams.ttf'
                         font_size: '14sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2610,7 +2633,7 @@ WindowManager:
                     spacing: '8dp'
                     opacity: 0
                     Label:
-                        text: app.translator.get_text('second_car_company')
+                        text: app.language and app.translator.get_text('second_car_company')
                         font_name: 'CaviarDreams_Bold.ttf'
                         font_size: '16sp'
                         color: 0.3, 0.3, 0.3, 1
@@ -2640,7 +2663,7 @@ WindowManager:
                     height: '10dp'
 
                 Button:
-                    text: app.translator.get_text('done')
+                    text: app.language and app.translator.get_text('done')
                     font_name: 'CaviarDreams_Bold.ttf'
                     font_size: '20sp'
                     size_hint_y: None

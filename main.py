@@ -11,7 +11,6 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import NoTransition
 from kivy.uix.screenmanager import SlideTransition
-from kivymd.app import MDApp
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.properties import StringProperty
@@ -35,7 +34,7 @@ currentlon = 0
 currentTripID = ''
 mpg = 25 # the average miles per gallon of taxi cars
 checkFrequency = 10 #seconds
-minMph = 2
+minKph = 3.2
 
 
 
@@ -529,7 +528,7 @@ def getTripDistance(tripID):
             c = 2 * atan2(sqrt(a), sqrt(1 - a))
             R = 6371.0 # radius of earth in kilometers
             d = R * c
-            if(d >= (minMph*checkFrequency/3600)): # prevents movements smaller than minMph average speed to not be recorded 
+            if(d >= (minKph*checkFrequency/3600)): # prevents movements smaller than minKph average speed to not be recorded
                 totalDist += d
             lon1 = lon2
             lat1 = lat2
@@ -1511,6 +1510,7 @@ class MainApp(App):
         
         # Update button text to show which language to switch TO
         current_lang = self.translator.get_current_language()
+        self.language = current_lang  # triggers KV re-evaluation of all app.language bindings
         self.language_button_text = 'EN' if current_lang == 'es' else 'ES'
         Logger.info(f"Language toggled to: {current_lang}, button now shows: {self.language_button_text}")
         

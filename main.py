@@ -6,6 +6,7 @@ Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.utils import platform
+from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
@@ -1478,21 +1479,26 @@ class MainApp(App):
             from android.permissions import request_permissions, Permission
             try:
                 request_permissions([
-                    Permission.INTERNET, 
-                    Permission.ACCESS_BACKGROUND_LOCATION, 
-                    Permission.ACCESS_FINE_LOCATION, 
+                    Permission.INTERNET,
+                    Permission.ACCESS_BACKGROUND_LOCATION,
+                    Permission.ACCESS_FINE_LOCATION,
                     Permission.ACCESS_COARSE_LOCATION,
                     Permission.WAKE_LOCK
                 ])
             except Exception as e:
                 Logger.error(f"Permission request failed: {e}")
-        
+            # Push layout up when soft keyboard appears so inputs stay visible
+            Window.softinput_mode = 'below_target'
+
+        # Handle Android hardware back button (key 27)
+        Window.bind(on_keyboard=self.on_keyboard)
+
         try:
             localDBCreate()
         except Exception as e:
             Logger.error(f"Local DB creation failed: {e}")
-        
-        onLaunch()  
+
+        onLaunch()
         self.root.transition = NoTransition()
         try:
             username = localDBPullAccountData()[0]
@@ -1503,6 +1509,34 @@ class MainApp(App):
         except:
             self.root.current = "Welcome"
         self.root.transition = SlideTransition()
+
+    def on_keyboard(self, window, key, *largs):
+        """Handle Android hardware/gesture back button (keycode 27)"""
+        if key == 27:
+            current = self.root.current
+            # Map each screen to where back should go
+            back_nav = {
+                'HomeStatsPage':        'Home',
+                'IndividualTripsPage':  'HomeStatsPage',
+                'TripDetailPage':       'IndividualTripsPage',
+                'StartTrip':            'Home',
+                'Destination':          'StartTrip',
+                'StartingPoint':        'Destination',
+                'People':               'StartingPoint',
+                'PassengerCount':       'People',
+                'Cargo':                'PassengerCount',
+                'StartTripConfirmation':'Cargo',
+                'Register1':            'Welcome',
+                'Register2':            'Register1',
+            }
+            if current in back_nav:
+                self.root.transition.direction = 'down'
+                self.root.current = back_nav[current]
+                return True  # consume event — don't let Android exit the app
+            # Mid-trip screens: block back entirely so driver can't exit by accident
+            if current in ('FinishTrip', 'TripStats'):
+                return True
+        return False
         
     def toggle_language(self):
         """Toggle between English and Spanish"""

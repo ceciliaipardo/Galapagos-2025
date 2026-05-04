@@ -1437,6 +1437,7 @@ class MainApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.translator = translator
+        self._last_toggle_time = 0  # Track last toggle time for debouncing
         self.update_text_properties()
     
     def update_text_properties(self):
@@ -1539,14 +1540,25 @@ class MainApp(App):
         return False
         
     def toggle_language(self):
-        """Toggle between English and Spanish"""
+        """Toggle between English and Spanish with debouncing"""
+        import time
+        
+        # Debounce: ignore if called within 500ms of last toggle
+        current_time = time.time()
+        if current_time - self._last_toggle_time < 0.5:
+            Logger.info(f"[DEBOUNCE] Toggle ignored - too soon ({(current_time - self._last_toggle_time)*1000:.0f}ms since last toggle)")
+            return
+        
+        self._last_toggle_time = current_time
+        Logger.info("[TOGGLE] Language toggle starting")
+        
         self.translator.toggle_language()
         
         # Update button text to show which language to switch TO
         current_lang = self.translator.get_current_language()
         self.language = current_lang  # triggers KV re-evaluation of all app.language bindings
         self.language_button_text = 'EN' if current_lang == 'es' else 'ES'
-        Logger.info(f"Language toggled to: {current_lang}, button now shows: {self.language_button_text}")
+        Logger.info(f"[TOGGLE] Language toggled to: {current_lang}, button now shows: {self.language_button_text}")
         
         self.update_text_properties()
         self.update_all_screen_texts()

@@ -672,7 +672,7 @@ WindowManager:
                 text: app.students_text
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
-                size_hint_y: 0.14
+                size_hint_y: 0.18
                 halign: 'center'
                 valign: 'middle'
                 text_size: self.size
@@ -695,7 +695,7 @@ WindowManager:
                 text: app.tourists_text
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
-                size_hint_y: 0.14
+                size_hint_y: 0.18
                 halign: 'center'
                 valign: 'middle'
                 text_size: self.size
@@ -718,7 +718,7 @@ WindowManager:
                 text: app.locals_text
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '19sp'
-                size_hint_y: 0.14
+                size_hint_y: 0.18
                 halign: 'center'
                 valign: 'middle'
                 text_size: self.size
@@ -738,7 +738,7 @@ WindowManager:
                     root.manager.transition.direction = "up"
 
             Widget:
-                size_hint_y: 0.38
+                size_hint_y: 0.18
 
 <PassengerCount>:
     name: "PassengerCount"
@@ -972,15 +972,17 @@ WindowManager:
             Label:
                 text: app.language and app.translator.get_text('what_cargo')
                 font_name: 'CaviarDreams_Bold.ttf'
-                font_size: '26sp'
+                font_size: '22sp'
                 color: 0.1, 0.1, 0.1, 1
                 size_hint_y: None
-                height: '40dp'
+                height: '60dp'
                 halign: 'center'
+                valign: 'middle'
+                text_size: self.width, None
 
             Widget:
                 size_hint_y: None
-                height: '10dp'
+                height: '6dp'
 
             # Luggage - Tap to toggle
             Button:
@@ -989,7 +991,7 @@ WindowManager:
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
-                height: '60dp'
+                height: '62dp'
                 background_normal: ''
                 background_color: 0.05, 0.05, 0.05, 1
                 color: 1, 1, 1, 1
@@ -1002,7 +1004,7 @@ WindowManager:
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
-                height: '60dp'
+                height: '62dp'
                 background_normal: ''
                 background_color: 0.05, 0.05, 0.05, 1
                 color: 1, 1, 1, 1
@@ -1015,7 +1017,7 @@ WindowManager:
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
-                height: '60dp'
+                height: '62dp'
                 background_normal: ''
                 background_color: 0.05, 0.05, 0.05, 1
                 color: 1, 1, 1, 1
@@ -1028,7 +1030,7 @@ WindowManager:
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
-                height: '60dp'
+                height: '62dp'
                 background_normal: ''
                 background_color: 0.05, 0.05, 0.05, 1
                 color: 1, 1, 1, 1
@@ -1041,7 +1043,7 @@ WindowManager:
                 font_name: 'CaviarDreams_Bold.ttf'
                 font_size: '18sp'
                 size_hint_y: None
-                height: '60dp'
+                height: '62dp'
                 background_normal: ''
                 background_color: 0.05, 0.05, 0.05, 1
                 color: 1, 1, 1, 1
@@ -1370,7 +1372,10 @@ WindowManager:
         ScrollView:
             do_scroll_x: False
             do_scroll_y: True
-            
+            scroll_timeout: 250
+            scroll_distance: 10
+            effect_cls: 'ScrollEffect'
+
             BoxLayout:
                 orientation: 'vertical'
                 padding: ['20dp', '80dp', '20dp', '20dp']
@@ -1938,6 +1943,9 @@ WindowManager:
             ScrollView:
                 do_scroll_x: False
                 do_scroll_y: True
+                scroll_timeout: 250
+                scroll_distance: 10
+                effect_cls: 'ScrollEffect'
                 BoxLayout:
                     id: trips_container
                     orientation: 'vertical'

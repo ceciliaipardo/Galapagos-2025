@@ -21,6 +21,7 @@ from plyer import gps
 from math import radians, sin, cos, sqrt, atan2
 from translations import translator
 import os
+import time
 
 
 currentUser = ''
@@ -36,6 +37,7 @@ currentTripID = ''
 mpg = 25 # the average miles per gallon of taxi cars
 checkFrequency = 10 #seconds
 minKph = 3.2
+
 
 
 
@@ -74,7 +76,7 @@ def DBCheckPhoneExists(phone):
     """Check if phone exists in Supabase"""
     try:
         int(phone)
-    except:
+    except Exception:
         return translator.get_text('phone_invalid')
     
     try:
@@ -266,6 +268,8 @@ def localDBDelete():
     [cursor, localdb] = localDBConnect()
     #cursor.execute("DROP TABLE accountData")
     cursor.execute("DROP TABLE tripData")
+    localdb.commit()
+    localdb.close()
 
 def localDBShowAll():
     [cursor,localdb] = localDBConnect()
@@ -284,9 +288,9 @@ def localDBShowAll():
     print("\n")
     # Save Changes
     localdb.commit()
-	# Close our connection
-    localdb.close() 
- 
+    # Close our connection
+    localdb.close()
+
 def localDBLogin(username, password, name, phone, company1, comp1num, company2, comp2num):
     [cursor, localdb] = localDBConnect()
     localDBLogOut()
@@ -294,9 +298,9 @@ def localDBLogin(username, password, name, phone, company1, comp1num, company2, 
     cursor.execute(query)
     # Save Changes
     localdb.commit()
-	# Close our connection
+    # Close our connection
     localdb.close()
- 
+
 def localDBPullAccountData():
     [cursor, localdb] = localDBConnect()
     query = "SELECT * FROM accountData"
@@ -304,10 +308,10 @@ def localDBPullAccountData():
     records = cursor.fetchone()
     # Save Changes
     localdb.commit()
-	# Close our connection
+    # Close our connection
     localdb.close()
     return records
-         
+
 def localDBLogOut():
     [cursor, localdb] = localDBConnect()
     # Clear Data
@@ -315,8 +319,8 @@ def localDBLogOut():
     cursor.execute(query)
     # Save Changes
     localdb.commit()
-	# Close our connection
-    localdb.close()  
+    # Close our connection
+    localdb.close()
 
 def localDBClearTrip():
     [cursor, localdb] = localDBConnect()
@@ -325,8 +329,8 @@ def localDBClearTrip():
     cursor.execute(query)
     # Save Changes
     localdb.commit()
-	# Close our connection
-    localdb.close() 
+    # Close our connection
+    localdb.close()
 
 def localDBRecord(username, company, carnum, destination, passengers, cargo, gpslon, gpslat, time):
     [cursor, localdb] = localDBConnect()
@@ -334,7 +338,7 @@ def localDBRecord(username, company, carnum, destination, passengers, cargo, gps
     cursor.execute(query)
     # Save Changes
     localdb.commit()
-	# Close our connection
+    # Close our connection
     localdb.close()
     # Don't print every GPS point
     if destination in ['Start Trip', 'End Trip']:
@@ -441,7 +445,7 @@ def localDBPullTripCoords(tripID):
     coords = cursor.fetchall()
     # Save Changes
     localdb.commit()
-	# Close our connection
+    # Close our connection
     localdb.close()
     return coords
 
@@ -515,7 +519,7 @@ def getTripDistance(tripID):
     coords = localDBPullTripCoords(tripID)
     totalDist = 0
     rowNum = 0
-    global lon1, lat1, lon2, lat2
+    lon1 = lat1 = lon2 = lat2 = 0.0
     for row in coords:
         if(rowNum < 1):
             lon1 = radians(float(row[0]))
@@ -596,18 +600,20 @@ class HomeStatsPage(Screen):
                 minutes = int((statistics[4].seconds-hours*3600)/60)
                 seconds = int(statistics[4].seconds - hours*3600 - minutes*60)
                 self.ids.TimeBetween.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
-            except:
-                self.ids.NumberOfTrips.text = "No Data Available"
-                self.ids.MilesDriven.text = "No Data Available"
-                self.ids.EstimatedGas.text = "No Data Available"
-                self.ids.TotalTime.text = "No Data Available"
-                self.ids.TimeBetween.text = "No Data Available"
+            except Exception:
+                no_data = translator.get_text('no_data_available')
+                self.ids.NumberOfTrips.text = no_data
+                self.ids.MilesDriven.text = no_data
+                self.ids.EstimatedGas.text = no_data
+                self.ids.TotalTime.text = no_data
+                self.ids.TimeBetween.text = no_data
         else:
-            self.ids.NumberOfTrips.text = "Connection Required"
-            self.ids.MilesDriven.text = "Connection Required"
-            self.ids.EstimatedGas.text = "Connection Required"
-            self.ids.TotalTime.text = "Connection Required"
-            self.ids.TimeBetween.text = "Connection Required"
+            conn_req = translator.get_text('connection_required')
+            self.ids.NumberOfTrips.text = conn_req
+            self.ids.MilesDriven.text = conn_req
+            self.ids.EstimatedGas.text = conn_req
+            self.ids.TotalTime.text = conn_req
+            self.ids.TimeBetween.text = conn_req
 
 class IndividualTripsPage(Screen):
     def __init__(self, **kwargs):
@@ -1111,6 +1117,7 @@ class Cargo(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_cargo = {}  # Changed to dict to track button states
+        self._last_click_time = 0  # Track last click time for debouncing
     
     def on_pre_enter(self):
         # Reset all selections
@@ -1130,40 +1137,83 @@ class Cargo(Screen):
             self.update_button_appearance('misc_btn', False, 'Miscellaneous Cargo')
     
     def toggle_cargo(self, cargo_type, button_id):
-        """Toggle cargo selection and update button appearance"""
+        """Toggle cargo selection and update button appearance with debouncing"""
+        # Debounce: ignore if called within 300ms of last click
+        current_time = time.time()
+        if current_time - self._last_click_time < 0.3:
+            Logger.info(f"[DEBOUNCE] Cargo click ignored - too soon ({(current_time - self._last_click_time)*1000:.0f}ms since last click)")
+            return
+        
+        self._last_click_time = current_time
+        Logger.info(f"[CARGO] Toggling {cargo_type}")
+        
         # Toggle the selection state
         self.selected_cargo[cargo_type] = not self.selected_cargo[cargo_type]
         # Update button appearance
         self.update_button_appearance(button_id, self.selected_cargo[cargo_type], cargo_type)
     
     def update_button_appearance(self, button_id, is_selected, cargo_type=None):
-        """Update button to show selected/unselected state"""
-        if hasattr(self, 'ids'):
-            button = getattr(self.ids, button_id, None)
-            if button:
-                # Get the translated cargo text
-                from kivy.app import App
-                app = App.get_running_app()
-                
-                # Map cargo types to translation keys
-                translation_map = {
-                    'Luggage': 'luggage',
-                    'Bike': 'bike',
-                    'Work Equipment': 'work_equipment',
-                    'Food and Goods': 'food_goods',
-                    'Miscellaneous Cargo': 'misc_cargo'
-                }
-                
-                if cargo_type and cargo_type in translation_map:
-                    base_text = app.translator.get_text(translation_map[cargo_type])
-                    if is_selected:
-                        # Selected: add checkmark and green background
-                        button.text = f"✓ {base_text}"
-                        button.background_color = (0.2, 0.7, 0.2, 1)  # Green
-                    else:
-                        # Unselected: no checkmark, dark gray background
-                        button.text = base_text
-                        button.background_color = (0.05, 0.05, 0.05, 1)  # Dark gray (visible!)
+        """Bordered-box style: white+outline when unselected, filled green+checkmark when selected"""
+        from kivy.app import App
+        from kivy.graphics import Color, RoundedRectangle, Line
+        app = App.get_running_app()
+
+        if not hasattr(self, 'ids'):
+            return
+        button = getattr(self.ids, button_id, None)
+        if not button:
+            return
+
+        translation_map = {
+            'Luggage': 'luggage',
+            'Bike': 'bike',
+            'Work Equipment': 'work_equipment',
+            'Food and Goods': 'food_goods',
+            'Miscellaneous Cargo': 'misc_cargo'
+        }
+        if cargo_type not in translation_map:
+            return
+
+        base_text = app.translator.get_text(translation_map[cargo_type])
+        # Transparent native background — canvas drives the visuals
+        button.background_normal = ''
+        button.background_color = (0, 0, 0, 0)
+
+        button.canvas.before.clear()
+        with button.canvas.before:
+            if is_selected:
+                Color(0.18, 0.65, 0.18, 1)
+                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
+            else:
+                Color(1, 1, 1, 1)
+                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
+                Color(0.3, 0.3, 0.3, 1)
+                Line(rounded_rectangle=(button.x, button.y, button.width, button.height, 10), width=1.5)
+
+        button.text = (f'✓  {base_text}') if is_selected else base_text
+        button.color = (1, 1, 1, 1) if is_selected else (0.15, 0.15, 0.15, 1)
+
+        # Bind once so the drawn shapes follow layout changes
+        if not getattr(button, '_cargo_bound', False):
+            def _redraw(instance, _value):
+                self._draw_cargo_button(instance, cargo_type)
+            button.bind(pos=_redraw, size=_redraw)
+            button._cargo_bound = True
+
+    def _draw_cargo_button(self, button, cargo_type):
+        """Redraw cargo button canvas after a pos/size change"""
+        from kivy.graphics import Color, RoundedRectangle, Line
+        is_selected = self.selected_cargo.get(cargo_type, False)
+        button.canvas.before.clear()
+        with button.canvas.before:
+            if is_selected:
+                Color(0.18, 0.65, 0.18, 1)
+                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
+            else:
+                Color(1, 1, 1, 1)
+                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
+                Color(0.3, 0.3, 0.3, 1)
+                Line(rounded_rectangle=(button.x, button.y, button.width, button.height, 10), width=1.5)
     
     def proceed_to_next(self):
         global currentCargo
@@ -1300,6 +1350,11 @@ class TripStats(Screen):
         pass
         
 class TripDetailPage(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.current_trip = None
+        self.trip_number = None
+
     def load_trip_details(self, trip, trip_num):
         """Load and display detailed information for a specific trip"""
         Logger.info(f"Loading trip details for trip #{trip_num}")
@@ -1541,8 +1596,6 @@ class MainApp(App):
         
     def toggle_language(self):
         """Toggle between English and Spanish with debouncing"""
-        import time
-        
         # Debounce: ignore if called within 500ms of last toggle
         current_time = time.time()
         if current_time - self._last_toggle_time < 0.5:
@@ -1568,16 +1621,19 @@ class MainApp(App):
         try:
             current_screen_name = self.root.current
             Logger.info(f"Current screen: {current_screen_name}")
-            
+
             if current_screen_name == 'IndividualTripsPage':
-                trips_screen = self.root.get_screen('IndividualTripsPage')
-                trips_screen.refresh_current_view()
+                self.root.get_screen('IndividualTripsPage').refresh_current_view()
                 Logger.info("Refreshed IndividualTripsPage")
             elif current_screen_name == 'TripStats':
-                Logger.info("Attempting to refresh TripStats")
-                trip_stats_screen = self.root.get_screen('TripStats')
-                trip_stats_screen.refresh_display()
+                self.root.get_screen('TripStats').refresh_display()
                 Logger.info("TripStats refresh complete")
+            elif current_screen_name == 'HomeStatsPage':
+                self.root.get_screen('HomeStatsPage').on_pre_enter()
+                Logger.info("Refreshed HomeStatsPage")
+            elif current_screen_name == 'TripDetailPage':
+                self.root.get_screen('TripDetailPage').update_display()
+                Logger.info("Refreshed TripDetailPage")
         except Exception as e:
             Logger.error(f"Error refreshing screens: {e}")
             import traceback

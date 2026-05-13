@@ -7,11 +7,10 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.utils import platform
 from kivy.core.window import Window
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition, SlideTransition
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.screenmanager import NoTransition
-from kivy.uix.screenmanager import SlideTransition
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.properties import StringProperty
@@ -234,7 +233,7 @@ def DBGetDayStats(username, date):
     
 
 def localDBConnect():
-    localdb = sqlite3.connect('local_db.db')
+    localdb = sqlite3.connect('local_db.db', check_same_thread=False)
     cursor = localdb.cursor()
     return [cursor, localdb]
 
@@ -346,6 +345,8 @@ def localDBRecord(username, company, carnum, destination, passengers, cargo, gps
 
 def localDBDumptoServer():
     """Upload trip summary to TripData table"""
+    global currentTripID, currentDest, currentPass, currentCargo
+    global currentStartPoint, currentCompany, currentCar, currentUser
     [cursor, localdb] = localDBConnect()
     
     try:
@@ -364,7 +365,7 @@ def localDBDumptoServer():
         Logger.info(f"Processing trip: {trip_id}")
         company = start_record[1]
         car_number = start_record[2]
-        start_time = datetime.strptime(str(start_record[3]), '%Y-%m-%d %H:%M:%S.%f')
+        start_time = _parse_db_datetime(start_record[3])
         
         # Use the global variables for trip info (destination, passengers, cargo)
         # These are set during the trip workflow
@@ -395,21 +396,13 @@ def localDBDumptoServer():
             return
         
         # Parse end data
-        duration_timedelta = end_record[0]
-        distance_km = float(end_record[1])
+        distance_km  = float(end_record[1])
         fuel_gallons = float(end_record[2])
-        end_time = datetime.strptime(str(end_record[3]), '%Y-%m-%d %H:%M:%S.%f')
-        
-        # Convert timedelta to seconds
-        if isinstance(duration_timedelta, timedelta):
-            duration_seconds = int(duration_timedelta.total_seconds())
-        else:
-            # Parse from string if needed
-            try:
-                t = datetime.strptime(str(duration_timedelta), '%H:%M:%S.%f')
-                duration_seconds = t.hour * 3600 + t.minute * 60 + t.second
-            except:
-                duration_seconds = 0
+        end_time     = _parse_db_datetime(end_record[3])
+
+        # Duration is stored as str(timedelta) — parse robustly
+        duration_td      = _parse_db_timedelta(end_record[0])
+        duration_seconds = int(duration_td.total_seconds())
         
         # Upload to server
         DBUploadTripSummary(
@@ -435,8 +428,17 @@ def localDBDumptoServer():
     localdb.commit()
     # Close our connection
     localdb.close()
-    # Clear local data
+    # Clear local trip data from SQLite
     localDBClearTrip()
+    # Reset all trip globals now that upload is complete
+    currentTripID     = ''
+    currentDest       = ''
+    currentPass       = ''
+    currentCargo      = ''
+    currentStartPoint = ''
+    currentCompany    = ''
+    currentCar        = ''
+    Logger.info('localDBDumptoServer: trip globals cleared after upload')
 
 def localDBPullTripCoords(tripID):
     [cursor, localdb] = localDBConnect()
@@ -449,31 +451,61 @@ def localDBPullTripCoords(tripID):
     localdb.close()
     return coords
 
-def localDBGetTripStart(tripID): 
+def _parse_db_datetime(s):
+    """Parse a datetime string from SQLite that may or may not have microseconds."""
+    s = str(s)
+    try:
+        return datetime.strptime(s, '%Y-%m-%d %H:%M:%S.%f')
+    except ValueError:
+        return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
+
+def _parse_db_timedelta(s):
+    """Parse a timedelta string from SQLite robustly.
+    SQLite stores timedelta as its str() repr, e.g. '1:23:45.678901' or
+    '0:05:00' — note NO leading-zero padding on hours, and microseconds
+    may be absent."""
+    s = str(s)
+    try:
+        # With microseconds: H:MM:SS.ffffff  (hours can be >23)
+        parts = s.split(':')
+        hours = int(parts[0])
+        minutes = int(parts[1])
+        sec_parts = parts[2].split('.')
+        seconds = int(sec_parts[0])
+        microseconds = int(sec_parts[1]) if len(sec_parts) > 1 else 0
+        return timedelta(hours=hours, minutes=minutes,
+                         seconds=seconds, microseconds=microseconds)
+    except Exception:
+        return timedelta(0)
+
+def localDBGetTripStart(tripID):
     [cursor, localdb] = localDBConnect()
     query = "SELECT time FROM tripData WHERE tripID = '{}' AND destinationXstatus = 'Start Trip'".format(tripID)
     cursor.execute(query)
-    time = datetime.strptime(str(cursor.fetchone()[0]),'%Y-%m-%d %H:%M:%S.%f')
-    return time
+    row = cursor.fetchone()
+    localdb.close()
+    return _parse_db_datetime(row[0])
 
 def localDBGetTripStats(tripID):
     [cursor, localdb] = localDBConnect()
-    query = "SELECT passengersXtotalTime,cargoXtotalDist,destinationXstatus FROM tripData WHERE destinationXstatus != 'End Trip' AND destinationXstatus != 'Start Trip' AND tripID = '{}'".format(tripID)
-    cursor.execute(query)
-    tripData = cursor.fetchone()
-    query = "SELECT passengersXtotalTime,cargoXtotalDist,gpslonXworkingFuel FROM tripData WHERE destinationXstatus = 'End Trip' AND tripID = '{}'".format(tripID)
+    # End Trip row holds the computed totals written by endTrip()
+    query = "SELECT passengersXtotalTime, cargoXtotalDist, gpslonXworkingFuel FROM tripData WHERE destinationXstatus = 'End Trip' AND tripID = '{}'".format(tripID)
     cursor.execute(query)
     endData = cursor.fetchone()
-    totalDist = endData[1]
-    t = datetime.strptime(str(endData[0]),'%H:%M:%S.%f')
-    totalTime = timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
-    totalFuel = endData[2]
-    try:
-        passengers = "{} with {}".format(tripData[0], tripData[1])
-        destination = tripData[2]
-    except:
-        passengers = "Trip Too Short"
-        destination = "Trip Too Short"
+    localdb.close()
+
+    if not endData:
+        return ['Trip Too Short', 'Trip Too Short', 0, timedelta(0), 0]
+
+    totalDist  = endData[1]                       # km
+    totalTime  = _parse_db_timedelta(endData[0])  # timedelta
+    totalFuel  = endData[2]                       # gallons
+
+    # Destination and passenger info come from the globals set during the trip
+    # (they are still set when TripStats loads immediately after the trip)
+    destination = currentDest if currentDest else 'N/A'
+    passengers  = currentPass if currentPass else 'Trip Too Short'
+
     return [destination, passengers, totalDist, totalTime, totalFuel]
 
 
@@ -500,6 +532,8 @@ def onLaunch():
 def startTrip():
     now = datetime.now()
     global currentTripID
+    # Clear any leftover local trip data from a previous session
+    localDBClearTrip()
     currentTripID = '{}{}{}{}{}{}{}'.format(currentUser, now.year, now.month, now.day, now.hour, now.minute, now.second)
     localDBRecord(currentTripID, currentCompany, currentCar, 'Start Trip', 0, 0, 0, 0, now)
 
@@ -515,29 +549,103 @@ def get_image_path(image_name):
         # Fall back to root directory image
         return image_name
 
+def translate_place(value):
+    """Translate a known place/destination name to the current language."""
+    mapping = {
+        'The Highlands': 'the_highlands',
+        'Parte Alta': 'the_highlands',
+        'Puerto Ayora': 'puerto_ayora',
+        'Airport': 'airport',
+        'Aeropuerto': 'airport',
+        'Other': 'other',
+        'Otro': 'other',
+    }
+    key = mapping.get(value)
+    return translator.get_text(key) if key else value
+
+
+def translate_passenger(value):
+    """Translate a known passenger type to the current language."""
+    mapping = {
+        'Students': 'students',
+        'Estudiantes': 'students',
+        'Tourists': 'tourists',
+        'Turistas': 'tourists',
+        'Single Tourist': 'single_tourist',
+        'Turista Individual': 'single_tourist',
+        'Multiple Tourists': 'multiple_tourists',
+        'M\u00faltiples Turistas': 'multiple_tourists',
+        'Locals': 'locals',
+        'Locales': 'locals',
+        'Miscellaneous Passengers': 'misc_passengers',
+        'Pasajeros Varios': 'misc_passengers',
+    }
+    key = mapping.get(value)
+    return translator.get_text(key) if key else value
+
+
+def translate_cargo_list(value):
+    """Translate a comma-separated cargo list to the current language."""
+    cargo_map = {
+        'Luggage': 'luggage',
+        'Equipaje': 'luggage',
+        'Bike': 'bike',
+        'Bicicleta': 'bike',
+        'Work Equipment': 'work_equipment',
+        'Equipo de Trabajo': 'work_equipment',
+        'Food and Goods': 'food_goods',
+        'Comida y Productos': 'food_goods',
+        'Miscellaneous Cargo': 'misc_cargo',
+        'Carga Variada': 'misc_cargo',
+    }
+    if not value or value == 'N/A':
+        return value
+    parts = [p.strip() for p in value.split(',')]
+    translated = []
+    for p in parts:
+        key = cargo_map.get(p)
+        translated.append(translator.get_text(key) if key else p)
+    return ', '.join(translated)
+
+
 def getTripDistance(tripID):
+    """Calculate total trip distance in km using the Haversine formula.
+    Filters out null-island (0,0) coordinates and segments below the
+    minimum-speed threshold to eliminate GPS noise."""
     coords = localDBPullTripCoords(tripID)
-    totalDist = 0
-    rowNum = 0
-    lon1 = lat1 = lon2 = lat2 = 0.0
+    totalDist = 0.0
+    have_first = False
+    lon1 = lat1 = 0.0
+
     for row in coords:
-        if(rowNum < 1):
-            lon1 = radians(float(row[0]))
-            lat1 = radians(float(row[1]))
+        raw_lon = float(row[0])
+        raw_lat = float(row[1])
+
+        # Skip null-island points (GPS hadn't acquired a fix yet)
+        if raw_lon == 0.0 and raw_lat == 0.0:
+            Logger.warning('getTripDistance: skipping null-island point')
+            continue
+
+        if not have_first:
+            lon1 = radians(raw_lon)
+            lat1 = radians(raw_lat)
+            have_first = True
         else:
-            lon2 = radians(float(row[0]))
-            lat2 = radians(float(row[1]))
+            lon2 = radians(raw_lon)
+            lat2 = radians(raw_lat)
             dlat = lat2 - lat1
             dlon = lon2 - lon1
             a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
             c = 2 * atan2(sqrt(a), sqrt(1 - a))
-            R = 6371.0 # radius of earth in kilometers
+            R = 6371.0  # Earth radius in km
             d = R * c
-            if(d >= (minKph*checkFrequency/3600)): # prevents movements smaller than minKph average speed to not be recorded
+            # Only count segment if it exceeds the minimum-speed threshold
+            # (minKph over checkFrequency seconds) — rejects stationary GPS jitter
+            if d >= (minKph * checkFrequency / 3600):
                 totalDist += d
             lon1 = lon2
             lat1 = lat2
-        rowNum += 1
+
     return totalDist
 
 
@@ -561,9 +669,9 @@ class Welcome(Screen):
 class Home(Screen):
     def autoSelectFirstCar(self):
         """Automatically select the first car for the user"""
-        global currentCompany
-        global currentCar
+        global currentCompany, currentCar, currentUser
         userData = localDBPullAccountData()
+        currentUser = userData[0]
         currentCompany = userData[4]
         currentCar = userData[5]
         
@@ -675,16 +783,14 @@ class IndividualTripsPage(Screen):
             self.show_connection_error()
     
     def load_past_trips(self):
-        """Load all past trips (excluding today)"""
+        """Load all past trips (excluding today), grouped by month then week"""
         self.current_view = 'past'
         self.update_button_styles()
         Logger.info(f"Loading PAST trips for user: {currentUser}")
         if(DBCheckConnection()):
             try:
-                # Get ALL trips
                 all_trips = supabase_api.get_individual_trips(currentUser, date=None)
                 
-                # Filter out today's trips
                 today_str = datetime.today().strftime('%Y-%m-%d')
                 past_trips = []
                 for trip in all_trips:
@@ -697,7 +803,7 @@ class IndividualTripsPage(Screen):
                         pass
                 
                 Logger.info(f"Retrieved {len(past_trips)} past trips")
-                self.populate_trips(past_trips)
+                self.populate_past_trips(past_trips)
             except Exception as e:
                 Logger.error(f"Failed to load past trips: {e}")
                 import traceback
@@ -706,6 +812,86 @@ class IndividualTripsPage(Screen):
         else:
             Logger.warning("No database connection available")
             self.show_connection_error()
+
+    def populate_past_trips(self, trips):
+        """Populate past trips grouped by Month > Week"""
+        from kivy.uix.label import Label
+        from kivy.uix.widget import Widget
+        from kivy.graphics import Color, RoundedRectangle
+
+        trips_container = self.ids.trips_container
+        trips_container.clear_widgets()
+
+        if not trips:
+            no_label = Label(
+                text=translator.get_text('no_past_trips'),
+                font_name='CaviarDreams.ttf',
+                font_size='18sp',
+                color=(0.4, 0.4, 0.4, 1),
+                size_hint_y=None,
+                height='100dp',
+                halign='center'
+            )
+            trips_container.add_widget(no_label)
+            return
+
+        # Group: month_key -> week_key -> [trips]
+        from collections import OrderedDict
+        months = OrderedDict()
+        for trip in trips:
+            try:
+                dt = datetime.fromisoformat(str(trip.get('start_time')).replace('Z', '+00:00'))
+            except:
+                continue
+            month_key = dt.strftime('%B %Y')          # e.g. "May 2025"
+            # ISO week start (Monday)
+            week_start = dt - timedelta(days=dt.weekday())
+            week_end   = week_start + timedelta(days=6)
+            week_key   = f"{week_start.strftime('%b %d')} - {week_end.strftime('%b %d')}"
+            months.setdefault(month_key, OrderedDict()).setdefault(week_key, []).append(trip)
+
+        # Global trip counter (oldest = 1)
+        total = len(trips)
+        global_idx = [total]   # mutable so inner closures can decrement
+
+        for month_label, weeks in months.items():
+            # Month header
+            hdr = Label(
+                text=month_label,
+                font_name='CaviarDreams_Bold.ttf',
+                font_size='17sp',
+                color=(0.1, 0.1, 0.1, 1),
+                size_hint_y=None,
+                height='38dp',
+                halign='left',
+                padding=['4dp', 0]
+            )
+            hdr.bind(size=hdr.setter('text_size'))
+            trips_container.add_widget(hdr)
+
+            for week_key, week_trips in weeks.items():
+                # Week sub-header
+                week_word = translator.get_text('week_of')
+                week_hdr = Label(
+                    text=f"  {week_word} {week_key}",
+                    font_name='CaviarDreams.ttf',
+                    font_size='14sp',
+                    color=(0.5, 0.5, 0.5, 1),
+                    size_hint_y=None,
+                    height='30dp',
+                    halign='left'
+                )
+                week_hdr.bind(size=week_hdr.setter('text_size'))
+                trips_container.add_widget(week_hdr)
+
+                for trip in week_trips:
+                    trip_num = global_idx[0]
+                    global_idx[0] -= 1
+                    card = self.create_condensed_trip_card(trip_num, trip)
+                    trips_container.add_widget(card)
+                    trips_container.add_widget(Widget(size_hint_y=None, height='8dp'))
+
+            trips_container.add_widget(Widget(size_hint_y=None, height='12dp'))
     
     def populate_trips(self, trips):
         """Populate the trips list in the UI with condensed trip cards"""
@@ -779,48 +965,59 @@ class IndividualTripsPage(Screen):
             trip_date = ''
             is_today = True
         
-        starting = trip.get('starting_point', 'N/A')
-        ending = trip.get('destination', 'N/A')
+        starting = translate_place(trip.get('starting_point', 'N/A'))
+        ending = translate_place(trip.get('destination', 'N/A'))
+        trip_word = translator.get_text('trip')
         
         # Create button text - include date if not today
         if is_today:
-            button_text = f"Trip #{trip_num}     {time_str}\n{starting} → {ending}"
+            button_text = f"{trip_word} #{trip_num}     {time_str}\n{starting} → {ending}"
         else:
             button_text = f"{trip_date}  {time_str}\n{starting} → {ending}"
         
         # Square styled button with more padding
-        card = Button(
-            text=button_text,
-            font_name='CaviarDreams.ttf',
-            font_size='15sp',
+        # Use ButtonBehavior+BoxLayout so the ScrollView can still claim
+        # scroll gestures — plain Button.on_touch_down consumes the event
+        # and prevents the parent ScrollView from detecting a scroll.
+        class TripCard(ButtonBehavior, BoxLayout):
+            pass
+
+        from kivy.uix.label import Label
+
+        card = TripCard(
+            orientation='vertical',
             size_hint_y=None,
             height='90dp',
-            halign='center',
-            valign='middle',
-            text_size=(None, None),
-            background_normal='',
-            background_color=(0, 0, 0, 0),
-            color=(0.1, 0.1, 0.1, 1)
+            padding=['20dp', '0dp'],
         )
-        
-        # Bind text_size to button size for text wrapping
-        card.bind(size=lambda instance, value: setattr(instance, 'text_size', (value[0] - 40, None)))
-        
-        # Add white background with rounded corners
+
+        # White rounded background
         with card.canvas.before:
             Color(1, 1, 1, 1)
             card.bg_rect = RoundedRectangle(pos=card.pos, size=card.size, radius=[12, 12, 12, 12])
-        
+
         def update_bg(instance, value):
             instance.bg_rect.pos = instance.pos
             instance.bg_rect.size = instance.size
-        
+
         card.bind(pos=update_bg, size=update_bg)
-        
-        # Make button clickable - navigate to detail page
-        def on_button_click(instance):
+
+        # Label inside the card
+        lbl = Label(
+            text=button_text,
+            font_name='CaviarDreams.ttf',
+            font_size='15sp',
+            halign='center',
+            valign='middle',
+            color=(0.1, 0.1, 0.1, 1),
+        )
+        lbl.bind(size=lambda inst, val: setattr(inst, 'text_size', (val[0], None)))
+        card.add_widget(lbl)
+
+        # Tap → navigate to detail page (fires on_release, not on_touch_down)
+        def on_card_release(instance):
             try:
-                Logger.info(f"Trip card {trip_num} clicked")
+                Logger.info(f"Trip card {trip_num} tapped")
                 app = App.get_running_app()
                 detail_screen = app.root.get_screen('TripDetailPage')
                 detail_screen.load_trip_details(trip, trip_num)
@@ -830,9 +1027,9 @@ class IndividualTripsPage(Screen):
                 Logger.error(f"Error navigating to detail page: {e}")
                 import traceback
                 Logger.error(traceback.format_exc())
-        
-        card.bind(on_release=on_button_click)
-        
+
+        card.bind(on_release=on_card_release)
+
         return card
     
     def create_trip_card(self, trip_num, trip):
@@ -1039,37 +1236,6 @@ class Register2(Screen):
         else:
             self.ids.Incorrect.text = translator.get_text('connection_required_register')
 
-class StartTrip(Screen):
-    def on_pre_enter(self):
-        userData = localDBPullAccountData()
-        self.ids.car1.text = "{}".format(userData[4])
-        self.ids.car2.text = "{}".format(userData[6])
-        if(userData[6] != ''):
-            self.ids.car2.disabled = False
-            self.ids.car2.opacity = 100
-        else:
-            self.ids.car2.disabled = True
-            self.ids.car2.opacity = 0
-        
-    
-    def selectCar(self, companyNum):
-        global currentCompany
-        global currentCar
-        userData = localDBPullAccountData()
-        currentCompany = userData[2*companyNum+2]
-        currentCar = userData[2*companyNum+3]
-        
-    def getCarLabel(self, companyNum):
-        userData = localDBPullAccountData()       
-        try:
-            return("{} {}".format(userData[2*companyNum+2], userData[2*companyNum+1+3]))
-        except:
-            return "None"
-        
-    def clearCar(self):
-        global currentCompany
-        currentCompany = ''
-
 class Destination(Screen):
     def setDest(self, destination):
         global currentDest
@@ -1153,9 +1319,9 @@ class Cargo(Screen):
         self.update_button_appearance(button_id, self.selected_cargo[cargo_type], cargo_type)
     
     def update_button_appearance(self, button_id, is_selected, cargo_type=None):
-        """Bordered-box style: white+outline when unselected, filled green+checkmark when selected"""
+        """Dark unselected, filled green+checkmark when selected"""
         from kivy.app import App
-        from kivy.graphics import Color, RoundedRectangle, Line
+        from kivy.graphics import Color, RoundedRectangle
         app = App.get_running_app()
 
         if not hasattr(self, 'ids'):
@@ -1183,15 +1349,12 @@ class Cargo(Screen):
         with button.canvas.before:
             if is_selected:
                 Color(0.18, 0.65, 0.18, 1)
-                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
             else:
-                Color(1, 1, 1, 1)
-                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
-                Color(0.3, 0.3, 0.3, 1)
-                Line(rounded_rectangle=(button.x, button.y, button.width, button.height, 10), width=1.5)
+                Color(0.05, 0.05, 0.05, 1)
+            RoundedRectangle(pos=button.pos, size=button.size, radius=[12, 12, 12, 12])
 
-        button.text = (f'✓  {base_text}') if is_selected else base_text
-        button.color = (1, 1, 1, 1) if is_selected else (0.15, 0.15, 0.15, 1)
+        button.text = base_text
+        button.color = (1, 1, 1, 1)
 
         # Bind once so the drawn shapes follow layout changes
         if not getattr(button, '_cargo_bound', False):
@@ -1202,18 +1365,15 @@ class Cargo(Screen):
 
     def _draw_cargo_button(self, button, cargo_type):
         """Redraw cargo button canvas after a pos/size change"""
-        from kivy.graphics import Color, RoundedRectangle, Line
+        from kivy.graphics import Color, RoundedRectangle
         is_selected = self.selected_cargo.get(cargo_type, False)
         button.canvas.before.clear()
         with button.canvas.before:
             if is_selected:
                 Color(0.18, 0.65, 0.18, 1)
-                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
             else:
-                Color(1, 1, 1, 1)
-                RoundedRectangle(pos=button.pos, size=button.size, radius=[10, 10, 10, 10])
-                Color(0.3, 0.3, 0.3, 1)
-                Line(rounded_rectangle=(button.x, button.y, button.width, button.height, 10), width=1.5)
+                Color(0.05, 0.05, 0.05, 1)
+            RoundedRectangle(pos=button.pos, size=button.size, radius=[12, 12, 12, 12])
     
     def proceed_to_next(self):
         global currentCargo
@@ -1265,23 +1425,46 @@ class FinishTrip(Screen):
         
         try:
             now = datetime.now()
-            dist = round(getTripDistance(currentTripID), 3) # rounds to 3 decimal places
+            dist = round(getTripDistance(currentTripID), 3)  # km, 3 decimal places
             tripTime = now - localDBGetTripStart(currentTripID)
-            tripFuel = round(dist/mpg, 3)
+            # Convert km → miles before dividing by mpg (miles per gallon)
+            dist_miles = dist * 0.621371
+            tripFuel = round(dist_miles / mpg, 3)
             localDBRecord(currentTripID, currentCompany, currentCar, 'End Trip', tripTime, dist, tripFuel, '', now)
         except Exception as e:
             Logger.error(f"Failed to end trip: {e}")
     
     def clearCargo(self):
         global currentCargo
-        global currentTripID
+        # NOTE: do NOT clear currentTripID here.
+        # TripStats.on_pre_leave() still needs it to upload the trip.
+        # Globals are cleared inside localDBDumptoServer() after upload.
         self.endTrip()
         currentCargo = ''
-        currentTripID = ''
         
 class TripStats(Screen):
     def on_enter(self):
+        """Start uploading trip data in background as soon as screen appears"""
+        import threading
+        self._upload_done = False
         self.refresh_display()
+
+        def _upload():
+            try:
+                if DBCheckConnection():
+                    Logger.info("TripStats: uploading trip data (background)")
+                    localDBDumptoServer()
+                    Logger.info("TripStats: upload complete")
+                else:
+                    Logger.warning("TripStats: no connection, skipping upload")
+            except Exception as e:
+                Logger.error(f"TripStats background upload error: {e}")
+                import traceback
+                Logger.error(traceback.format_exc())
+            finally:
+                self._upload_done = True
+
+        threading.Thread(target=_upload, daemon=True).start()
     
     def refresh_display(self):
         """Refresh the trip statistics display with current language"""
@@ -1330,23 +1513,14 @@ class TripStats(Screen):
             Logger.error(traceback.format_exc())
     
     def on_pre_leave(self):
-        """Upload trip data to server before leaving screen"""
-        try:
-            if DBCheckConnection():
-                Logger.info("TripStats: Attempting to upload trip data to server")
-                localDBDumptoServer()
-                Logger.info("TripStats: Trip data uploaded successfully")
-            else:
-                Logger.warning("TripStats: No connection available, trip data not uploaded")
-        except Exception as e:
-            Logger.error(f"TripStats on_pre_leave error: {e}")
-            import traceback
-            Logger.error(traceback.format_exc())
-            # Don't crash - just log the error and continue
-        
+        """Wait (briefly) for the background upload to finish before navigating away"""
+        import time as _time
+        deadline = _time.time() + 5.0
+        while not getattr(self, '_upload_done', True) and _time.time() < deadline:
+            _time.sleep(0.05)
+
     def clearCurrent(self):
-        # DON'T clear the globals here - they're needed for upload in on_pre_leave
-        # They will be cleared after upload in localDBDumptoServer
+        # Globals are cleared inside localDBDumptoServer() after upload
         pass
         
 class TripDetailPage(Screen):
@@ -1407,26 +1581,29 @@ class TripDetailPage(Screen):
                 Logger.error(f"Error parsing timestamps: {e}")
                 self.ids.time_label.text = 'N/A'
             
-            # Display trip details - all with str() to avoid type issues
-            self.ids.destination_value.text = str(trip.get('destination', 'N/A'))
-            self.ids.starting_point_value.text = str(trip.get('starting_point', 'N/A'))
-            
-            # Format passengers
-            passenger_text = str(trip.get('passenger_type', 'N/A'))
-            if trip.get('passenger_count'):
-                passenger_text += f" - {trip.get('passenger_count')}"
+            # Display trip details — translate known values
+            self.ids.destination_value.text = translate_place(str(trip.get('destination', 'N/A')))
+            self.ids.starting_point_value.text = translate_place(str(trip.get('starting_point', 'N/A')))
+
+            # Format passengers with translation
+            passenger_text = translate_passenger(str(trip.get('passenger_type', 'N/A')))
+            count = trip.get('passenger_count', '')
+            if count:
+                passenger_text += f" - {count}"
             self.ids.passengers_value.text = passenger_text
-            
-            self.ids.cargo_value.text = str(trip.get('cargo_type', 'N/A'))
+
+            self.ids.cargo_value.text = translate_cargo_list(str(trip.get('cargo_type', 'N/A')))
             self.ids.distance_value.text = f"{float(trip.get('distance_km', 0)):.2f} {translator.get_text('km')}"
             self.ids.duration_value.text = self.format_duration(int(trip.get('duration_seconds', 0)))
             self.ids.fuel_value.text = f"{float(trip.get('fuel_gallons', 0)):.2f} {translator.get_text('gallons')}"
             
             # Display company and car info if available
+            company_label = translator.get_text('car_company').rstrip(':')
+            car_label = translator.get_text('car_number').rstrip(':')
             if trip.get('company'):
-                self.ids.company_value.text = f"Company: {trip.get('company')}"
+                self.ids.company_value.text = f"{company_label}: {trip.get('company')}"
             if trip.get('car_number'):
-                self.ids.car_value.text = f"Car: {trip.get('car_number')}"
+                self.ids.car_value.text = f"{car_label}: {trip.get('car_number')}"
             
             Logger.info("Display update complete")
             
@@ -1575,8 +1752,7 @@ class MainApp(App):
                 'HomeStatsPage':        'Home',
                 'IndividualTripsPage':  'HomeStatsPage',
                 'TripDetailPage':       'IndividualTripsPage',
-                'StartTrip':            'Home',
-                'Destination':          'StartTrip',
+                'Destination':          'Home',
                 'StartingPoint':        'Destination',
                 'People':               'StartingPoint',
                 'PassengerCount':       'People',
@@ -1837,35 +2013,159 @@ class MainApp(App):
     def handle_another_company_checkbox(self, active):
         """Handle checkbox state change for additional company field"""
         register2 = self.root.get_screen('Register2')
+        box = register2.ids.AdditionalCompanyBox
         if active:
-            register2.ids.AdditionalCompanyBox.opacity = 1
+            box.height = '80dp'
+            box.opacity = 1
             register2.ids.AdditionalCompanyReg.disabled = False
-            # Clear the dropdown selection when checkbox is activated
-            register2.ids.CompanySpinner.text = self.translator.get_text('select_company')
         else:
-            register2.ids.AdditionalCompanyBox.opacity = 0
+            box.height = 0
+            box.opacity = 0
             register2.ids.AdditionalCompanyReg.disabled = True
             register2.ids.AdditionalCompanyReg.text = ''
     
     def startGPS(self, min_time):
+        """Start GPS tracking. On Android uses a background HandlerThread
+        and a WakeLock so updates continue when the screen is off."""
         try:
-            gps.configure(on_location = self.update_gps_location)
-            gps.start(minTime = min_time*1000, minDistance = 0)
+            if platform == 'android':
+                self._start_android_gps(min_time)
+            else:
+                # Desktop / iOS fallback
+                gps.configure(on_location=self.update_gps_location)
+                gps.start(minTime=min_time * 1000, minDistance=5)
         except NotImplementedError:
-            Logger.critical("GPS not implemented on this platform")
-    
+            Logger.critical('GPS not implemented on this platform')
+        except Exception as e:
+            Logger.error(f'startGPS failed: {e}')
+
+    def _start_android_gps(self, min_time):
+        """Android-specific GPS start.
+        - Acquires a PARTIAL_WAKE_LOCK so the CPU stays awake mid-trip.
+        - Registers location updates on a background HandlerThread instead
+          of getMainLooper(), preventing the UI thread from starving updates
+          when the screen turns off.
+        - Sets minDistance=5 m at the OS level to pre-filter GPS jitter.
+        """
+        try:
+            from jnius import autoclass
+            from plyer.platforms.android import activity
+
+            # ── WakeLock: keep CPU alive during the trip ──────────────────
+            PowerManager = autoclass('android.os.PowerManager')
+            Context      = autoclass('android.content.Context')
+            pm = activity.getSystemService(Context.POWER_SERVICE)
+            self._wake_lock = pm.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK, 'GalapaGo:GPS')
+            if not self._wake_lock.isHeld():
+                self._wake_lock.acquire()
+            Logger.info('GPS: WakeLock acquired')
+
+            # ── Background thread: GPS callbacks off the UI thread ────────
+            HandlerThread = autoclass('android.os.HandlerThread')
+            self._gps_thread = HandlerThread('GalapaGoGPS')
+            self._gps_thread.start()
+            looper = self._gps_thread.getLooper()
+            Logger.info('GPS: background HandlerThread started')
+
+            # ── Let plyer build its LocationManager + LocationListener ────
+            # configure() sets up the internal objects; we then take over
+            # registration ourselves on the background looper so GPS works
+            # with the screen off.  Immediately call stop() to cancel any
+            # main-looper registration plyer may have done automatically.
+            gps.configure(
+                on_location=self.update_gps_location,
+                on_status=self.on_gps_status)
+            try:
+                gps.stop()  # cancel plyer's main-looper registration
+            except Exception:
+                pass
+
+            # ── Register every available provider on the background looper
+            providers = gps._location_manager.getProviders(False).toArray()
+            registered = 0
+            for provider in providers:
+                try:
+                    gps._location_manager.requestLocationUpdates(
+                        provider,
+                        min_time * 1000,   # minimum interval in ms
+                        5,                 # minimum displacement in metres
+                        gps._location_listener,
+                        looper)            # ← background looper, not main
+                    Logger.info(f'GPS: provider "{provider}" registered')
+                    registered += 1
+                except Exception as e:
+                    Logger.warning(f'GPS: provider "{provider}" skipped: {e}')
+
+            if registered == 0:
+                raise RuntimeError('No GPS providers could be registered')
+
+        except Exception as e:
+            Logger.error(f'GPS: _start_android_gps failed: {e} — falling back to plyer default')
+            # Graceful fallback: use plyer with at least a sensible minDistance
+            gps.configure(on_location=self.update_gps_location)
+            gps.start(minTime=min_time * 1000, minDistance=5)
+
+    def on_gps_status(self, stype, status):
+        """Log GPS provider status changes (enabled / disabled / accuracy)."""
+        Logger.info(f'GPS status [{stype}]: {status}')
+
     def update_gps_location(self, **kwargs):
+        """Receive a GPS fix and write it to the local DB.
+        Fixes are rejected if:
+          - coordinates are (0, 0)  → GPS hasn't locked yet
+          - horizontal accuracy > 30 m → fix is too noisy
+        """
         global currentlat, currentlon
-        currentlat = kwargs['lat']
-        currentlon = kwargs['lon']
+
+        lat      = kwargs.get('lat',      0.0)
+        lon      = kwargs.get('lon',      0.0)
+        accuracy = kwargs.get('accuracy', 999.0)
+
+        # Guard: null-island means the GPS chipset hasn't got a fix yet
+        if lat == 0.0 and lon == 0.0:
+            Logger.warning('GPS: rejected null-island fix (no lock yet)')
+            return
+
+        # Guard: reject fixes with poor horizontal accuracy
+        if accuracy > 30.0:
+            Logger.warning(f'GPS: rejected low-accuracy fix ({accuracy:.1f} m > 30 m threshold)')
+            return
+
+        currentlat = lat
+        currentlon = lon
+        Logger.info(f'GPS: fix recorded  lat={lat:.6f}  lon={lon:.6f}  acc={accuracy:.1f} m')
         now = datetime.now()
-        localDBRecord(currentTripID, currentCompany, currentCar, currentDest, currentPass, currentCargo, currentlon, currentlat, now)
-    
+        localDBRecord(currentTripID, currentCompany, currentCar,
+                      currentDest, currentPass, currentCargo,
+                      currentlon, currentlat, now)
+
     def stopGPS(self):
+        """Stop GPS updates, release the WakeLock, and quit the background thread."""
+        # Stop location updates
         try:
             gps.stop()
+            Logger.info('GPS: location updates stopped')
         except NotImplementedError:
-            Logger.critical("GPS not implemented on this platform")
+            Logger.critical('GPS not implemented on this platform')
+        except Exception as e:
+            Logger.error(f'GPS: stop failed: {e}')
+
+        # Release WakeLock so the battery isn't drained after the trip
+        try:
+            if hasattr(self, '_wake_lock') and self._wake_lock.isHeld():
+                self._wake_lock.release()
+                Logger.info('GPS: WakeLock released')
+        except Exception as e:
+            Logger.error(f'GPS: WakeLock release failed: {e}')
+
+        # Shut down the background HandlerThread
+        try:
+            if hasattr(self, '_gps_thread'):
+                self._gps_thread.quit()
+                Logger.info('GPS: background thread stopped')
+        except Exception as e:
+            Logger.error(f'GPS: background thread stop failed: {e}')
         
 if __name__ == '__main__':
     MainApp().run()

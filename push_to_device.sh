@@ -2,12 +2,14 @@
 # ============================================================
 # push_to_device.sh
 # Pushes updated source files to the Android device over ADB.
-# Run this instead of rebuilding after every code change.
+# Works on non-rooted devices via run-as stdin piping.
 #
 # Usage:
 #   chmod +x push_to_device.sh   (only needed once)
 #   ./push_to_device.sh
 # ============================================================
+
+export PATH="$PATH:/Users/personal/Library/Android/sdk/platform-tools"
 
 PACKAGE="org.galapagos.gct"
 DEVICE_APP_DIR="/data/data/$PACKAGE/files/app"
@@ -20,31 +22,31 @@ fi
 
 echo "Device found. Pushing files..."
 
-# --- Python source files ---
-adb push main.py                        $DEVICE_APP_DIR/main.py
-adb push translations.py                $DEVICE_APP_DIR/translations.py
-adb push supabase_rest_api.py           $DEVICE_APP_DIR/supabase_rest_api.py
-adb push gps_service.py                 $DEVICE_APP_DIR/gps_service.py
+# Helper: stream a local file directly into the app's private directory via run-as
+push_file() {
+    local LOCAL_FILE="$1"
+    local REMOTE_NAME="$2"
+    local DEST="$DEVICE_APP_DIR/$REMOTE_NAME"
+    adb shell "run-as $PACKAGE sh -c 'cat > $DEST'" < "$LOCAL_FILE"
+    echo "  Pushed $REMOTE_NAME"
+}
 
-# --- KV layout file ---
-adb push GalapagosCarTracking_translated.kv $DEVICE_APP_DIR/GalapagosCarTracking_translated.kv
+push_file main.py                            main.py
+push_file translations.py                    translations.py
+push_file supabase_rest_api.py               supabase_rest_api.py
+push_file gps_service.py                     gps_service.py
+push_file GalapagosCarTracking_translated.kv GalapagosCarTracking_translated.kv
+push_file galapago_logo.png                  galapago_logo.png
+push_file lang_icon.png                      lang_icon.png
 
-# --- Fonts ---
-adb push CaviarDreams.ttf               $DEVICE_APP_DIR/CaviarDreams.ttf
-adb push CaviarDreams_Bold.ttf          $DEVICE_APP_DIR/CaviarDreams_Bold.ttf
-adb push CaviarDreams_Italic.ttf        $DEVICE_APP_DIR/CaviarDreams_Italic.ttf
-adb push CaviarDreams_BoldItalic.ttf    $DEVICE_APP_DIR/CaviarDreams_BoldItalic.ttf
+# Remove stale .pyc files so Kivy re-compiles from the fresh .py sources
+echo "  Removing stale .pyc files..."
+adb shell "run-as $PACKAGE sh -c 'rm -f $DEVICE_APP_DIR/main.pyc $DEVICE_APP_DIR/translations.pyc $DEVICE_APP_DIR/supabase_rest_api.pyc $DEVICE_APP_DIR/gps_service.pyc'"
 
 echo ""
 echo "All files pushed. Restarting app..."
-
-# Force-stop the app
 adb shell am force-stop $PACKAGE
-
-# Small pause to let the OS fully close it
 sleep 1
-
-# Relaunch the app
 adb shell am start -n $PACKAGE/org.kivy.android.PythonActivity
 
 echo ""

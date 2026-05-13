@@ -23,8 +23,8 @@ class Translations:
                 'get_stats': 'Get Stats',
                 
                 # Registration Screens
-                'fill_out_following': 'Please Fill Out the following:',
-                'complete_registration': 'Complete your Registration:',
+                'fill_out_following': 'Please fill out the following:',
+                'complete_registration': 'Complete your registration:',
                 'name': 'Name:',
                 'phone_number': 'Phone Number:',
                 'car_companies': 'Select Your Taxi Companies:',
@@ -140,7 +140,12 @@ class Translations:
                 # Time units
                 'hours': 'Hours',
                 'minutes': 'Minutes',
-                'seconds': 'Seconds'
+                'seconds': 'Seconds',
+
+                # Trip history grouping
+                'week_of': 'Week of',
+                'start_trip_instruction': 'Tap Start Trip when you are ready\nto begin your journey',
+                'no_past_trips': 'No past trips found'
             },
             'es': {
                 # Welcome Screen
@@ -159,8 +164,8 @@ class Translations:
                 'get_stats': 'Ver Estadísticas',
                 
                 # Registration Screens
-                'fill_out_following': 'Por favor complete lo siguiente:',
-                'complete_registration': 'Complete su Registro:',
+                'fill_out_following': 'Por favor llene lo siguiente:',
+                'complete_registration': 'Complete su registro:',
                 'name': 'Nombre:',
                 'phone_number': 'Número de Teléfono:',
                 'car_companies': 'Seleccione sus Compañías de Taxi:',
@@ -276,7 +281,12 @@ class Translations:
                 # Time units
                 'hours': 'Horas',
                 'minutes': 'Minutos',
-                'seconds': 'Segundos'
+                'seconds': 'Segundos',
+
+                # Trip history grouping
+                'week_of': 'Semana del',
+                'start_trip_instruction': 'Toque Iniciar Viaje cuando esté listo\npara comenzar su recorrido',
+                'no_past_trips': 'No se encontraron viajes pasados'
             }
         }
     

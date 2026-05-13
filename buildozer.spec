@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = GCT
+title = GalapaGo
 
 # (str) Package name
 package.name = gct
@@ -44,10 +44,10 @@ requirements = python3,sqlite3,kivy,kivymd,android,https://github.com/HyTurtle/p
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/data/presplash.png
+presplash.filename = %(source.dir)s/galapago_logo.png
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
+icon.filename = %(source.dir)s/galapago_logo.png
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse

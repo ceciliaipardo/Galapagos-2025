@@ -1,13 +1,23 @@
 # Reusable language toggle button — shown on every screen
 <LangButton@Button>:
     size_hint: (None, None)
-    size: ('62dp', '62dp')
+    size: ('62dp', '42dp')
     pos_hint: {'right': 0.97, 'top': 0.97}
-    background_normal: 'lang_icon.png'
-    background_down: 'lang_icon.png'
-    background_color: 1, 1, 1, 1
-    text: ''
+    background_normal: ''
+    background_down: ''
+    background_color: 0, 0, 0, 0
+    text: app.language_button_text
+    font_name: 'CaviarDreams_Bold.ttf'
+    font_size: '14sp'
+    color: 1, 1, 1, 1
     on_release: app.toggle_language()
+    canvas.before:
+        Color:
+            rgba: 0.1, 0.1, 0.1, 0.85
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [10, 10, 10, 10]
 
 WindowManager:
     Loading:
@@ -1222,7 +1232,7 @@ WindowManager:
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '55dp'
+                        height: max(PassengersCargo.texture_size[1] + 16, 45)
                         spacing: '8dp'
                         Label:
                             text: app.passengers_cargo_text
@@ -1829,7 +1839,7 @@ WindowManager:
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '35dp'
+                        height: max(passengers_value.texture_size[1] + 16, 35)
                         spacing: '10dp'
                         Label:
                             text: app.language and app.translator.get_text('passengers')
@@ -1848,14 +1858,14 @@ WindowManager:
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_x: 0.65
                             halign: 'left'
-                            valign: 'middle'
-                            text_size: self.size
+                            valign: 'top'
+                            text_size: self.width, None
 
                     # Cargo
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
-                        height: '35dp'
+                        height: max(cargo_value.texture_size[1] + 16, 35)
                         spacing: '10dp'
                         Label:
                             text: app.language and app.translator.get_text('cargo')
@@ -1874,8 +1884,8 @@ WindowManager:
                             color: 0.1, 0.1, 0.1, 1
                             size_hint_x: 0.65
                             halign: 'left'
-                            valign: 'middle'
-                            text_size: self.size
+                            valign: 'top'
+                            text_size: self.width, None
 
                     Widget:
                         size_hint_y: None
@@ -2313,7 +2323,7 @@ WindowManager:
                     halign: 'left'
                     text_size: self.size
                     padding: ['10dp', 0]
-                Spinner:
+                StableSpinner:
                     id: CompanySpinner
                     text: app.language and app.translator.get_text('select_company')
                     values: [app.translator.get_text('option1'), app.translator.get_text('option2'), app.translator.get_text('option3'), app.translator.get_text('option4'), app.translator.get_text('option5')]
@@ -2321,9 +2331,15 @@ WindowManager:
                     font_size: '18sp'
                     size_hint_y: None
                     height: '50dp'
-                    background_normal: ''
-                    background_color: 0.9, 0.9, 0.9, 1
+                    background_color: 0, 0, 0, 0
                     color: 0.1, 0.1, 0.1, 1
+                    canvas.before:
+                        Color:
+                            rgba: 0.9, 0.9, 0.9, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [4]
 
             # Another-company checkbox row
             BoxLayout:
@@ -2435,7 +2451,7 @@ WindowManager:
                 pos: self.pos
                 size: self.size
         Image:
-            source: 'galapago_logo.png'
+            source: app.logo_source
             allow_stretch: True
             keep_ratio: True
             size_hint: (0.65, 0.65)

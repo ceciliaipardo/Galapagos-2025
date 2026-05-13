@@ -11,9 +11,11 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition, SlideTra
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.spinner import Spinner
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.properties import StringProperty
+from kivy.clock import Clock
 from datetime import datetime
 from datetime import timedelta
 from plyer import gps
@@ -88,12 +90,13 @@ def DBCheckPhoneExists(phone):
         return "Error"
     
 def DBRegister(username, password, name, phone, company1, comp1num, company2, comp2num):
-    """Register new user in Supabase"""
+    """Register new user in Supabase. Returns None on success, error string on failure."""
     try:
         supabase_api.register_user(username, password, name, phone, company1, comp1num, company2, comp2num)
+        return None
     except Exception as e:
         Logger.error(f"DBRegister failed: {e}")
-        raise
+        return str(e)
 
 def DBLogin(username, password):
     """Login user from Supabase"""
@@ -497,9 +500,9 @@ def localDBGetTripStats(tripID):
     if not endData:
         return ['Trip Too Short', 'Trip Too Short', 0, timedelta(0), 0]
 
-    totalDist  = endData[1]                       # km
-    totalTime  = _parse_db_timedelta(endData[0])  # timedelta
-    totalFuel  = endData[2]                       # gallons
+    totalDist  = float(endData[1]) if endData[1] not in (None, '') else 0.0   # km
+    totalTime  = _parse_db_timedelta(endData[0])                               # timedelta
+    totalFuel  = float(endData[2]) if endData[2] not in (None, '') else 0.0   # gallons
 
     # Destination and passenger info come from the globals set during the trip
     # (they are still set when TripStats loads immediately after the trip)
@@ -1200,6 +1203,20 @@ class Register1(Screen):
         else:
             self.ids.Incorrect.text = translator.get_text('connection_required_register')
    
+class StableSpinner(Spinner):
+    """Spinner that delays dropdown open by one frame so the opening touch
+    event doesn't immediately trigger the dropdown's outside-touch dismiss."""
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            Clock.schedule_once(lambda dt: self._open_dropdown(), 0.05)
+            return True
+        return super().on_touch_down(touch)
+
+    def _open_dropdown(self):
+        if not self.is_open:
+            self.is_open = True
+
+
 class Register2(Screen):
     def register(self, username, password, name, phone, car_num):
         if(DBCheckConnection()):
@@ -1219,8 +1236,15 @@ class Register2(Screen):
                     selected_company = additional_company
             
             # Register with companies as comp1, empty comp2
-            DBRegister(username, password, name, phone, selected_company, car_num, '', '')
-            
+            error = DBRegister(username, password, name, phone, selected_company, car_num, '', '')
+
+            if error is not None:
+                if '409' in error or 'duplicate' in error.lower():
+                    self.ids.Incorrect.text = translator.get_text('username_exists')
+                else:
+                    self.ids.Incorrect.text = translator.get_text('connection_required_register')
+                return
+
             # Clear all fields
             self.manager.get_screen('Register1').ids.UsernameReg.text = ''
             self.manager.get_screen('Register1').ids.PasswordReg.text = ''
@@ -1230,7 +1254,7 @@ class Register2(Screen):
             self.ids.CompanySpinner.text = translator.get_text('select_company')
             self.ids.AnotherCompanyCheck.active = False
             self.ids.AdditionalCompanyReg.text = ''
-            
+
             self.manager.current = "Welcome"
             self.manager.transition.direction = "up"
         else:
@@ -1266,11 +1290,11 @@ class People(Screen):
 class PassengerCount(Screen):
     def setPassengerCount(self, count):
         global currentPass
-        # Combine passenger type (from People screen) with count
-        # currentPass already has the passenger type from the People screen
+        # Combine passenger type (from People screen) with count.
+        # Strip any previously appended count so we never get "Locals - 2 - 3".
         if currentPass and currentPass != '':
-            # Append the count to the passenger type: "Students - 3"
-            currentPass = f"{currentPass} - {count}"
+            base_type = currentPass.split(' - ')[0].strip()
+            currentPass = f"{base_type} - {count}"
         else:
             # Fallback if passenger type is missing
             currentPass = count
@@ -1493,19 +1517,33 @@ class TripStats(Screen):
                 destination = translator.get_text('trip_too_short')
             
             # Translate passenger/cargo info
-            passengers_cargo = str(statistics[1])
-            if passengers_cargo == "Trip Too Short":
+            raw_pass = str(statistics[1])
+            if raw_pass == "Trip Too Short":
                 passengers_cargo = translator.get_text('trip_too_short')
-            
+            else:
+                # raw_pass is "Type - count", e.g. "Locals - 2"
+                if ' - ' in raw_pass:
+                    ptype, pcount = raw_pass.split(' - ', 1)
+                    translated_type = translate_passenger(ptype.strip())
+                    passengers_cargo = f"{translated_type} - {pcount.strip()}"
+                else:
+                    passengers_cargo = translate_passenger(raw_pass)
+
+            # Append cargo if present
+            if currentCargo and currentCargo not in ('', 'None'):
+                translated_cargo = translate_cargo_list(currentCargo)
+                passengers_cargo = f"{passengers_cargo}\n{translated_cargo}"
+
             Logger.info(f"Setting destination to: {destination}")
             self.ids.Destination.text = destination
             self.ids.PassengersCargo.text = passengers_cargo
-            self.ids.tripDist.text = "{} {}".format(statistics[2], translator.get_text('km'))
-            hours = int(statistics[3].seconds/3600)
-            minutes = int((statistics[3].seconds-hours*3600)/60)
-            seconds = int(statistics[3].seconds - hours*3600 - minutes*60)
+            self.ids.tripDist.text = "{:.3f} {}".format(float(statistics[2]), translator.get_text('km'))
+            total_secs = int(statistics[3].total_seconds())
+            hours = total_secs // 3600
+            minutes = (total_secs % 3600) // 60
+            seconds = total_secs % 60
             self.ids.tripTime.text = '{} {}, {} {}, {} {}'.format(hours, translator.get_text('hours'), minutes, translator.get_text('minutes'), seconds, translator.get_text('seconds'))
-            self.ids.tripFuel.text = "{} {}".format(statistics[4], translator.get_text('gallons'))
+            self.ids.tripFuel.text = "{:.3f} {}".format(float(statistics[4]), translator.get_text('gallons'))
             Logger.info("TripStats refresh_display completed successfully")
         except Exception as e:
             Logger.error(f"Error in refresh_display: {e}")
@@ -1635,7 +1673,8 @@ class MainApp(App):
     # Observable property that triggers KV re-evaluation when language changes
     language = StringProperty('es')
     language_button_text = StringProperty('EN')  # Shows which language to switch TO
-    
+    logo_source = StringProperty('')  # Safe logo path — empty string if file is missing
+
     # Create observable string properties for all translatable text
     welcome_text = StringProperty()
     username_text = StringProperty()
@@ -1708,6 +1747,8 @@ class MainApp(App):
         return Builder.load_file('GalapagosCarTracking_translated.kv')
     
     def on_start(self):
+        # CWD is now set to the app data dir — safe to check for assets
+        self.logo_source = 'galapago_logo.png' if os.path.exists('galapago_logo.png') else ''
         if platform == "android":
             from android.permissions import request_permissions, Permission
             try:

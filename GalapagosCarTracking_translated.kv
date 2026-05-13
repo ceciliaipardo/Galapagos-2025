@@ -1123,7 +1123,7 @@ WindowManager:
                         size: self.size
                         radius: [12, 12, 12, 12]
                 on_release:
-                    root.endTrip()
+                    root.endTripOnce()
                     app.root.current = "TripStats"
                     root.manager.transition.direction = "up"
 

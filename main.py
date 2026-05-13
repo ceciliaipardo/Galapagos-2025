@@ -100,15 +100,23 @@ def DBRegister(username, password, name, phone, company1, comp1num, company2, co
 
 def DBLogin(username, password):
     """Login user from Supabase"""
+    global currentUser, currentCompany, currentCar
+    # Guard: reject empty credentials so double-tap can't overwrite good globals
+    if not username or not password:
+        return False
     try:
         account = supabase_api.login_user(username, password)
-        
         if account:
             localDBLogin(
-                account['username'], account['password'], account['name'], 
-                account['phone'], account['company1'], account['comp1num'], 
+                account['username'], account['password'], account['name'],
+                account['phone'], account['company1'], account['comp1num'],
                 account['company2'], account['comp2num']
             )
+            # Set globals immediately so they are always available
+            currentUser    = account['username']
+            currentCompany = account['company1']
+            currentCar     = account['comp1num']
+            Logger.info(f"DBLogin: user={currentUser} company={currentCompany} car={currentCar}")
             return True
         else:
             return False
@@ -182,6 +190,9 @@ def DBUploadTripSummary(trip_id, username, company, car_number, destination, pas
         Logger.info(f"Trip summary uploaded: {trip_id}")
     except Exception as e:
         Logger.error(f"DBUploadTripSummary failed: {e}")
+        # Re-raise so localDBDumptoServer can distinguish real failures
+        # from 409 duplicates (already-uploaded trips)
+        raise
 
 def DBCheckConnection():
     """Check if Supabase connection is available"""
@@ -346,6 +357,19 @@ def localDBRecord(username, company, carnum, destination, passengers, cargo, gps
     if destination in ['Start Trip', 'End Trip']:
         localDBShowAll()
 
+def localDBHasPendingTrip():
+    """Return True if the local DB has a completed but not-yet-uploaded trip
+    (i.e. both a Start Trip and End Trip row exist in tripData)."""
+    try:
+        [cursor, localdb] = localDBConnect()
+        cursor.execute("SELECT COUNT(*) FROM tripData WHERE destinationXstatus = 'End Trip'")
+        count = cursor.fetchone()[0]
+        localdb.close()
+        return count > 0
+    except Exception as e:
+        Logger.error(f'localDBHasPendingTrip: {e}')
+        return False
+
 def localDBDumptoServer():
     """Upload trip summary to TripData table"""
     global currentTripID, currentDest, currentPass, currentCargo
@@ -366,10 +390,26 @@ def localDBDumptoServer():
         trip_id = start_record[0]
         print(f"\n==== PROCESSING TRIP: {trip_id} ====")
         Logger.info(f"Processing trip: {trip_id}")
-        company = start_record[1]
+        company    = start_record[1]
         car_number = start_record[2]
         start_time = _parse_db_datetime(start_record[3])
-        
+
+        # Fallback: if company/car/username were empty when the trip started,
+        # pull them now from the local account DB
+        if not company or not car_number or not currentUser:
+            try:
+                acct = localDBPullAccountData()
+                if acct:
+                    if not currentUser:
+                        currentUser = acct[0] or ''
+                    if not company:
+                        company = acct[4] or ''
+                    if not car_number:
+                        car_number = acct[5] or ''
+                    Logger.info(f"Fallback account data: user={currentUser} company={company} car={car_number}")
+            except Exception as acct_err:
+                Logger.error(f"localDBDumptoServer fallback acct lookup failed: {acct_err}")
+
         # Use the global variables for trip info (destination, passengers, cargo)
         # These are set during the trip workflow
         destination = currentDest
@@ -408,40 +448,60 @@ def localDBDumptoServer():
         duration_seconds = int(duration_td.total_seconds())
         
         # Upload to server
-        DBUploadTripSummary(
-            trip_id=trip_id,
-            username=currentUser,
-            company=company,
-            car_number=car_number,
-            destination=destination,
-            passenger_info=passenger_info,
-            cargo_type=cargo_type,
-            distance_km=distance_km,
-            duration_seconds=duration_seconds,
-            fuel_gallons=fuel_gallons,
-            start_time=start_time,
-            end_time=end_time,
-            starting_point=currentStartPoint if currentStartPoint else ""
-        )
-        
+        try:
+            DBUploadTripSummary(
+                trip_id=trip_id,
+                username=currentUser,
+                company=company,
+                car_number=car_number,
+                destination=destination,
+                passenger_info=passenger_info,
+                cargo_type=cargo_type,
+                distance_km=distance_km,
+                duration_seconds=duration_seconds,
+                fuel_gallons=fuel_gallons,
+                start_time=start_time,
+                end_time=end_time,
+                starting_point=currentStartPoint if currentStartPoint else ""
+            )
+        except Exception as upload_err:
+            # HTTP 409 = trip already exists in Supabase (was uploaded before but
+            # SQLite wasn't cleared). Treat as success so we clear local data.
+            if '409' in str(upload_err):
+                Logger.warning(f'localDBDumptoServer: trip already in Supabase (409), clearing local copy')
+            else:
+                # Genuine failure — preserve local data for retry
+                Logger.error(f'localDBDumptoServer: upload failed: {upload_err}')
+                try:
+                    localdb.commit()
+                    localdb.close()
+                except Exception:
+                    pass
+                Logger.warning('localDBDumptoServer: trip data preserved for retry')
+                return False
+
+        # Upload succeeded (or was already there) — safe to clear local trip data
+        localdb.commit()
+        localdb.close()
+        localDBClearTrip()
+        # Reset trip-specific globals only — keep user/company/car for the next trip
+        currentTripID     = ''
+        currentDest       = ''
+        currentPass       = ''
+        currentCargo      = ''
+        currentStartPoint = ''
+        Logger.info('localDBDumptoServer: trip uploaded and local data cleared')
+        return True
+
     except Exception as e:
         Logger.error(f"localDBDumptoServer failed: {e}")
-    
-    # Save Changes
-    localdb.commit()
-    # Close our connection
-    localdb.close()
-    # Clear local trip data from SQLite
-    localDBClearTrip()
-    # Reset all trip globals now that upload is complete
-    currentTripID     = ''
-    currentDest       = ''
-    currentPass       = ''
-    currentCargo      = ''
-    currentStartPoint = ''
-    currentCompany    = ''
-    currentCar        = ''
-    Logger.info('localDBDumptoServer: trip globals cleared after upload')
+        try:
+            localdb.commit()
+            localdb.close()
+        except Exception:
+            pass
+        Logger.warning('localDBDumptoServer: trip data preserved for retry')
+        return False
 
 def localDBPullTripCoords(tripID):
     [cursor, localdb] = localDBConnect()
@@ -535,7 +595,9 @@ def onLaunch():
 def startTrip():
     now = datetime.now()
     global currentTripID
-    # Clear any leftover local trip data from a previous session
+    # Always clear old local trip data first — any pending retry upload
+    # is handled in a background thread at app launch and on TripStats screen,
+    # NOT here on the main thread (avoids SQLite lock + UI freeze).
     localDBClearTrip()
     currentTripID = '{}{}{}{}{}{}{}'.format(currentUser, now.year, now.month, now.day, now.hour, now.minute, now.second)
     localDBRecord(currentTripID, currentCompany, currentCar, 'Start Trip', 0, 0, 0, 0, now)
@@ -673,10 +735,15 @@ class Home(Screen):
     def autoSelectFirstCar(self):
         """Automatically select the first car for the user"""
         global currentCompany, currentCar, currentUser
-        userData = localDBPullAccountData()
-        currentUser = userData[0]
-        currentCompany = userData[4]
-        currentCar = userData[5]
+        try:
+            userData = localDBPullAccountData()
+            if userData:
+                if userData[0]: currentUser    = userData[0]
+                if userData[4]: currentCompany = userData[4]
+                if userData[5]: currentCar     = userData[5]
+            Logger.info(f"autoSelectFirstCar: user={currentUser} company={currentCompany} car={currentCar}")
+        except Exception as e:
+            Logger.error(f"autoSelectFirstCar failed: {e}")
         
     def logOut(self):
         global currentUser
@@ -1435,10 +1502,21 @@ class StartTripConfirmation(Screen):
         self.manager.transition.direction = "up"
 
 class FinishTrip(Screen):
+    _trip_ended = False  # guard against double-tap
+
     def on_enter(self):
         # GPS is now started in StartTripConfirmation screen
-        pass
-    
+        self._trip_ended = False  # reset for each new trip
+
+    def endTripOnce(self):
+        """Called from the UI button. Ensures endTrip() only runs once
+        even if the button fires twice (double-tap)."""
+        if self._trip_ended:
+            Logger.warning('FinishTrip: endTripOnce called again, ignoring')
+            return
+        self._trip_ended = True
+        self.endTrip()
+
     def endTrip(self):
         try:
             app = App.get_running_app()
@@ -1477,10 +1555,13 @@ class TripStats(Screen):
             try:
                 if DBCheckConnection():
                     Logger.info("TripStats: uploading trip data (background)")
-                    localDBDumptoServer()
-                    Logger.info("TripStats: upload complete")
+                    success = localDBDumptoServer()
+                    if success:
+                        Logger.info("TripStats: upload complete")
+                    else:
+                        Logger.warning("TripStats: upload returned False, trip data kept for retry")
                 else:
-                    Logger.warning("TripStats: no connection, skipping upload")
+                    Logger.warning("TripStats: no connection — trip saved locally, will retry on next login")
             except Exception as e:
                 Logger.error(f"TripStats background upload error: {e}")
                 import traceback
@@ -1750,17 +1831,24 @@ class MainApp(App):
         # CWD is now set to the app data dir — safe to check for assets
         self.logo_source = 'galapago_logo.png' if os.path.exists('galapago_logo.png') else ''
         if platform == "android":
-            from android.permissions import request_permissions, Permission
+            from android.permissions import request_permissions, check_permission, Permission
+            # Step 1: request foreground location + internet + wake lock
             try:
                 request_permissions([
                     Permission.INTERNET,
-                    Permission.ACCESS_BACKGROUND_LOCATION,
                     Permission.ACCESS_FINE_LOCATION,
                     Permission.ACCESS_COARSE_LOCATION,
                     Permission.WAKE_LOCK
                 ])
             except Exception as e:
-                Logger.error(f"Permission request failed: {e}")
+                Logger.error(f"Permission request (foreground) failed: {e}")
+            # Step 2: request ACCESS_BACKGROUND_LOCATION separately.
+            # Android 10+ silently ignores it if bundled with foreground perms.
+            try:
+                if not check_permission(Permission.ACCESS_BACKGROUND_LOCATION):
+                    request_permissions([Permission.ACCESS_BACKGROUND_LOCATION])
+            except Exception as e:
+                Logger.error(f"Permission request (background location) failed: {e}")
             # Push layout up when soft keyboard appears so inputs stay visible
             Window.softinput_mode = 'below_target'
 
@@ -1773,6 +1861,19 @@ class MainApp(App):
             Logger.error(f"Local DB creation failed: {e}")
 
         onLaunch()
+
+        # Retry any trip that was saved locally but failed to upload last session
+        if localDBHasPendingTrip() and DBCheckConnection():
+            import threading
+            def _retry():
+                try:
+                    Logger.info('on_start: retrying pending trip upload')
+                    localDBDumptoServer()
+                    Logger.info('on_start: pending trip upload succeeded')
+                except Exception as e:
+                    Logger.error(f'on_start: pending trip upload failed: {e}')
+            threading.Thread(target=_retry, daemon=True).start()
+
         self.root.transition = NoTransition()
         try:
             username = localDBPullAccountData()[0]
@@ -2080,6 +2181,18 @@ class MainApp(App):
         except Exception as e:
             Logger.error(f'startGPS failed: {e}')
 
+    def _start_background_service(self):
+        """Start the declared GPS background service so Android treats
+        this app as an active foreground process during a trip."""
+        try:
+            from android import AndroidService
+            service = AndroidService('GalapaGo GPS', 'Trip tracking active')
+            service.start('GPS running')
+            self._android_service = service
+            Logger.info('GPS: background service started')
+        except Exception as e:
+            Logger.warning(f'GPS: could not start background service: {e}')
+
     def _start_android_gps(self, min_time):
         """Android-specific GPS start.
         - Acquires a PARTIAL_WAKE_LOCK so the CPU stays awake mid-trip.
@@ -2091,6 +2204,9 @@ class MainApp(App):
         try:
             from jnius import autoclass
             from plyer.platforms.android import activity
+
+            # ── Start background service so Android won't kill the process ─
+            self._start_background_service()
 
             # ── WakeLock: keep CPU alive during the trip ──────────────────
             PowerManager = autoclass('android.os.PowerManager')
@@ -2123,7 +2239,7 @@ class MainApp(App):
                 pass
 
             # ── Register every available provider on the background looper
-            providers = gps._location_manager.getProviders(False).toArray()
+            providers = gps._location_manager.getProviders(True).toArray()  # True = enabled providers only
             registered = 0
             for provider in providers:
                 try:
@@ -2161,25 +2277,43 @@ class MainApp(App):
 
         lat      = kwargs.get('lat',      0.0)
         lon      = kwargs.get('lon',      0.0)
-        accuracy = kwargs.get('accuracy', 999.0)
+        # Default None means accuracy was not provided by this GPS provider.
+        # In that case we accept the fix rather than silently rejecting everything.
+        accuracy = kwargs.get('accuracy', None)
 
         # Guard: null-island means the GPS chipset hasn't got a fix yet
         if lat == 0.0 and lon == 0.0:
             Logger.warning('GPS: rejected null-island fix (no lock yet)')
             return
 
-        # Guard: reject fixes with poor horizontal accuracy
-        if accuracy > 30.0:
-            Logger.warning(f'GPS: rejected low-accuracy fix ({accuracy:.1f} m > 30 m threshold)')
+        # Guard: reject fixes with known poor horizontal accuracy (>50 m)
+        # Only applied when accuracy is actually reported by the provider.
+        if accuracy is not None and accuracy > 50.0:
+            Logger.warning(f'GPS: rejected low-accuracy fix ({accuracy:.1f} m > 50 m threshold)')
             return
 
         currentlat = lat
         currentlon = lon
         Logger.info(f'GPS: fix recorded  lat={lat:.6f}  lon={lon:.6f}  acc={accuracy:.1f} m')
         now = datetime.now()
-        localDBRecord(currentTripID, currentCompany, currentCar,
-                      currentDest, currentPass, currentCargo,
-                      currentlon, currentlat, now)
+        # Capture all values as locals RIGHT NOW so the lambda always records
+        # the coordinates from THIS fix, even if another fix arrives before
+        # Clock executes the callback on the main thread.
+        _lon = lon
+        _lat = lat
+        _tid = currentTripID
+        _co  = currentCompany
+        _car = currentCar
+        _dst = currentDest
+        _pas = currentPass
+        _crg = currentCargo
+        _now = now
+        # Schedule the DB write on the main thread to avoid SQLite
+        # "database is locked" errors from the background HandlerThread
+        from kivy.clock import Clock
+        Clock.schedule_once(
+            lambda dt: localDBRecord(_tid, _co, _car, _dst, _pas, _crg, _lon, _lat, _now),
+            0)
 
     def stopGPS(self):
         """Stop GPS updates, release the WakeLock, and quit the background thread."""
@@ -2207,6 +2341,14 @@ class MainApp(App):
                 Logger.info('GPS: background thread stopped')
         except Exception as e:
             Logger.error(f'GPS: background thread stop failed: {e}')
-        
+
+        # Stop the background service now that the trip is over
+        try:
+            if hasattr(self, '_android_service'):
+                self._android_service.stop()
+                Logger.info('GPS: background service stopped')
+        except Exception as e:
+            Logger.error(f'GPS: background service stop failed: {e}')
+
 if __name__ == '__main__':
     MainApp().run()

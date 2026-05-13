@@ -9,7 +9,30 @@
 #   ./push_to_device.sh
 # ============================================================
 
-export PATH="$PATH:/Users/personal/Library/Android/sdk/platform-tools"
+# ── Locate ADB ──────────────────────────────────────────────
+# Try common SDK locations so this works on any machine.
+# If adb is already on your PATH (e.g. you set ANDROID_HOME),
+# the first check will succeed immediately.
+if ! command -v adb &>/dev/null; then
+    for candidate in \
+        "$ANDROID_HOME/platform-tools/adb" \
+        "$ANDROID_SDK_ROOT/platform-tools/adb" \
+        "$HOME/Library/Android/sdk/platform-tools/adb" \
+        "$HOME/Android/Sdk/platform-tools/adb" \
+        "/usr/local/lib/android/sdk/platform-tools/adb"
+    do
+        if [ -x "$candidate" ]; then
+            export PATH="$PATH:$(dirname "$candidate")"
+            break
+        fi
+    done
+fi
+
+if ! command -v adb &>/dev/null; then
+    echo "ERROR: adb not found. Install Android SDK platform-tools and ensure"
+    echo "       adb is on your PATH (or set ANDROID_HOME / ANDROID_SDK_ROOT)."
+    exit 1
+fi
 
 PACKAGE="org.galapagos.gct"
 DEVICE_APP_DIR="/data/data/$PACKAGE/files/app"
